@@ -6,6 +6,7 @@
 typedef struct _TEXT {
 	size_t size;
 	size_t gap_start;
+	size_t text_start;
 	char *buf;
 } Text;
 
