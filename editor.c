@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
 
 	initscr();
 	nonl();
-	cbreak();
+	raw();
 	noecho();
 
 	getmaxyx(stdscr, row, col);
