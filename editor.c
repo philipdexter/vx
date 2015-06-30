@@ -90,6 +90,7 @@ int main(int argc, char *argv[])
 	struct arguments arguments;
 	arguments.verbose = 0;
 	arguments.nopy = 0;
+	arguments.args[0] = NULL;
 	argp_parse(&argp, argc, argv, 0, 0, &arguments);
 
 	setlocale(LC_ALL, "en_US.UTF-8");
@@ -121,7 +122,10 @@ int main(int argc, char *argv[])
 	}
 
 	Buffer *buffer = new_buffer();
-	attach_file(buffer, "README.md");
+	if (arguments.args[0])
+		attach_file(buffer, arguments.args[0]);
+	else
+		attach_file(buffer, "README.md");
 	addstr(buffer->text->buf);
 
 	WINDOW *local_win = newwin(2, col, row-1, 0);
