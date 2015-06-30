@@ -1,3 +1,4 @@
 *.o
 *.m
 editor
+__pycache__
