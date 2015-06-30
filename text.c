@@ -32,8 +32,6 @@ void resize_gap(Text *text, size_t new_gap)
 	text->buf = (char*)calloc(1, new_size);
 	memcpy(text->buf, old_buf, text->gap_start);
 	memcpy(text->buf + text->text_start, old_buf + old_start, old_size - old_start);
-	/* for (int i = text->text_start; i < text->gap_start; ++i) */
-	/* 	text->buf[i] = old_buf[i]; */
 	free(old_buf);
 }
 
@@ -52,4 +50,115 @@ void add_string(Text *text, char *buf, size_t len)
 		resize_gap(text, RESIZE_BY + len);
 	memcpy(text->buf + text->gap_start, buf, len);
 	text->gap_start += len;
+}
+
+void move_cursor(size_t pos)
+{
+	;
+}
+
+void move_cursor_to_beg(Text *text)
+{
+	size_t gap = GAPSIZE(text);
+
+	char *old_buf = text->buf;
+	text->buf = (char*)calloc(1, text->size);
+	memcpy(text->buf + gap, old_buf, text->gap_start);
+	memcpy(text->buf + gap + text->gap_start, old_buf + text->text_start, text->size - text->text_start);
+	text->gap_start = 0;
+	text->text_start = gap;
+
+	free(old_buf);
+}
+
+const char *get_str(Text *text)
+{
+	char* buf = calloc(1, NBYTES(text) + 1);
+	memcpy(buf, text->buf, text->gap_start);
+	memcpy(buf + text->gap_start, text->buf + text->text_start, text->size - text->text_start);
+	return buf;
+}
+
+size_t get_cursor_pos(Text *text)
+{
+	return text->gap_start;
+}
+
+void get_cursor_rowcol(Text *text, int *row, int *col)
+{
+	int r = 0, c = 0;
+	for (int i = 0; i < text->gap_start; ++i) {
+		if (text->buf[i] == '\n') {
+			++r; c = 0;
+		} else {
+			++c;
+		}
+	}
+	*row = r;
+	*col = c;
+}
+
+void backspace(Text *text)
+{
+	if (text->gap_start > 0)
+		--text->gap_start;
+}
+
+void move_left(Text *text)
+{
+	if (text->gap_start > 0) {
+		text->buf[text->text_start-1] = text->buf[text->gap_start-1];
+		--text->text_start;
+		--text->gap_start;
+	}
+}
+
+void move_right(Text *text)
+{
+	if (text->size - text->text_start > 0) {
+		text->buf[text->gap_start] = text->buf[text->text_start];
+		++text->text_start;
+		++text->gap_start;
+	}
+}
+
+void move_up(Text *text)
+{
+	int col = 0;
+	int i = text->gap_start-1;
+	for (; i > 0; i = text->gap_start-1, ++col) {
+		if (text->buf[i] == '\n') break;
+		move_left(text);
+	}
+	move_left(text);
+	i = text->gap_start-1;
+	for (; i >= 0; i = text->gap_start-1) {
+		if (text->buf[i] == '\n') break;
+		move_left(text);
+	}
+	for (int j = 0; j < col; i = text->gap_start-1, ++j) {
+		if(text->buf[i+1] == '\n') break;
+		move_right(text);
+	}
+}
+
+void move_down(Text *text)
+{
+	int col = 0;
+	int i = text->gap_start-1;
+	for (; i > 0; i = text->gap_start-1, ++col) {
+		if (text->buf[i] == '\n') break;
+		move_left(text);
+	}
+	i = text->text_start;
+	for (; text->size - text->text_start > 0; i = text->text_start) {
+		if (text->buf[i] == '\n') break;
+		move_right(text);
+	}
+	move_right(text);
+	i = text->text_start;
+	for (int j = 0; j < col; i = text->text_start, ++j) {
+		if(text->buf[i] == '\n') break;
+		move_right(text);
+	}
 }

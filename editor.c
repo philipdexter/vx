@@ -126,18 +126,48 @@ int main(int argc, char *argv[])
 		attach_file(buffer, arguments.args[0]);
 	else
 		attach_file(buffer, "README.md");
-	addstr(buffer->text->buf);
+	move_cursor_to_beg(buffer->text);
+	waddstr(stdscr, get_str(buffer->text));
 
 	WINDOW *local_win = newwin(2, col, row-1, 0);
 	refresh();
 	wprintw(local_win, "rows: %d / cols: %d", row, col);
 	wrefresh(local_win);
-	move(0,0);
+	wmove(stdscr, 0, 0);
 
 	for (;;)
 	{
 		int c = getch();
 		if (c == 'q') break;
+		if (c == 13) {
+			add_character(buffer->text, '\n');
+		} else if (c == 8 || c == 127) {
+			backspace(buffer->text);
+		} else if (c == '\033') {
+			getch();
+			c = getch();
+			if (c == 'A')
+				move_up(buffer->text);
+			else if (c == 'B')
+				move_down(buffer->text);
+			else if (c == 'C')
+				move_right(buffer->text);
+			else if (c == 'D')
+				move_left(buffer->text);
+
+		} else {
+			add_character(buffer->text, c);
+		}
+		wmove(stdscr, 0, 0);
+		waddstr(stdscr, get_str(buffer->text));
+		wrefresh(stdscr);
+		wmove(local_win, 0, 0);
+		werase(local_win);
+		wprintw(local_win, "rows: %d / cols: %d", row, col);
+		wrefresh(local_win);
+		int mr, mc;
+		get_cursor_rowcol(buffer->text, &mr, &mc);
+		wmove(stdscr, mr, mc);
 	}
 
 	if(!arguments.nopy)
