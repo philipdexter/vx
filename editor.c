@@ -121,13 +121,15 @@ int main(int argc, char *argv[])
 		Py_DECREF(pName);
 	}
 
+	size_t line = 1;
+
 	Buffer *buffer = new_buffer();
 	if (arguments.args[0])
 		attach_file(buffer, arguments.args[0]);
 	else
 		attach_file(buffer, "README.md");
 	move_cursor_to_beg(buffer->text);
-	waddstr(stdscr, get_str(buffer->text));
+	waddstr(stdscr, get_str_from_line(buffer->text, line));
 
 	WINDOW *local_win = newwin(2, col, row-1, 0);
 	refresh();
@@ -158,16 +160,22 @@ int main(int argc, char *argv[])
 		} else {
 			add_character(buffer->text, c);
 		}
-		wmove(stdscr, 0, 0);
-		waddstr(stdscr, get_str(buffer->text));
-		wrefresh(stdscr);
-		wmove(local_win, 0, 0);
-		werase(local_win);
-		wprintw(local_win, "rows: %d / cols: %d", row, col);
-		wrefresh(local_win);
+
 		int mr, mc;
 		get_cursor_rowcol(buffer->text, &mr, &mc);
-		wmove(stdscr, mr, mc);
+		while (mr+1 < line && line > 1) --line;
+		while (mr+1 > line + row - 2) ++line;
+
+		wmove(stdscr, 0, 0);
+		waddstr(stdscr, get_str_from_line(buffer->text, line));
+		wrefresh(stdscr);
+
+		wmove(local_win, 0, 0);
+		werase(local_win);
+		wprintw(local_win, "rows: %d / cols: %d  -- mr: %d, line : %zu", row, col, mr, line);
+		wrefresh(local_win);
+
+		wmove(stdscr, mr - (line - 1), mc);
 	}
 
 	if(!arguments.nopy)

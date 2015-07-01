@@ -73,9 +73,36 @@ void move_cursor_to_beg(Text *text)
 
 const char *get_str(Text *text)
 {
-	char* buf = calloc(1, NBYTES(text) + 1);
+	char *buf = calloc(1, NBYTES(text) + 1);
 	memcpy(buf, text->buf, text->gap_start);
 	memcpy(buf + text->gap_start, text->buf + text->text_start, text->size - text->text_start);
+	return buf;
+}
+
+const char *get_str_from_line(Text *text, size_t line)
+{
+	size_t pos_line = 1;
+	size_t i;
+	for (i = 0; i < text->size; ++i) {
+		if (pos_line == line) {
+			break;
+		}
+		if (i == text->gap_start) {
+			i += GAPSIZE(text) - 1;
+			continue;
+		}
+		if (text->buf[i] == '\n') {
+			++pos_line;
+		}
+	}
+
+	char *buf = calloc(1, NBYTES(text) - i + 1);
+	if (i <= text->gap_start) {
+		memcpy(buf, text->buf + i, text->gap_start - i);
+		memcpy(buf + text->gap_start - i, text->buf + text->text_start, text->size - text->text_start);
+	} else {
+		memcpy(buf, text->buf + i, text->size - text->text_start - i);
+	}
 	return buf;
 }
 
@@ -146,7 +173,7 @@ void move_down(Text *text)
 {
 	int col = 0;
 	int i = text->gap_start-1;
-	for (; i > 0; i = text->gap_start-1, ++col) {
+	for (; i >= 0; i = text->gap_start-1, ++col) {
 		if (text->buf[i] == '\n') break;
 		move_left(text);
 	}
