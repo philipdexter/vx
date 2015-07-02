@@ -16,6 +16,8 @@ void add_character(Text*, char);
 void add_string(Text*, char*, size_t);
 void move_cursor(size_t pos);
 void move_cursor_to_beg(Text *text);
+void move_cursor_bol(Text*);
+void move_cursor_eol(Text*);
 const char *get_str(Text*);
 const char *get_str_from_line(Text*, size_t);
 size_t get_cursor_pos(Text *text);

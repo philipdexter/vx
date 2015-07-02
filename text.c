@@ -57,6 +57,24 @@ void move_cursor(size_t pos)
 	;
 }
 
+void move_cursor_bol(Text *text)
+{
+	int i = text->gap_start-1;
+	for (; i >= 0; i = text->gap_start-1) {
+		if (text->buf[i] == '\n') break;
+		move_left(text);
+	}
+}
+
+void move_cursor_eol(Text *text)
+{
+	int i = text->text_start;
+	for (; text->size - text->text_start > 0; i = text->text_start) {
+		if (text->buf[i] == '\n') break;
+		move_right(text);
+	}
+}
+
 void move_cursor_to_beg(Text *text)
 {
 	size_t gap = GAPSIZE(text);
@@ -164,7 +182,7 @@ void move_up(Text *text)
 		move_left(text);
 	}
 	for (int j = 0; j < col; i = text->gap_start-1, ++j) {
-		if(text->buf[i+1] == '\n') break;
+		if(text->buf[text->text_start] == '\n') break;
 		move_right(text);
 	}
 }

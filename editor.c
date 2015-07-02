@@ -13,6 +13,8 @@
 
 static void finish(int sig);
 
+static char last_char;
+
 static int row=0;
 static int col=0;
 
@@ -64,6 +66,24 @@ editor_move_right(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
+static PyObject*
+editor_move_bol(PyObject *self, PyObject *args)
+{
+	if(!PyArg_ParseTuple(args, ":rows"))
+		return NULL;
+	move_cursor_bol(buffer->text);
+	Py_RETURN_NONE;
+}
+
+static PyObject*
+editor_move_eol(PyObject *self, PyObject *args)
+{
+	if(!PyArg_ParseTuple(args, ":rows"))
+		return NULL;
+	move_cursor_eol(buffer->text);
+	Py_RETURN_NONE;
+}
+
 static PyMethodDef EditorMethods[] = {
 	{"rows", editor_rows, METH_VARARGS,
 	 "Return the number of rows in the screen."},
@@ -75,6 +95,10 @@ static PyMethodDef EditorMethods[] = {
 	 "Move the cursor left one row"},
 	{"move_right", editor_move_right, METH_VARARGS,
 	 "Move the cursor right one row"},
+	{"move_bol", editor_move_bol, METH_VARARGS,
+	 "Move the cursor to the beginning of the line"},
+	{"move_eol", editor_move_eol, METH_VARARGS,
+	 "Move the cursor to the end of the line"},
 	{NULL, NULL, 0, NULL}
 };
 
