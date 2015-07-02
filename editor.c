@@ -239,7 +239,9 @@ int main(int argc, char *argv[])
 	else
 		attach_file(buffer, "README.md");
 	move_cursor_to_beg(buffer->text);
-	waddstr(stdscr, get_str_from_line(buffer->text, line));
+	char *contents = get_str_from_line(buffer->text, line);
+	waddstr(stdscr, contents);
+	free(contents);
 
 	if(!arguments.nopy) {
 		PyObject *pName = PyUnicode_FromString("start");
@@ -318,7 +320,10 @@ int main(int argc, char *argv[])
 		while (mr+1 > line + row - 2) ++line;
 
 		wmove(stdscr, 0, 0);
-		waddstr(stdscr, get_str_from_line(buffer->text, line));
+		wclear(stdscr);
+		char *contents = get_str_from_line(buffer->text, line);
+		waddstr(stdscr, contents);
+		free(contents);
 		wrefresh(stdscr);
 
 		wmove(local_win, 0, 0);
