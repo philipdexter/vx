@@ -84,6 +84,15 @@ editor_move_eol(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
+static PyObject*
+editor_save(PyObject *self, PyObject *args)
+{
+	if(!PyArg_ParseTuple(args, ":rows"))
+		return NULL;
+	save_file(buffer);
+	Py_RETURN_NONE;
+}
+
 static PyMethodDef EditorMethods[] = {
 	{"rows", editor_rows, METH_VARARGS,
 	 "Return the number of rows in the screen."},
@@ -99,6 +108,8 @@ static PyMethodDef EditorMethods[] = {
 	 "Move the cursor to the beginning of the line"},
 	{"move_eol", editor_move_eol, METH_VARARGS,
 	 "Move the cursor to the end of the line"},
+	{"save", editor_save, METH_VARARGS,
+	 "Save the file"},
 	{NULL, NULL, 0, NULL}
 };
 

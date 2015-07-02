@@ -13,6 +13,7 @@ Buffer *new_buffer(void)
 
 void attach_file(Buffer *buffer, char *filename)
 {
+	buffer->filename = filename;
 	FILE *fp = fopen(filename, "r");
 	char buf[20];
 	size_t nread;
@@ -21,4 +22,17 @@ void attach_file(Buffer *buffer, char *filename)
 		add_string(buffer->text, buf, nread);
 
 	fclose(fp);
+}
+
+void save_file(Buffer *buffer)
+{
+	const char *str = get_str(buffer->text);
+	char *name = calloc(1, strlen(buffer->filename) + 3);
+	sprintf(name, ".%s.", buffer->filename);
+
+	FILE *tmpfile = fopen(name, "w");
+	fprintf(tmpfile, "%s", str);
+	fclose(tmpfile);
+
+	rename(name, buffer->filename);
 }
