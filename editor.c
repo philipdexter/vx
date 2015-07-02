@@ -275,6 +275,15 @@ int main(int argc, char *argv[])
 		}
 
 		PyObject *ll = PyUnicode_FromOrdinal(c);
+
+		PyObject *key_callback = PyObject_GetAttrString(editor_mod, "register_key");
+		PyObject *args = Py_BuildValue("(O)", ll);
+		PyObject_CallObject(key_callback, args);
+		Py_DECREF(args);
+		Py_DECREF(key_callback);
+
+
+
 		PyObject *callback = PyDict_GetItem(keymap, ll);
 		Py_DECREF(ll);
 		if (callback) {

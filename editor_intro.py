@@ -1,5 +1,7 @@
 import editor
 
+editor.register_key = lambda x: None
+
 def _C(c):
     return chr(0x1f & ord(c))
 
