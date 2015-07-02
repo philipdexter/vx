@@ -80,7 +80,7 @@ void move_cursor_to_beg(Text *text)
 	size_t gap = GAPSIZE(text);
 
 	char *old_buf = text->buf;
-	text->buf = (char*)calloc(1, text->size);
+	text->buf = (char*)calloc(1, text->size + 1);
 	memcpy(text->buf + gap, old_buf, text->gap_start);
 	memcpy(text->buf + gap + text->gap_start, old_buf + text->text_start, text->size - text->text_start);
 	text->gap_start = 0;
