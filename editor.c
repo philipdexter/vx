@@ -85,6 +85,24 @@ editor_move_eol(PyObject *self, PyObject *args)
 }
 
 static PyObject*
+editor_move_beg(PyObject *self, PyObject *args)
+{
+	if(!PyArg_ParseTuple(args, ":rows"))
+		return NULL;
+	move_cursor_to_beg(buffer->text);
+	Py_RETURN_NONE;
+}
+
+static PyObject*
+editor_move_end(PyObject *self, PyObject *args)
+{
+	if(!PyArg_ParseTuple(args, ":rows"))
+		return NULL;
+	move_cursor_to_end(buffer->text);
+	Py_RETURN_NONE;
+}
+
+static PyObject*
 editor_save(PyObject *self, PyObject *args)
 {
 	if(!PyArg_ParseTuple(args, ":rows"))
@@ -108,6 +126,10 @@ static PyMethodDef EditorMethods[] = {
 	 "Move the cursor to the beginning of the line"},
 	{"move_eol", editor_move_eol, METH_VARARGS,
 	 "Move the cursor to the end of the line"},
+	{"move_beg", editor_move_beg, METH_VARARGS,
+	 "Move the cursor to the beginning of the buffer"},
+	{"move_end", editor_move_end, METH_VARARGS,
+	 "Move the cursor to the end of the buffer"},
 	{"save", editor_save, METH_VARARGS,
 	 "Save the file"},
 	{NULL, NULL, 0, NULL}

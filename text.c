@@ -89,7 +89,21 @@ void move_cursor_to_beg(Text *text)
 	free(old_buf);
 }
 
-const char *get_str(Text *text)
+void move_cursor_to_end(Text *text)
+{
+	size_t gap = GAPSIZE(text);
+
+	char *old_buf = text->buf;
+	text->buf = (char*)calloc(1, text->size + 1);
+	memcpy(text->buf, old_buf, text->gap_start);
+	memcpy(text->buf + text->gap_start, old_buf + text->text_start, text->size - text->text_start);
+	text->gap_start = text->size - gap;
+	text->text_start = text->size;
+
+	free(old_buf);
+}
+
+char *get_str(Text *text)
 {
 	char *buf = calloc(1, NBYTES(text) + 1);
 	memcpy(buf, text->buf, text->gap_start);
@@ -97,7 +111,7 @@ const char *get_str(Text *text)
 	return buf;
 }
 
-const char *get_str_from_line(Text *text, size_t line)
+char *get_str_from_line(Text *text, size_t line)
 {
 	size_t pos_line = 1;
 	size_t i;
