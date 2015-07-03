@@ -22,6 +22,8 @@ void attach_file(Buffer *buffer, char *filename)
 		add_string(buffer->text, buf, nread);
 
 	fclose(fp);
+
+	move_cursor_to_beg(buffer->text);
 }
 
 void save_file(Buffer *buffer)

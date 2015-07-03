@@ -1,29 +1,15 @@
 import editor
+from sys import argv
 from functools import partial
 
 editor.register_key = lambda x: None
+editor.my_editor = lambda: None
 
 def _C(c):
     return chr(0x1f & ord(c))
 
 def _M(c):
     return chr(0x80 | ord(c))
-
-def _tobinding(s):
-    class donothing:
-        def __init__(self): pass
-        def __add__(self, other): return other
-    binding = donothing()
-    for c,n in zip(s,s[1:]+' '):
-        if c == '-':
-            continue
-        elif c == 'C' and n == '-':
-            c = control()
-        elif c == 'M' and n == '-':
-            c = meta()
-        binding = binding + c
-    return binding
-editor.tobinding = _tobinding
 
 class _keybinding:
     def __init__(self, key):
@@ -48,6 +34,24 @@ class _keymodifier:
             other = _keybinding(other)
         other.key = self.mod(other.key)
         return other
+_ctrl = _keymodifier(_C)
+_alt =  _keymodifier(_M)
+
+def _tobinding(s):
+    class donothing:
+        def __init__(self): pass
+        def __add__(self, other): return other
+    binding = donothing()
+    for c,n in zip(s,s[1:]+' '):
+        if c == '-':
+            continue
+        elif c == 'C' and n == '-':
+            c = _ctrl
+        elif c == 'M' and n == '-':
+            c = _alt
+        binding = binding + c
+    return binding
+editor.tobinding = _tobinding
 
 def _bind(key, command=None):
     if type(key) is str:
@@ -72,14 +76,15 @@ for i in range(10):
 for char in ['?', '<', '>', '\'', '/', '"', ':',
              ';', '.', ',', '!', '@', '#', '$',
              '%', '^', '&', '*', '(', ')', '-',
-             '_', '+', '=', '\\', '|', '`', '~']:
+             '_', '+', '=', '\\', '|', '`', '~',
+             ' ']:
     _quick_bind(char)
 _bind(chr(13), partial(editor.add_string, '\n'))
 _bind(chr(127), editor.backspace)
 
 editor.bind = _bind
-editor.ctrl = _keymodifier(_C)
-editor.alt = _keymodifier(_M)
+editor.ctrl = _ctrl
+editor.alt = _alt
 
 def _repeat(c, times=4):
     for _ in range(times):
@@ -116,3 +121,32 @@ class _keys:
         _keys.doublequote = '"'
         _keys.pipe = '|'
 editor.keys = _keys()
+
+class _window:
+    def __init__(self, rows, columns, x, y):
+        self._c_window = editor.new_window(rows, columns, x, y)
+
+    def attach_file(self, filename):
+        editor.attach_window(self._c_window, filename)
+
+    def focus(self):
+        editor.focus_window(self._c_window)
+
+    def update(self):
+        editor.update_window(self._c_window)
+editor.window = _window
+
+editor.files = argv[1:]
+
+_windows = []
+editor.windows = _windows
+
+_current_window = 0
+def _next_window():
+    global _current_window
+    _current_window += 1
+    if _current_window >= len(_windows):
+        _current_window = 0
+    _windows[_current_window].focus()
+
+editor.next_window = _next_window

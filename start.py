@@ -1,11 +1,8 @@
 import editor
-from editor import bind, alt, ctrl, keys
+import sys
+from editor import bind, alt, ctrl, keys, window
 
 from functools import partial
-
-editor.status_line = 'status line-------'
-
-bind(ctrl + keys.l, editor.move_down)
 
 bind(ctrl + keys.v, partial(editor.repeat, editor.move_down))
 bind(alt + keys.v, partial(editor.repeat, editor.move_up))
@@ -24,3 +21,22 @@ bind(alt + keys.le, editor.move_beg)
 bind(alt + keys.ge, editor.move_end)
 
 bind(alt + keys.s, editor.move_beg)
+
+win = window(editor.rows - 1, editor.cols, 0, 0)
+win.attach_file(editor.files[0] if len(editor.files) > 0 else 'README.md')
+win.focus()
+
+editor.windows.append(win)
+
+editor.bind('C-o', editor.next_window)
+
+def my_editor():
+    for w in editor.windows:
+        w.update()
+
+editor.my_editor = my_editor
+
+editor.status_line = lambda: 'line: {} col: {} / rows: {} cols: {}'.format(editor.line,
+                                                                           editor.col,
+                                                                           editor.rows,
+                                                                           editor.cols)

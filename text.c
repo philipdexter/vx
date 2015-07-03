@@ -5,6 +5,7 @@
 
 #define GAPSIZE(t) (t->text_start - t->gap_start)
 #define NBYTES(t) ((t->size - t->text_start) + (t->gap_start))
+#define MIN(a, b) (a < b ? a : b)
 
 #define RESIZE_BY 20
 
@@ -134,6 +135,56 @@ char *get_str_from_line(Text *text, size_t line)
 		memcpy(buf + text->gap_start - i, text->buf + text->text_start, text->size - text->text_start);
 	} else {
 		memcpy(buf, text->buf + i, text->size - text->text_start - i);
+	}
+	return buf;
+}
+
+char *get_str_from_line_to_line(Text *text, size_t from, size_t to)
+{
+	size_t pos_line = 1;
+	size_t pos_end = 1;
+	size_t i;
+	size_t j;
+	for (i = 0; i < text->size; ++i) {
+		if (pos_line == from) {
+			break;
+		}
+		if (i == text->gap_start) {
+			i += GAPSIZE(text) - 1;
+			continue;
+		}
+		if (text->buf[i] == '\n') {
+			++pos_line;
+			++pos_end;
+		}
+	}
+	for (j = i; j < text->size; ++j) {
+		if (pos_end == to+1) {
+			break;
+		}
+		if (j == text->gap_start) {
+			j += GAPSIZE(text) - 1;
+			continue;
+		}
+		if (text->buf[j] == '\n') {
+			++pos_end;
+		}
+	}
+
+	char *buf = calloc(1, j - i + 1);
+	if (i <= text->gap_start) {
+		size_t end = MIN(text->gap_start, j);
+		size_t len = end - i;
+		memcpy(buf, text->buf + i, len);
+		size_t send = MIN(text->size, j);
+		if (send > text->text_start) {
+			size_t slen = send - text->text_start;
+			memcpy(buf + len, text->buf + text->text_start, slen);
+		}
+	} else {
+		size_t end = MIN(text->size, j);
+		size_t len = end - text->text_start - i;
+		memcpy(buf, text->buf + i, len);
 	}
 	return buf;
 }

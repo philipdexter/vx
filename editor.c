@@ -19,16 +19,28 @@ static char last_char;
 static int row=0;
 static int col=0;
 
+static int mr=0, mc=0;
+
 static PyObject *keymap;
 
-static Buffer *buffer;
+static Window *focused_window = NULL;
 
-static PyObject*
-editor_rows(PyObject *self, PyObject *args)
+static PyObject *editor_mod;
+
+void update_editor_vars(void)
 {
-	if(!PyArg_ParseTuple(args, ":rows"))
-		return NULL;
-	return PyLong_FromLong(row);
+	PyObject *v = PyLong_FromLong(row);
+	PyObject_SetAttrString(editor_mod, "rows", v);
+	Py_DECREF(v);
+	v = PyLong_FromLong(col);
+	PyObject_SetAttrString(editor_mod, "cols", v);
+	Py_DECREF(v);
+	v = PyLong_FromLong(mr + 1);
+	PyObject_SetAttrString(editor_mod, "line", v);
+	Py_DECREF(v);
+	v = PyLong_FromLong(mc + 1);
+	PyObject_SetAttrString(editor_mod, "col", v);
+	Py_DECREF(v);
 }
 
 static PyObject*
@@ -36,7 +48,7 @@ editor_move_up(PyObject *self, PyObject *args)
 {
 	if(!PyArg_ParseTuple(args, ":rows"))
 		return NULL;
-	move_up(buffer->text);
+	move_up(focused_window->buffer->text);
 	Py_RETURN_NONE;
 }
 
@@ -45,7 +57,7 @@ editor_move_down(PyObject *self, PyObject *args)
 {
 	if(!PyArg_ParseTuple(args, ":rows"))
 		return NULL;
-	move_down(buffer->text);
+	move_down(focused_window->buffer->text);
 	Py_RETURN_NONE;
 }
 
@@ -54,7 +66,7 @@ editor_move_left(PyObject *self, PyObject *args)
 {
 	if(!PyArg_ParseTuple(args, ":rows"))
 		return NULL;
-	move_left(buffer->text);
+	move_left(focused_window->buffer->text);
 	Py_RETURN_NONE;
 }
 
@@ -63,7 +75,7 @@ editor_move_right(PyObject *self, PyObject *args)
 {
 	if(!PyArg_ParseTuple(args, ":rows"))
 		return NULL;
-	move_right(buffer->text);
+	move_right(focused_window->buffer->text);
 	Py_RETURN_NONE;
 }
 
@@ -72,7 +84,7 @@ editor_move_bol(PyObject *self, PyObject *args)
 {
 	if(!PyArg_ParseTuple(args, ":rows"))
 		return NULL;
-	move_cursor_bol(buffer->text);
+	move_cursor_bol(focused_window->buffer->text);
 	Py_RETURN_NONE;
 }
 
@@ -81,7 +93,7 @@ editor_move_eol(PyObject *self, PyObject *args)
 {
 	if(!PyArg_ParseTuple(args, ":rows"))
 		return NULL;
-	move_cursor_eol(buffer->text);
+	move_cursor_eol(focused_window->buffer->text);
 	Py_RETURN_NONE;
 }
 
@@ -90,7 +102,7 @@ editor_move_beg(PyObject *self, PyObject *args)
 {
 	if(!PyArg_ParseTuple(args, ":rows"))
 		return NULL;
-	move_cursor_to_beg(buffer->text);
+	move_cursor_to_beg(focused_window->buffer->text);
 	Py_RETURN_NONE;
 }
 
@@ -99,7 +111,7 @@ editor_move_end(PyObject *self, PyObject *args)
 {
 	if(!PyArg_ParseTuple(args, ":rows"))
 		return NULL;
-	move_cursor_to_end(buffer->text);
+	move_cursor_to_end(focused_window->buffer->text);
 	Py_RETURN_NONE;
 }
 
@@ -109,7 +121,7 @@ editor_add_string(PyObject *self, PyObject *args)
 	char *str = NULL;
 	if(!PyArg_ParseTuple(args, "s", &str))
 		return NULL;
-	add_string(buffer->text, str, strlen(str));
+	add_string(focused_window->buffer->text, str, strlen(str));
 	Py_RETURN_NONE;
 }
 
@@ -118,7 +130,7 @@ editor_backspace(PyObject *self, PyObject *args)
 {
 	if(!PyArg_ParseTuple(args, ":rows"))
 		return NULL;
-	backspace(buffer->text);
+	backspace(focused_window->buffer->text);
 	Py_RETURN_NONE;
 }
 
@@ -127,13 +139,64 @@ editor_save(PyObject *self, PyObject *args)
 {
 	if(!PyArg_ParseTuple(args, ":rows"))
 		return NULL;
-	save_file(buffer);
+	save_file(focused_window->buffer);
+	Py_RETURN_NONE;
+}
+
+static PyObject*
+editor_new_window(PyObject *self, PyObject *args)
+{
+	int nlines, ncols, begin_y, begin_x;
+	if(!PyArg_ParseTuple(args, "iiii", &nlines, &ncols, &begin_y, &begin_x))
+		return NULL;
+	Window *w = new_window();
+	build_window(w, nlines, ncols, begin_y, begin_x);
+	PyObject *capsule = PyCapsule_New((void*)w, "editor.window", NULL);
+	return capsule;
+}
+
+static PyObject*
+editor_attach_window(PyObject *self, PyObject *args)
+{
+	PyObject *capsule;
+	char *file;
+	if(!PyArg_ParseTuple(args, "Os", &capsule, &file))
+		return NULL;
+	Window *window = (Window*)PyCapsule_GetPointer(capsule, "editor.window");
+	Buffer *buffer = new_buffer();
+	attach_file(buffer, file);
+	attach_buffer(window, buffer);
+	Py_RETURN_NONE;
+}
+
+static PyObject*
+editor_focus_window(PyObject *self, PyObject *args)
+{
+	PyObject *capsule;
+	if(!PyArg_ParseTuple(args, "O", &capsule))
+		return NULL;
+	Window *window = (Window*)PyCapsule_GetPointer(capsule, "editor.window");
+	focused_window = window;
+	Py_RETURN_NONE;
+}
+
+static PyObject*
+editor_update_window(PyObject *self, PyObject *args)
+{
+	PyObject *capsule;
+	if(!PyArg_ParseTuple(args, "O", &capsule))
+		return NULL;
+	Window *window = (Window*)PyCapsule_GetPointer(capsule, "editor.window");
+	wmove(window->curses_window, 0, 0);
+	wclear(window->curses_window);
+	char *contents = get_str_from_line_to_line(window->buffer->text, window->line, window->line + window->lines - 1);
+	print_string(window, contents);
+	refresh_window(window);
+	free(contents);
 	Py_RETURN_NONE;
 }
 
 static PyMethodDef EditorMethods[] = {
-	{"rows", editor_rows, METH_VARARGS,
-	 "Return the number of rows in the screen."},
 	{"move_up", editor_move_up, METH_VARARGS,
 	 "Move the cursor up one row"},
 	{"move_down", editor_move_down, METH_VARARGS,
@@ -156,6 +219,14 @@ static PyMethodDef EditorMethods[] = {
 	 "Add a string to the buffer"},
 	{"backspace", editor_backspace, METH_VARARGS,
 	 "Delete a character to the left"},
+	{"new_window", editor_new_window, METH_VARARGS,
+	 "Create a new window"},
+	{"attach_window", editor_attach_window, METH_VARARGS,
+	 "Attach a window to a file"},
+	{"focus_window", editor_focus_window, METH_VARARGS,
+	 "Focus a window"},
+	{"update_window", editor_update_window, METH_VARARGS,
+	 "Update a window"},
 	{NULL, NULL, 0, NULL}
 };
 
@@ -164,18 +235,14 @@ static PyModuleDef EditorModule = {
 	NULL, NULL, NULL, NULL
 };
 
-static PyObject *editor_mod;
-
 static PyObject*
 PyInit_editor(void)
 {
 	editor_mod = PyModule_Create(&EditorModule);
-	PyObject *v = Py_BuildValue("s", "hello");
-	PyObject_SetAttrString(editor_mod, "status_line", v);
-	Py_DECREF(v);
 	keymap = PyDict_New();
 	PyObject_SetAttrString(editor_mod, "keymap", keymap);
-	v = Py_BuildValue("s", "*");
+	update_editor_vars();
+	PyObject *v = Py_BuildValue("s", "*");
 	PyImport_ImportModuleEx("editor_intro", NULL, NULL, v);
 	Py_DECREF(v);
 	return editor_mod;
@@ -237,7 +304,7 @@ int main(int argc, char *argv[])
 
 	wchar_t **wargv = calloc(argc, sizeof(wchar_t*));
 	for(int i = 0; i < argc; ++i) {
-		wargv[i] = calloc(1, sizeof(wchar_t) * (strlen(argv[i] + 1)));
+		wargv[i] = calloc(1, sizeof(wchar_t) * (strlen(argv[i]) + 1) + 1);
 		mbstowcs(wargv[i], argv[i], strlen(argv[i]));
 	}
 
@@ -255,25 +322,6 @@ int main(int argc, char *argv[])
 
 	getmaxyx(stdscr, row, col);
 
-	size_t line = 1;
-
-	Window *main_window = new_window();
-	buffer = new_buffer();
-	build_window(main_window, row-1, col, 0, 0);
-	attach_buffer(main_window, buffer);
-	if (arguments.args[0])
-		attach_file(buffer, arguments.args[0]);
-	else
-		attach_file(buffer, "README.md");
-
-	clear();
-	refresh();
-
-	move_cursor_to_beg(buffer->text);
-	char *contents = get_str_from_line(buffer->text, line);
-	print_string(main_window, contents);
-	free(contents);
-
 	if(!arguments.nopy) {
 		PyObject *pName = PyUnicode_FromString("start");
 		PyObject *imod = PyImport_Import(pName);
@@ -285,18 +333,35 @@ int main(int argc, char *argv[])
 		Py_DECREF(pName);
 	}
 
+	clear();
+	refresh();
+
+	get_cursor_rowcol(focused_window->buffer->text, &mr, &mc);
+	update_editor_vars();
+
+	PyObject *their_editor = PyObject_GetAttrString(editor_mod, "my_editor");
+	PyObject *tmp_args = PyTuple_New(0);
+	PyObject *tmp = PyObject_CallObject(their_editor, tmp_args);
+	Py_DECREF(tmp_args);
+	Py_XDECREF(tmp);
+
 	Window *local_win = new_window();
 	build_window(local_win, 2, col, row-1, 0);
 	wmove(local_win->curses_window, 0, 0);
 	PyObject *status_line = PyObject_GetAttrString(editor_mod, "status_line");
-	char *status_line_str = PyUnicode_AsUTF8(status_line);
-	wprintw(local_win->curses_window, "%.*s", 20, status_line_str);
-	last_char = '\0';
+	PyObject *args = PyTuple_New(0);
+	PyObject *ret = PyObject_CallObject(status_line, args);
+	char *status_line_str = PyUnicode_AsUTF8(ret);
+	wprintw(local_win->curses_window, "%s", status_line_str);
 	Py_DECREF(status_line);
+	Py_DECREF(ret);
+	Py_DECREF(args);
 	refresh_window(local_win);
 
-	wmove(main_window->curses_window, 0, 0);
-	refresh_window(main_window);
+	last_char = '\0';
+
+	wmove(focused_window->curses_window, 0, 0);
+	refresh_window(focused_window);
 
 	for (;;)
 	{
@@ -326,29 +391,33 @@ int main(int argc, char *argv[])
 			Py_XDECREF(tmp);
 		}
 
-		int mr, mc;
-		get_cursor_rowcol(buffer->text, &mr, &mc);
-		while (mr+1 < line && line > 1) --line;
-		while (mr+1 > line + row - 2) ++line;
+		get_cursor_rowcol(focused_window->buffer->text, &mr, &mc);
+		while (mr+1 < focused_window->line && focused_window->line > 1) --focused_window->line;
+		while (mr+1 > focused_window->line + focused_window->lines - 1) ++focused_window->line;
 
-		wmove(main_window->curses_window, 0, 0);
-		werase(main_window->curses_window);
-		char *contents = get_str_from_line(buffer->text, line);
-		print_string(main_window, contents);
-		free(contents);
-		refresh_window(main_window);
+		update_editor_vars();
+
+		PyObject *their_editor = PyObject_GetAttrString(editor_mod, "my_editor");
+		PyObject *tmp_args = PyTuple_New(0);
+		PyObject *tmp = PyObject_CallObject(their_editor, tmp_args);
+		Py_DECREF(tmp_args);
+		Py_XDECREF(tmp);
 
 		wmove(local_win->curses_window, 0, 0);
 		werase(local_win->curses_window);
 		PyObject *status_line = PyObject_GetAttrString(editor_mod, "status_line");
-		char *status_line_str = PyUnicode_AsUTF8(status_line);
-		waddstr(local_win->curses_window, status_line_str);
+		args = PyTuple_New(0);
+		PyObject *ret = PyObject_CallObject(status_line, args);
+		char *status_line_str = PyUnicode_AsUTF8(ret);
+		wprintw(local_win->curses_window, "%s", status_line_str);
 		Py_DECREF(status_line);
+		Py_DECREF(ret);
+		Py_DECREF(args);
 		refresh_window(local_win);
 
-		wmove(main_window->curses_window, mr - (line - 1), mc);
+		wmove(focused_window->curses_window, mr - (focused_window->line - 1), mc);
 
-		refresh_window(main_window);
+		refresh_window(focused_window);
 
 	}
 

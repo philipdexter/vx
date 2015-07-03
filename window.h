@@ -6,6 +6,9 @@
 #include "buffer.h"
 
 typedef struct _WINDOW {
+	size_t line;
+	size_t lines;
+	size_t columns;
 	WINDOW *curses_window;
 	Buffer *buffer;
 } Window;
