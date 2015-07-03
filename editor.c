@@ -317,8 +317,6 @@ int main(int argc, char *argv[])
 		Py_DECREF(args);
 		Py_DECREF(key_callback);
 
-
-
 		PyObject *callback = PyDict_GetItem(keymap, ll);
 		Py_DECREF(ll);
 		if (callback) {
@@ -326,18 +324,6 @@ int main(int argc, char *argv[])
 			PyObject *tmp = PyObject_CallObject(callback, args);
 			Py_DECREF(args);
 			Py_XDECREF(tmp);
-		} else if (c == '\033') {
-			getch();
-			c = getch();
-			if (c == 'A')
-				move_up(buffer->text);
-			else if (c == 'B')
-				move_down(buffer->text);
-			else if (c == 'C')
-				move_right(buffer->text);
-			else if (c == 'D')
-				move_left(buffer->text);
-
 		}
 
 		int mr, mc;
