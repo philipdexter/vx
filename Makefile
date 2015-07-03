@@ -1,6 +1,7 @@
 SOURCES=editor.c \
 	text.c \
-	buffer.c
+	buffer.c \
+	window.c
 
 OBJS = $(SOURCES:.c=.o)
 

@@ -9,6 +9,7 @@
 #include <Python.h>
 
 #include "buffer.h"
+#include "window.h"
 #include "text.h"
 
 static void finish(int sig);
@@ -233,14 +234,21 @@ int main(int argc, char *argv[])
 
 	size_t line = 1;
 
+	Window *main_window = new_window();
 	buffer = new_buffer();
+	build_window(main_window, row-1, col, 0, 0);
+	attach_buffer(main_window, buffer);
 	if (arguments.args[0])
 		attach_file(buffer, arguments.args[0]);
 	else
 		attach_file(buffer, "README.md");
+
+	clear();
+	refresh();
+
 	move_cursor_to_beg(buffer->text);
 	char *contents = get_str_from_line(buffer->text, line);
-	waddstr(stdscr, contents);
+	print_string(main_window, contents);
 	free(contents);
 
 	if(!arguments.nopy) {
@@ -254,16 +262,18 @@ int main(int argc, char *argv[])
 		Py_DECREF(pName);
 	}
 
-	WINDOW *local_win = newwin(2, col, row-1, 0);
-	refresh();
-	wmove(local_win, 0, 0);
+	Window *local_win = new_window();
+	build_window(local_win, 2, col, row-1, 0);
+	wmove(local_win->curses_window, 0, 0);
 	PyObject *status_line = PyObject_GetAttrString(editor_mod, "status_line");
 	char *status_line_str = PyUnicode_AsUTF8(status_line);
-	wprintw(local_win, "%.*s", 20, status_line_str);
+	wprintw(local_win->curses_window, "%.*s", 20, status_line_str);
 	last_char = '\0';
 	Py_DECREF(status_line);
-	wrefresh(local_win);
-	wmove(stdscr, 0, 0);
+	refresh_window(local_win);
+
+	wmove(main_window->curses_window, 0, 0);
+	refresh_window(main_window);
 
 	for (;;)
 	{
@@ -319,22 +329,25 @@ int main(int argc, char *argv[])
 		while (mr+1 < line && line > 1) --line;
 		while (mr+1 > line + row - 2) ++line;
 
-		wmove(stdscr, 0, 0);
-		wclear(stdscr);
+		wmove(main_window->curses_window, 0, 0);
+		werase(main_window->curses_window);
 		char *contents = get_str_from_line(buffer->text, line);
-		waddstr(stdscr, contents);
+		print_string(main_window, contents);
 		free(contents);
-		wrefresh(stdscr);
+		refresh_window(main_window);
 
-		wmove(local_win, 0, 0);
-		werase(local_win);
+		wmove(local_win->curses_window, 0, 0);
+		werase(local_win->curses_window);
 		PyObject *status_line = PyObject_GetAttrString(editor_mod, "status_line");
 		char *status_line_str = PyUnicode_AsUTF8(status_line);
-		waddstr(local_win, status_line_str);
+		waddstr(local_win->curses_window, status_line_str);
 		Py_DECREF(status_line);
-		wrefresh(local_win);
+		refresh_window(local_win);
 
-		wmove(stdscr, mr - (line - 1), mc);
+		wmove(main_window->curses_window, mr - (line - 1), mc);
+
+		refresh_window(main_window);
+
 	}
 
 	if(!arguments.nopy)
