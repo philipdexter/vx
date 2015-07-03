@@ -316,6 +316,12 @@ int main(int argc, char *argv[])
 	}
 
 	initscr();
+	can_change_color();
+	has_colors();
+	start_color();
+	use_default_colors();
+	for (int i = 0; i < COLORS; ++i)
+		init_pair(i, i, -1);
 	nonl();
 	raw();
 	noecho();
@@ -352,6 +358,7 @@ int main(int argc, char *argv[])
 	PyObject *args = PyTuple_New(0);
 	PyObject *ret = PyObject_CallObject(status_line, args);
 	char *status_line_str = PyUnicode_AsUTF8(ret);
+	wattron(local_win->curses_window, COLOR_PAIR(55));
 	wprintw(local_win->curses_window, "%s", status_line_str);
 	Py_DECREF(status_line);
 	Py_DECREF(ret);
