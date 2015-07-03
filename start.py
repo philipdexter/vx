@@ -24,4 +24,3 @@ bind(alt + keys.le, editor.move_beg)
 bind(alt + keys.ge, editor.move_end)
 
 bind(alt + keys.s, editor.move_beg)
-

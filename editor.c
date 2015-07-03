@@ -104,6 +104,25 @@ editor_move_end(PyObject *self, PyObject *args)
 }
 
 static PyObject*
+editor_add_string(PyObject *self, PyObject *args)
+{
+	char *str = NULL;
+	if(!PyArg_ParseTuple(args, "s", &str))
+		return NULL;
+	add_string(buffer->text, str, strlen(str));
+	Py_RETURN_NONE;
+}
+
+static PyObject*
+editor_backspace(PyObject *self, PyObject *args)
+{
+	if(!PyArg_ParseTuple(args, ":rows"))
+		return NULL;
+	backspace(buffer->text);
+	Py_RETURN_NONE;
+}
+
+static PyObject*
 editor_save(PyObject *self, PyObject *args)
 {
 	if(!PyArg_ParseTuple(args, ":rows"))
@@ -133,6 +152,10 @@ static PyMethodDef EditorMethods[] = {
 	 "Move the cursor to the end of the buffer"},
 	{"save", editor_save, METH_VARARGS,
 	 "Save the file"},
+	{"add_string", editor_add_string, METH_VARARGS,
+	 "Add a string to the buffer"},
+	{"backspace", editor_backspace, METH_VARARGS,
+	 "Delete a character to the left"},
 	{NULL, NULL, 0, NULL}
 };
 
@@ -303,11 +326,6 @@ int main(int argc, char *argv[])
 			PyObject *tmp = PyObject_CallObject(callback, args);
 			Py_DECREF(args);
 			Py_XDECREF(tmp);
-		}
-		else if (c == 13) {
-			add_character(buffer->text, '\n');
-		} else if (c == 8 || c == 127) {
-			backspace(buffer->text);
 		} else if (c == '\033') {
 			getch();
 			c = getch();
@@ -320,8 +338,6 @@ int main(int argc, char *argv[])
 			else if (c == 'D')
 				move_left(buffer->text);
 
-		} else {
-			add_character(buffer->text, c);
 		}
 
 		int mr, mc;

@@ -1,4 +1,5 @@
 import editor
+from functools import partial
 
 editor.register_key = lambda x: None
 
@@ -50,7 +51,7 @@ class _keymodifier:
 
 def _bind(key, command=None):
     if type(key) is str:
-        key = tobinding(key)
+        key = _tobinding(key)
     if command is None:
         def g(func):
             editor.keymap[str(key)] = func
@@ -60,6 +61,21 @@ def _bind(key, command=None):
         return g
     else:
         editor.keymap[str(key)] = command
+
+def _quick_bind(key):
+    _bind(key, partial(editor.add_string, key))
+for i in range(26):
+    char = chr(ord('a') + i)
+    _quick_bind(char)
+for i in range(10):
+    _quick_bind(str(i))
+for char in ['?', '<', '>', '\'', '/', '"', ':',
+             ';', '.', ',', '!', '@', '#', '$',
+             '%', '^', '&', '*', '(', ')', '-',
+             '_', '+', '=', '\\', '|', '`', '~']:
+    _quick_bind(char)
+_bind(chr(13), partial(editor.add_string, '\n'))
+_bind(chr(127), editor.backspace)
 
 editor.bind = _bind
 editor.ctrl = _keymodifier(_C)
