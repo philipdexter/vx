@@ -200,6 +200,8 @@ void get_cursor_rowcol(Text *text, int *row, int *col)
 	for (int i = 0; i < text->gap_start; ++i) {
 		if (text->buf[i] == '\n') {
 			++r; c = 0;
+		} else if (text->buf[i] == '\t') {
+			c += 8;
 		} else {
 			++c;
 		}
