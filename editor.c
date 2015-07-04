@@ -251,18 +251,20 @@ PyInit_editor(void)
 const char *argp_program_version = "editor 0.1";
 static char doc[] = "editor -- edit files";
 
-static char args_doc[] = "FILE";
+static char args_doc[] = "[FILE...]";
+
+#define OPT_NOPY 1
 
 static  struct argp_option options[] = {
 	{"verbose", 'v', 0, 0, "Produce verbose output" },
-	{"nopy", 's', 0, 0, "Don't load any python"},
+	{"nopy", OPT_NOPY, 0, 0, "Don't load any python : this flag doesn't work"},
 	{ 0 }
 };
 
 struct arguments
 {
-	char *args[1];
-	int verbose, nopy;
+	char **files;
+	int verbose, nopy, num_files;
 };
 
 static error_t
@@ -274,13 +276,13 @@ parse_opt (int key, char *arg, struct argp_state *state)
 		case 'v':
 			arguments->verbose = 1;
 			break;
-		case 's':
+		case OPT_NOPY:
 			arguments->nopy = 1;
 			break;
 		case ARGP_KEY_ARG:
-			if (state->arg_num >= 1)
-				argp_usage(state);
-			arguments->args[state->arg_num] = arg;
+			arguments->files = &state->argv[state->next-1];
+			arguments->num_files = state->argc - state->next + 1;
+			state->next = state->argc;
 			break;
 		default:
 			return ARGP_ERR_UNKNOWN;
@@ -297,22 +299,25 @@ int main(int argc, char *argv[])
 	struct arguments arguments;
 	arguments.verbose = 0;
 	arguments.nopy = 0;
-	arguments.args[0] = NULL;
+	arguments.files = NULL;
+	arguments.num_files = 0;
 	argp_parse(&argp, argc, argv, 0, 0, &arguments);
 
 	setlocale(LC_ALL, "en_US.UTF-8");
 
-	wchar_t **wargv = calloc(argc, sizeof(wchar_t*));
-	for(int i = 0; i < argc; ++i) {
-		wargv[i] = calloc(1, sizeof(wchar_t) * (strlen(argv[i]) + 1) + 1);
-		mbstowcs(wargv[i], argv[i], strlen(argv[i]));
+	wchar_t **wargv = calloc(arguments.num_files + 1, sizeof(wchar_t*));
+	wargv[0] = calloc(1, sizeof(wchar_t) * (strlen(argv[0]) + 1) + 1);
+	mbstowcs(wargv[0], argv[0], strlen(argv[0]));
+	for(int i = argc - arguments.num_files, j = 1; i < argc; ++i, ++j) {
+		wargv[j] = calloc(1, sizeof(wchar_t) * (strlen(argv[i]) + 1) + 1);
+		mbstowcs(wargv[j], argv[i], strlen(argv[i]));
 	}
 
 	if(!arguments.nopy) {
 		Py_SetProgramName(wargv[0]);
 		PyImport_AppendInittab("editor", &PyInit_editor);
 		Py_Initialize();
-		PySys_SetArgv(argc, wargv);
+		PySys_SetArgv(arguments.num_files + 1, wargv);
 	}
 
 	initscr();
