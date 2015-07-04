@@ -170,6 +170,18 @@ editor_attach_window(PyObject *self, PyObject *args)
 }
 
 static PyObject*
+editor_attach_window_blank(PyObject *self, PyObject *args)
+{
+	PyObject *capsule;
+	if(!PyArg_ParseTuple(args, "O", &capsule))
+		return NULL;
+	Window *window = (Window*)PyCapsule_GetPointer(capsule, "editor.window");
+	Buffer *buffer = new_buffer();
+	attach_buffer(window , buffer);
+	Py_RETURN_NONE;
+}
+
+static PyObject*
 editor_focus_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
@@ -223,6 +235,8 @@ static PyMethodDef EditorMethods[] = {
 	 "Create a new window"},
 	{"attach_window", editor_attach_window, METH_VARARGS,
 	 "Attach a window to a file"},
+	{"attach_window_blank", editor_attach_window_blank, METH_VARARGS,
+	 "Attach a window to a blank buffer"},
 	{"focus_window", editor_focus_window, METH_VARARGS,
 	 "Focus a window"},
 	{"update_window", editor_update_window, METH_VARARGS,

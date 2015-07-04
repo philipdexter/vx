@@ -1,5 +1,6 @@
 import editor
 import sys
+import math
 from editor import bind, alt, ctrl, keys, window
 
 from functools import partial
@@ -22,11 +23,20 @@ bind(alt + keys.ge, editor.move_end)
 
 bind(alt + keys.s, editor.move_beg)
 
-win = window(editor.rows - 1, editor.cols, 0, 0)
-win.attach_file(editor.files[0] if len(editor.files) > 0 else 'README.md')
-win.focus()
-
-editor.windows.append(win)
+if len(editor.files) == 0:
+    win = window(editor.rows - 1, editor.cols, 0, 0)
+    win.blank()
+    win.focus()
+    editor.windows.append(win)
+else:
+    d = math.floor((editor.rows - 1) / (len(editor.files)))
+    y = 0
+    for f in editor.files:
+        win = window(d, editor.cols, y, 0)
+        y += d
+        win.attach_file(f)
+        win.focus()
+        editor.windows.append(win)
 
 editor.bind('C-o', editor.next_window)
 

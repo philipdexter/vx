@@ -129,6 +129,9 @@ class _window:
     def attach_file(self, filename):
         editor.attach_window(self._c_window, filename)
 
+    def blank(self):
+        editor.attach_window_blank(self._c_window)
+
     def focus(self):
         editor.focus_window(self._c_window)
 
@@ -141,7 +144,7 @@ editor.files = argv[1:]
 _windows = []
 editor.windows = _windows
 
-_current_window = 0
+_current_window = -1
 def _next_window():
     global _current_window
     _current_window += 1
