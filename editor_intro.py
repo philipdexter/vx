@@ -38,6 +38,7 @@ _ctrl = _keymodifier(_C)
 _alt =  _keymodifier(_M)
 
 def _tobinding(s):
+    '''Convert a key string (C-o) to a keycode.'''
     class donothing:
         def __init__(self): pass
         def __add__(self, other): return other
@@ -51,46 +52,54 @@ def _tobinding(s):
             c = _alt
         binding = binding + c
     return binding
-editor.tobinding = _tobinding
 
-def _bind(key, command=None):
+def _realbind(key, func):
+    '''Bind a key to a function. Cannot be used as a decorator.'''
     if type(key) is str:
         key = _tobinding(key)
+    editor.keymap[str(key)] = func
+
+def _bind(key, command=None):
+    '''Bind a key to a function. Can be used as a decorator.'''
     if command is None:
-        def g(func):
-            editor.keymap[str(key)] = func
-            def h(*args, **kwargs):
-                return func(*args, **kwargs)
-            return h
-        return g
+        def decorator(func):
+            _realbind(key, func)
+            return func
+        return decorator
     else:
-        editor.keymap[str(key)] = command
+        _realbind(key, command)
 
 def _quick_bind(key):
+    '''Bind a keycode to insert itself as text.'''
     _bind(key, partial(editor.add_string, key))
+
+# Quick-bind letter keys
 for i in range(26):
     char = chr(ord('a') + i)
     _quick_bind(char)
+
+    char = chr(ord('A') + i)
+    _quick_bind(char)
+
+# ...number keys
 for i in range(10):
     _quick_bind(str(i))
+
+# ...symbols
 for char in ['?', '<', '>', '\'', '/', '"', ':',
              ';', '.', ',', '!', '@', '#', '$',
              '%', '^', '&', '*', '(', ')', '-',
              '_', '+', '=', '\\', '|', '`', '~',
              ' ']:
     _quick_bind(char)
+
+# ...return/backspace
 _bind(chr(13), partial(editor.add_string, '\n'))
 _bind(chr(127), editor.backspace)
-
-editor.bind = _bind
-editor.ctrl = _ctrl
-editor.alt = _alt
 
 def _repeat(c, times=4):
     for _ in range(times):
         c()
-
-editor.repeat = _repeat
 
 class _keys:
     def __init__(self):
@@ -120,7 +129,9 @@ class _keys:
         _keys.quote = '\''
         _keys.doublequote = '"'
         _keys.pipe = '|'
-editor.keys = _keys()
+        _keys.backspace = chr(127)
+        _keys.enter = chr(13)
+        _keys.escape = chr(27)
 
 class _window:
     def __init__(self, rows, columns, x, y):
@@ -137,12 +148,9 @@ class _window:
 
     def update(self):
         editor.update_window(self._c_window)
-editor.window = _window
 
-editor.files = argv[1:]
 
 _windows = []
-editor.windows = _windows
 
 _current_window = -1
 def _next_window():
@@ -153,3 +161,13 @@ def _next_window():
     _windows[_current_window].focus()
 
 editor.next_window = _next_window
+editor.windows = _windows
+editor.files = argv[1:]
+editor.window = _window
+editor.keys = _keys()
+editor.repeat = _repeat
+editor.tobinding = _tobinding
+editor.bind = _bind
+editor.maybebind = _maybebind
+editor.ctrl = _ctrl
+editor.alt = _alt
