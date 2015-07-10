@@ -18,8 +18,8 @@ bind(ctrl + keys.e, vx.move_eol)
 
 bind(ctrl + keys.s, vx.save)
 
-bind(alt + keys.le, vx.move_beg)
-bind(alt + keys.ge, vx.move_end)
+bind(alt + keys.langle, vx.move_beg)
+bind(alt + keys.rangle, vx.move_end)
 
 bind(alt + keys.s, vx.move_beg)
 

@@ -1,19 +1,65 @@
 import vx
+from enum import Enum
 from sys import argv
 from functools import partial
 
 vx.register_key = lambda x: None
 vx.my_vx = lambda: None
 
-def _C(c):
-    return chr(0x1f & ord(c))
+_keys = {
+    'langle':       '<', 'rangle':   '>',
+    'lparen':       '(', 'rparen':   ')',
+    'lbrace':       '{', 'rbrace':   '}',
+    'lbracket':     '[', 'rbracket': ']',
+    'grave':        '`',
+    'backtick':     '`',
+    'tilde':        '~',
+    'bang':         '!',
+    'exclamation':  '!',
+    'at':           '@',
+    'hash':         '#',
+    'dollar':       '$',
+    'percent':      '%',
+    'carrot':       '^',
+    'carat':        '^',
+    'and':          '&',
+    'ampersand':    '&',
+    'star':         '*',
+    'asterisk':     '*',
+    'hyphen':       '-',
+    'dash':         '-',
+    'minus':        '-',
+    'underscore':   '_',
+    'equals':       '=',
+    'equal':        '=',
+    'plus':         '+',
+    'pipe':         '|',
+    'backslash':    '\\',
+    'forwardslash': '/',
+    'slash':        '/',
+    'quote':        '"',
+    'apostrophe':   '\'',
+    'question':     '?',
+    'dot':          '.',
+    'period':       '.',
+    'comma':        ',',
+    'backspace':    chr(127),
+    'enter':        chr(13),
+    'return':       chr(13), # this one is funky
+    'escape':       chr(27),
+}
 
-def _M(c):
-    return chr(0x80 | ord(c))
+for x in 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789':
+  _keys[x] = x
+
+Keys = Enum('Keys', _keys)
 
 class _keybinding:
     def __init__(self, key):
-        self.key = key
+        if isinstance(key, Keys):
+            self.key = key.value
+        else:
+            self.key = key
 
     def __str__(self):
         return str(self.key)
@@ -24,18 +70,15 @@ class _keymodifier:
         pass
 
     def __add__(self, other):
-        if type(other) is str:
+        if not isinstance(other, _keybinding):
             other = _keybinding(other)
         other.key = self.mod(other.key)
         return other
 
-    def __radd__(self, other):
-        if type(other) is str:
-            other = _keybinding(other)
-        other.key = self.mod(other.key)
-        return other
-_ctrl = _keymodifier(_C)
-_alt =  _keymodifier(_M)
+    __radd__ = __add__
+
+_ctrl = _keymodifier(lambda c: chr(0x1f & ord(c)))
+_alt =  _keymodifier(lambda c: chr(0x80 | ord(c)))
 
 def _tobinding(s):
     '''Convert a key string (C-o) to a keycode.'''
@@ -57,6 +100,10 @@ def _realbind(key, func):
     '''Bind a key to a function. Cannot be used as a decorator.'''
     if type(key) is str:
         key = _tobinding(key)
+    # kinda hacky
+    if isinstance(key, Keys):
+        key = key.value
+
     vx.keymap[str(key)] = func
 
 def _bind(key, command=None):
@@ -101,38 +148,6 @@ def _repeat(c, times=4):
     for _ in range(times):
         c()
 
-class _keys:
-    def __init__(self):
-        for i in range(26):
-            char = chr(ord('a') + i)
-            setattr(_keys, char, char)
-        for i in range(26):
-            char = chr(ord('A') + i)
-            setattr(_keys, char, char)
-        _keys.le = '<'
-        _keys.ge = '>'
-        _keys.question_mark = '?'
-        _keys.period = '.'
-        _keys.comma = ','
-        _keys.left_parenthesis = '('
-        _keys.right_parenthesis = ')'
-        _keys.left_curly_bracket = '{'
-        _keys.right_curly_bracket = '}'
-        _keys.left_square_bracket = '['
-        _keys.right_square_bracket = ']'
-        _keys.plus = '+'
-        _keys.minus = '-'
-        _keys.equals = '='
-        _keys.underscore = '_'
-        _keys.backslash = '\\'
-        _keys.forwardslash = '/'
-        _keys.quote = '\''
-        _keys.doublequote = '"'
-        _keys.pipe = '|'
-        _keys.backspace = chr(127)
-        _keys.enter = chr(13)
-        _keys.escape = chr(27)
-
 class _window:
     def __init__(self, rows, columns, x, y):
         self._c_window = vx.new_window(rows, columns, x, y)
@@ -164,7 +179,7 @@ vx.next_window = _next_window
 vx.windows = _windows
 vx.files = argv[1:]
 vx.window = _window
-vx.keys = _keys()
+vx.keys = Keys
 vx.repeat = _repeat
 vx.tobinding = _tobinding
 vx.bind = _bind
