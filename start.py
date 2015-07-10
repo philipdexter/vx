@@ -1,54 +1,54 @@
-import editor
+import vx
 import sys
 import math
-from editor import bind, alt, ctrl, keys, window
+from vx import bind, alt, ctrl, keys, window
 
 from functools import partial
 
-bind(ctrl + keys.v, partial(editor.repeat, editor.move_down))
-bind(alt + keys.v, partial(editor.repeat, editor.move_up))
+bind(ctrl + keys.v, partial(vx.repeat, vx.move_down))
+bind(alt + keys.v, partial(vx.repeat, vx.move_up))
 
-bind(ctrl + keys.n, editor.move_down)
-bind(ctrl + keys.p, editor.move_up)
-bind(ctrl + keys.b, editor.move_left)
-bind(ctrl + keys.f, editor.move_right)
+bind(ctrl + keys.n, vx.move_down)
+bind(ctrl + keys.p, vx.move_up)
+bind(ctrl + keys.b, vx.move_left)
+bind(ctrl + keys.f, vx.move_right)
 
-bind(ctrl + keys.a, editor.move_bol)
-bind(ctrl + keys.e, editor.move_eol)
+bind(ctrl + keys.a, vx.move_bol)
+bind(ctrl + keys.e, vx.move_eol)
 
-bind(ctrl + keys.s, editor.save)
+bind(ctrl + keys.s, vx.save)
 
-bind(alt + keys.le, editor.move_beg)
-bind(alt + keys.ge, editor.move_end)
+bind(alt + keys.le, vx.move_beg)
+bind(alt + keys.ge, vx.move_end)
 
-bind(alt + keys.s, editor.move_beg)
+bind(alt + keys.s, vx.move_beg)
 
-if len(editor.files) == 0:
-    win = window(editor.rows - 1, editor.cols, 0, 0)
+if len(vx.files) == 0:
+    win = window(vx.rows - 1, vx.cols, 0, 0)
     win.blank()
     win.focus()
-    editor.windows.append(win)
+    vx.windows.append(win)
 else:
-    d = math.floor((editor.rows - 1) / (len(editor.files)))
+    d = math.floor((vx.rows - 1) / (len(vx.files)))
     y = 0
-    for f in editor.files:
-        win = window(d, editor.cols, y, 0)
+    for f in vx.files:
+        win = window(d, vx.cols, y, 0)
         y += d
         win.attach_file(f)
         win.focus()
-        editor.windows.append(win)
+        vx.windows.append(win)
 
-editor.bind('C-q', editor.quit)
+vx.bind('C-q', vx.quit)
 
-editor.bind('C-o', editor.next_window)
+vx.bind('C-o', vx.next_window)
 
-def my_editor():
-    for w in editor.windows:
+def my_vx():
+    for w in vx.windows:
         w.update()
 
-editor.my_editor = my_editor
+vx.my_vx = my_vx
 
-editor.status_line = lambda: 'line: {} col: {} / rows: {} cols: {}'.format(editor.line,
-                                                                           editor.col,
-                                                                           editor.rows,
-                                                                           editor.cols)
+vx.status_line = lambda: 'line: {} col: {} / rows: {} cols: {}'.format(vx.line,
+                                                                           vx.col,
+                                                                           vx.rows,
+                                                                           vx.cols)

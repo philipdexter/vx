@@ -27,26 +27,26 @@ static PyObject *keymap;
 
 static Window *focused_window = NULL;
 
-static PyObject *editor_mod;
+static PyObject *vx_mod;
 
-void update_editor_vars(void)
+void update_vx_vars(void)
 {
 	PyObject *v = PyLong_FromLong(row);
-	PyObject_SetAttrString(editor_mod, "rows", v);
+	PyObject_SetAttrString(vx_mod, "rows", v);
 	Py_DECREF(v);
 	v = PyLong_FromLong(col);
-	PyObject_SetAttrString(editor_mod, "cols", v);
+	PyObject_SetAttrString(vx_mod, "cols", v);
 	Py_DECREF(v);
 	v = PyLong_FromLong(mr + 1);
-	PyObject_SetAttrString(editor_mod, "line", v);
+	PyObject_SetAttrString(vx_mod, "line", v);
 	Py_DECREF(v);
 	v = PyLong_FromLong(mc + 1);
-	PyObject_SetAttrString(editor_mod, "col", v);
+	PyObject_SetAttrString(vx_mod, "col", v);
 	Py_DECREF(v);
 }
 
 static PyObject*
-editor_quit(PyObject *self, PyObject *args)
+vx_quit(PyObject *self, PyObject *args)
 {
 	if(!PyArg_ParseTuple(args, ":rows"))
 		return NULL;
@@ -55,7 +55,7 @@ editor_quit(PyObject *self, PyObject *args)
 }
 
 static PyObject*
-editor_move_up(PyObject *self, PyObject *args)
+vx_move_up(PyObject *self, PyObject *args)
 {
 	if(!PyArg_ParseTuple(args, ":rows"))
 		return NULL;
@@ -64,7 +64,7 @@ editor_move_up(PyObject *self, PyObject *args)
 }
 
 static PyObject*
-editor_move_down(PyObject *self, PyObject *args)
+vx_move_down(PyObject *self, PyObject *args)
 {
 	if(!PyArg_ParseTuple(args, ":rows"))
 		return NULL;
@@ -73,7 +73,7 @@ editor_move_down(PyObject *self, PyObject *args)
 }
 
 static PyObject*
-editor_move_left(PyObject *self, PyObject *args)
+vx_move_left(PyObject *self, PyObject *args)
 {
 	if(!PyArg_ParseTuple(args, ":rows"))
 		return NULL;
@@ -82,7 +82,7 @@ editor_move_left(PyObject *self, PyObject *args)
 }
 
 static PyObject*
-editor_move_right(PyObject *self, PyObject *args)
+vx_move_right(PyObject *self, PyObject *args)
 {
 	if(!PyArg_ParseTuple(args, ":rows"))
 		return NULL;
@@ -91,7 +91,7 @@ editor_move_right(PyObject *self, PyObject *args)
 }
 
 static PyObject*
-editor_move_bol(PyObject *self, PyObject *args)
+vx_move_bol(PyObject *self, PyObject *args)
 {
 	if(!PyArg_ParseTuple(args, ":rows"))
 		return NULL;
@@ -100,7 +100,7 @@ editor_move_bol(PyObject *self, PyObject *args)
 }
 
 static PyObject*
-editor_move_eol(PyObject *self, PyObject *args)
+vx_move_eol(PyObject *self, PyObject *args)
 {
 	if(!PyArg_ParseTuple(args, ":rows"))
 		return NULL;
@@ -109,7 +109,7 @@ editor_move_eol(PyObject *self, PyObject *args)
 }
 
 static PyObject*
-editor_move_beg(PyObject *self, PyObject *args)
+vx_move_beg(PyObject *self, PyObject *args)
 {
 	if(!PyArg_ParseTuple(args, ":rows"))
 		return NULL;
@@ -118,7 +118,7 @@ editor_move_beg(PyObject *self, PyObject *args)
 }
 
 static PyObject*
-editor_move_end(PyObject *self, PyObject *args)
+vx_move_end(PyObject *self, PyObject *args)
 {
 	if(!PyArg_ParseTuple(args, ":rows"))
 		return NULL;
@@ -127,7 +127,7 @@ editor_move_end(PyObject *self, PyObject *args)
 }
 
 static PyObject*
-editor_add_string(PyObject *self, PyObject *args)
+vx_add_string(PyObject *self, PyObject *args)
 {
 	char *str = NULL;
 	if(!PyArg_ParseTuple(args, "s", &str))
@@ -137,7 +137,7 @@ editor_add_string(PyObject *self, PyObject *args)
 }
 
 static PyObject*
-editor_backspace(PyObject *self, PyObject *args)
+vx_backspace(PyObject *self, PyObject *args)
 {
 	if(!PyArg_ParseTuple(args, ":rows"))
 		return NULL;
@@ -146,7 +146,7 @@ editor_backspace(PyObject *self, PyObject *args)
 }
 
 static PyObject*
-editor_save(PyObject *self, PyObject *args)
+vx_save(PyObject *self, PyObject *args)
 {
 	if(!PyArg_ParseTuple(args, ":rows"))
 		return NULL;
@@ -155,25 +155,25 @@ editor_save(PyObject *self, PyObject *args)
 }
 
 static PyObject*
-editor_new_window(PyObject *self, PyObject *args)
+vx_new_window(PyObject *self, PyObject *args)
 {
 	int nlines, ncols, begin_y, begin_x;
 	if(!PyArg_ParseTuple(args, "iiii", &nlines, &ncols, &begin_y, &begin_x))
 		return NULL;
 	Window *w = new_window();
 	build_window(w, nlines, ncols, begin_y, begin_x);
-	PyObject *capsule = PyCapsule_New((void*)w, "editor.window", NULL);
+	PyObject *capsule = PyCapsule_New((void*)w, "vx.window", NULL);
 	return capsule;
 }
 
 static PyObject*
-editor_attach_window(PyObject *self, PyObject *args)
+vx_attach_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
 	char *file;
 	if(!PyArg_ParseTuple(args, "Os", &capsule, &file))
 		return NULL;
-	Window *window = (Window*)PyCapsule_GetPointer(capsule, "editor.window");
+	Window *window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
 	Buffer *buffer = new_buffer();
 	attach_file(buffer, file);
 	attach_buffer(window, buffer);
@@ -181,35 +181,35 @@ editor_attach_window(PyObject *self, PyObject *args)
 }
 
 static PyObject*
-editor_attach_window_blank(PyObject *self, PyObject *args)
+vx_attach_window_blank(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
 	if(!PyArg_ParseTuple(args, "O", &capsule))
 		return NULL;
-	Window *window = (Window*)PyCapsule_GetPointer(capsule, "editor.window");
+	Window *window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
 	Buffer *buffer = new_buffer();
 	attach_buffer(window , buffer);
 	Py_RETURN_NONE;
 }
 
 static PyObject*
-editor_focus_window(PyObject *self, PyObject *args)
+vx_focus_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
 	if(!PyArg_ParseTuple(args, "O", &capsule))
 		return NULL;
-	Window *window = (Window*)PyCapsule_GetPointer(capsule, "editor.window");
+	Window *window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
 	focused_window = window;
 	Py_RETURN_NONE;
 }
 
 static PyObject*
-editor_update_window(PyObject *self, PyObject *args)
+vx_update_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
 	if(!PyArg_ParseTuple(args, "O", &capsule))
 		return NULL;
-	Window *window = (Window*)PyCapsule_GetPointer(capsule, "editor.window");
+	Window *window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
 	wmove(window->curses_window, 0, 0);
 	wclear(window->curses_window);
 	char *contents = get_str_from_line_to_line(window->buffer->text, window->line, window->line + window->lines - 1);
@@ -219,64 +219,64 @@ editor_update_window(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
-static PyMethodDef EditorMethods[] = {
-	{"quit", editor_quit, METH_VARARGS,
+static PyMethodDef VxMethods[] = {
+	{"quit", vx_quit, METH_VARARGS,
 	 "Quit"},
-	{"move_up", editor_move_up, METH_VARARGS,
+	{"move_up", vx_move_up, METH_VARARGS,
 	 "Move the cursor up one row"},
-	{"move_down", editor_move_down, METH_VARARGS,
+	{"move_down", vx_move_down, METH_VARARGS,
 	 "Move the cursor down one row"},
-	{"move_left", editor_move_left, METH_VARARGS,
+	{"move_left", vx_move_left, METH_VARARGS,
 	 "Move the cursor left one row"},
-	{"move_right", editor_move_right, METH_VARARGS,
+	{"move_right", vx_move_right, METH_VARARGS,
 	 "Move the cursor right one row"},
-	{"move_bol", editor_move_bol, METH_VARARGS,
+	{"move_bol", vx_move_bol, METH_VARARGS,
 	 "Move the cursor to the beginning of the line"},
-	{"move_eol", editor_move_eol, METH_VARARGS,
+	{"move_eol", vx_move_eol, METH_VARARGS,
 	 "Move the cursor to the end of the line"},
-	{"move_beg", editor_move_beg, METH_VARARGS,
+	{"move_beg", vx_move_beg, METH_VARARGS,
 	 "Move the cursor to the beginning of the buffer"},
-	{"move_end", editor_move_end, METH_VARARGS,
+	{"move_end", vx_move_end, METH_VARARGS,
 	 "Move the cursor to the end of the buffer"},
-	{"save", editor_save, METH_VARARGS,
+	{"save", vx_save, METH_VARARGS,
 	 "Save the file"},
-	{"add_string", editor_add_string, METH_VARARGS,
+	{"add_string", vx_add_string, METH_VARARGS,
 	 "Add a string to the buffer"},
-	{"backspace", editor_backspace, METH_VARARGS,
+	{"backspace", vx_backspace, METH_VARARGS,
 	 "Delete a character to the left"},
-	{"new_window", editor_new_window, METH_VARARGS,
+	{"new_window", vx_new_window, METH_VARARGS,
 	 "Create a new window"},
-	{"attach_window", editor_attach_window, METH_VARARGS,
+	{"attach_window", vx_attach_window, METH_VARARGS,
 	 "Attach a window to a file"},
-	{"attach_window_blank", editor_attach_window_blank, METH_VARARGS,
+	{"attach_window_blank", vx_attach_window_blank, METH_VARARGS,
 	 "Attach a window to a blank buffer"},
-	{"focus_window", editor_focus_window, METH_VARARGS,
+	{"focus_window", vx_focus_window, METH_VARARGS,
 	 "Focus a window"},
-	{"update_window", editor_update_window, METH_VARARGS,
+	{"update_window", vx_update_window, METH_VARARGS,
 	 "Update a window"},
 	{NULL, NULL, 0, NULL}
 };
 
-static PyModuleDef EditorModule = {
-	PyModuleDef_HEAD_INIT, "editor", NULL, -1, EditorMethods,
+static PyModuleDef VxModule = {
+	PyModuleDef_HEAD_INIT, "vx", NULL, -1, VxMethods,
 	NULL, NULL, NULL, NULL
 };
 
 static PyObject*
-PyInit_editor(void)
+PyInit_vx(void)
 {
-	editor_mod = PyModule_Create(&EditorModule);
+	vx_mod = PyModule_Create(&VxModule);
 	keymap = PyDict_New();
-	PyObject_SetAttrString(editor_mod, "keymap", keymap);
-	update_editor_vars();
+	PyObject_SetAttrString(vx_mod, "keymap", keymap);
+	update_vx_vars();
 	PyObject *v = Py_BuildValue("s", "*");
-	PyImport_ImportModuleEx("editor_intro", NULL, NULL, v);
+	PyImport_ImportModuleEx("vx_intro", NULL, NULL, v);
 	Py_DECREF(v);
-	return editor_mod;
+	return vx_mod;
 }
 
-const char *argp_program_version = "editor 0.1";
-static char doc[] = "editor -- edit files";
+const char *argp_program_version = "vx 0.1";
+static char doc[] = "vx -- edit files";
 
 static char args_doc[] = "[FILE...]";
 
@@ -342,7 +342,7 @@ int main(int argc, char *argv[])
 
 	if(!arguments.nopy) {
 		Py_SetProgramName(wargv[0]);
-		PyImport_AppendInittab("editor", &PyInit_editor);
+		PyImport_AppendInittab("vx", &PyInit_vx);
 		Py_Initialize();
 		PySys_SetArgv(arguments.num_files + 1, wargv);
 	}
@@ -375,18 +375,18 @@ int main(int argc, char *argv[])
 	refresh();
 
 	get_cursor_rowcol(focused_window->buffer->text, &mr, &mc);
-	update_editor_vars();
+	update_vx_vars();
 
-	PyObject *their_editor = PyObject_GetAttrString(editor_mod, "my_editor");
+	PyObject *their_vx = PyObject_GetAttrString(vx_mod, "my_vx");
 	PyObject *tmp_args = PyTuple_New(0);
-	PyObject *tmp = PyObject_CallObject(their_editor, tmp_args);
+	PyObject *tmp = PyObject_CallObject(their_vx, tmp_args);
 	Py_DECREF(tmp_args);
 	Py_XDECREF(tmp);
 
 	Window *local_win = new_window();
 	build_window(local_win, 2, col, row-1, 0);
 	wmove(local_win->curses_window, 0, 0);
-	PyObject *status_line = PyObject_GetAttrString(editor_mod, "status_line");
+	PyObject *status_line = PyObject_GetAttrString(vx_mod, "status_line");
 	PyObject *args = PyTuple_New(0);
 	PyObject *ret = PyObject_CallObject(status_line, args);
 	char *status_line_str = PyUnicode_AsUTF8(ret);
@@ -414,7 +414,7 @@ int main(int argc, char *argv[])
 
 		PyObject *ll = PyUnicode_FromOrdinal(c);
 
-		PyObject *key_callback = PyObject_GetAttrString(editor_mod, "register_key");
+		PyObject *key_callback = PyObject_GetAttrString(vx_mod, "register_key");
 		PyObject *args = Py_BuildValue("(O)", ll);
 		PyObject_CallObject(key_callback, args);
 		Py_DECREF(args);
@@ -433,17 +433,17 @@ int main(int argc, char *argv[])
 		while (mr+1 < focused_window->line && focused_window->line > 1) --focused_window->line;
 		while (mr+1 > focused_window->line + focused_window->lines - 1) ++focused_window->line;
 
-		update_editor_vars();
+		update_vx_vars();
 
-		PyObject *their_editor = PyObject_GetAttrString(editor_mod, "my_editor");
+		PyObject *their_vx = PyObject_GetAttrString(vx_mod, "my_vx");
 		PyObject *tmp_args = PyTuple_New(0);
-		PyObject *tmp = PyObject_CallObject(their_editor, tmp_args);
+		PyObject *tmp = PyObject_CallObject(their_vx, tmp_args);
 		Py_DECREF(tmp_args);
 		Py_XDECREF(tmp);
 
 		wmove(local_win->curses_window, 0, 0);
 		werase(local_win->curses_window);
-		PyObject *status_line = PyObject_GetAttrString(editor_mod, "status_line");
+		PyObject *status_line = PyObject_GetAttrString(vx_mod, "status_line");
 		args = PyTuple_New(0);
 		PyObject *ret = PyObject_CallObject(status_line, args);
 		char *status_line_str = PyUnicode_AsUTF8(ret);

@@ -1,9 +1,9 @@
-import editor
+import vx
 from sys import argv
 from functools import partial
 
-editor.register_key = lambda x: None
-editor.my_editor = lambda: None
+vx.register_key = lambda x: None
+vx.my_vx = lambda: None
 
 def _C(c):
     return chr(0x1f & ord(c))
@@ -57,7 +57,7 @@ def _realbind(key, func):
     '''Bind a key to a function. Cannot be used as a decorator.'''
     if type(key) is str:
         key = _tobinding(key)
-    editor.keymap[str(key)] = func
+    vx.keymap[str(key)] = func
 
 def _bind(key, command=None):
     '''Bind a key to a function. Can be used as a decorator.'''
@@ -71,7 +71,7 @@ def _bind(key, command=None):
 
 def _quick_bind(key):
     '''Bind a keycode to insert itself as text.'''
-    _bind(key, partial(editor.add_string, key))
+    _bind(key, partial(vx.add_string, key))
 
 # Quick-bind letter keys
 for i in range(26):
@@ -94,8 +94,8 @@ for char in ['?', '<', '>', '\'', '/', '"', ':',
     _quick_bind(char)
 
 # ...return/backspace
-_bind(chr(13), partial(editor.add_string, '\n'))
-_bind(chr(127), editor.backspace)
+_bind(chr(13), partial(vx.add_string, '\n'))
+_bind(chr(127), vx.backspace)
 
 def _repeat(c, times=4):
     for _ in range(times):
@@ -135,19 +135,19 @@ class _keys:
 
 class _window:
     def __init__(self, rows, columns, x, y):
-        self._c_window = editor.new_window(rows, columns, x, y)
+        self._c_window = vx.new_window(rows, columns, x, y)
 
     def attach_file(self, filename):
-        editor.attach_window(self._c_window, filename)
+        vx.attach_window(self._c_window, filename)
 
     def blank(self):
-        editor.attach_window_blank(self._c_window)
+        vx.attach_window_blank(self._c_window)
 
     def focus(self):
-        editor.focus_window(self._c_window)
+        vx.focus_window(self._c_window)
 
     def update(self):
-        editor.update_window(self._c_window)
+        vx.update_window(self._c_window)
 
 
 _windows = []
@@ -160,14 +160,13 @@ def _next_window():
         _current_window = 0
     _windows[_current_window].focus()
 
-editor.next_window = _next_window
-editor.windows = _windows
-editor.files = argv[1:]
-editor.window = _window
-editor.keys = _keys()
-editor.repeat = _repeat
-editor.tobinding = _tobinding
-editor.bind = _bind
-editor.maybebind = _maybebind
-editor.ctrl = _ctrl
-editor.alt = _alt
+vx.next_window = _next_window
+vx.windows = _windows
+vx.files = argv[1:]
+vx.window = _window
+vx.keys = _keys()
+vx.repeat = _repeat
+vx.tobinding = _tobinding
+vx.bind = _bind
+vx.ctrl = _ctrl
+vx.alt = _alt

@@ -1,6 +1,6 @@
-TARGET=editor
+TARGET=vx
 
-SOURCES=editor.c \
+SOURCES=vx.c \
 	text.c \
 	buffer.c \
 	window.c
