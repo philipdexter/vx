@@ -38,6 +38,8 @@ else:
         win.focus()
         editor.windows.append(win)
 
+editor.bind('C-q', editor.quit)
+
 editor.bind('C-o', editor.next_window)
 
 def my_editor():

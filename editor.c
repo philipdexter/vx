@@ -14,6 +14,8 @@
 
 static void finish(int sig);
 
+static int lets_edit = 1;
+
 static char last_char;
 
 static int row=0;
@@ -41,6 +43,15 @@ void update_editor_vars(void)
 	v = PyLong_FromLong(mc + 1);
 	PyObject_SetAttrString(editor_mod, "col", v);
 	Py_DECREF(v);
+}
+
+static PyObject*
+editor_quit(PyObject *self, PyObject *args)
+{
+	if(!PyArg_ParseTuple(args, ":rows"))
+		return NULL;
+	lets_edit = 0;
+	Py_RETURN_NONE;
 }
 
 static PyObject*
@@ -209,6 +220,8 @@ editor_update_window(PyObject *self, PyObject *args)
 }
 
 static PyMethodDef EditorMethods[] = {
+	{"quit", editor_quit, METH_VARARGS,
+	 "Quit"},
 	{"move_up", editor_move_up, METH_VARARGS,
 	 "Move the cursor up one row"},
 	{"move_down", editor_move_down, METH_VARARGS,
@@ -389,11 +402,10 @@ int main(int argc, char *argv[])
 	wmove(focused_window->curses_window, 0, 0);
 	refresh_window(focused_window);
 
-	for (;;)
+	while (lets_edit)
 	{
 		int c = getch();
 		last_char = c;
-		if (c == 'q') break;
 
 		if (c == '\033') {
 			c = getch();
