@@ -1,3 +1,5 @@
+TARGET=editor
+
 SOURCES=editor.c \
 	text.c \
 	buffer.c \
@@ -13,11 +15,11 @@ PYCFLAGS = $(shell /usr/bin/python3.4-config --cflags)
 PYLDFLAGS = $(shell /usr/bin/python3.4-config --ldflags)
 
 .PHONY: all
-all: editor
+all: $(TARGET)
 
 
-editor: $(OBJS)
-	gcc -lpython3.4m -lncurses $(OBJS) -oeditor $(PYLDFLAGS)
+$(TARGET): $(OBJS)
+	gcc -lpython3.4m -lncurses $(OBJS) -o$(TARGET) $(PYLDFLAGS)
 
 .c.o:
 	gcc -c $< -o $@ -I/usr/include/python3.4m -MMD -MF $(<:.c=.m) $(PYCFLAGS) $(CFLAGS)
@@ -26,4 +28,4 @@ editor: $(OBJS)
 
 .PHONY: clean
 clean:
-	rm -f editor $(OBJS)
+	rm -f $(TARGET) $(OBJS)
