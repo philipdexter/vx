@@ -1,4 +1,4 @@
 *.o
 *.m
-editor
+vx
 __pycache__
