@@ -14,10 +14,10 @@ typedef struct _WINDOW {
 } Window;
 
 Window *new_window(void);
-void build_window(Window*, int, int, int, int);
-void delete_window(Window*);
+int build_window(Window*, int, int, int, int);
+int delete_window(Window*);
 void attach_buffer(Window*, Buffer*);
-void refresh_window(Window*);
-void print_string(Window*, char*);
+int refresh_window(Window*);
+int print_string(Window*, char*);
 
 #endif

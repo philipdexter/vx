@@ -11,14 +11,13 @@ typedef struct _TEXT {
 } Text;
 
 Text *new_document(void);
-void resize_gap(Text*, size_t);
-void add_character(Text*, char);
-void add_string(Text*, char*, size_t);
-void move_cursor(size_t pos);
-void move_cursor_to_beg(Text *text);
-void move_cursor_to_end(Text *text);
-void move_cursor_bol(Text*);
-void move_cursor_eol(Text*);
+int resize_gap(Text*, size_t);
+int add_character(Text*, char);
+int add_string(Text*, char*, size_t);
+int move_cursor_to_beg(Text *text);
+int move_cursor_to_end(Text *text);
+int move_cursor_bol(Text*);
+int move_cursor_eol(Text*);
 char *get_str(Text*);
 char *get_str_from_line(Text*, size_t);
 char *get_str_from_line_to_line(Text*, size_t, size_t);

@@ -132,6 +132,7 @@ vx_add_string(PyObject *self, PyObject *args)
 	char *str = NULL;
 	if (!PyArg_ParseTuple(args, "s:add_string", &str))
 		return NULL;
+	if (!str) return NULL;
 	add_string(focused_window->buffer->text, str, strlen(str));
 	Py_RETURN_NONE;
 }
@@ -158,11 +159,14 @@ static PyObject*
 vx_new_window(PyObject *self, PyObject *args)
 {
 	int nlines, ncols, begin_y, begin_x;
+	Window *w;
+	PyObject *capsule;
+
 	if (!PyArg_ParseTuple(args, "iiii:new_window", &nlines, &ncols, &begin_y, &begin_x))
 		return NULL;
-	Window *w = new_window();
+	w = new_window();
 	build_window(w, nlines, ncols, begin_y, begin_x);
-	PyObject *capsule = PyCapsule_New((void*)w, "vx.window", NULL);
+	capsule = PyCapsule_New((void*)w, "vx.window", NULL);
 	return capsule;
 }
 
@@ -171,10 +175,14 @@ vx_attach_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
 	char *file;
+	Window *window;
+	Buffer *buffer;
+
+
 	if (!PyArg_ParseTuple(args, "Os:attach_window", &capsule, &file))
 		return NULL;
-	Window *window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
-	Buffer *buffer = new_buffer();
+	window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
+	buffer = new_buffer();
 	attach_file(buffer, file);
 	attach_buffer(window, buffer);
 	Py_RETURN_NONE;
@@ -184,10 +192,13 @@ static PyObject*
 vx_attach_window_blank(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
+	Window *window;
+	Buffer *buffer;
+
 	if (!PyArg_ParseTuple(args, "O:attach_window_blank", &capsule))
 		return NULL;
-	Window *window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
-	Buffer *buffer = new_buffer();
+	window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
+	buffer = new_buffer();
 	attach_buffer(window , buffer);
 	Py_RETURN_NONE;
 }
@@ -196,9 +207,11 @@ static PyObject*
 vx_focus_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
+	Window *window;
+
 	if (!PyArg_ParseTuple(args, "O:focus_window", &capsule))
 		return NULL;
-	Window *window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
+	window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
 	focused_window = window;
 	Py_RETURN_NONE;
 }
@@ -207,12 +220,15 @@ static PyObject*
 vx_update_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
+	Window *window;
+	char *contents;
+
 	if (!PyArg_ParseTuple(args, "O:update_window", &capsule))
 		return NULL;
-	Window *window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
+	window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
 	wmove(window->curses_window, 0, 0);
 	wclear(window->curses_window);
-	char *contents = get_str_from_line_to_line(window->buffer->text, window->line, window->line + window->lines - 1);
+	contents = get_str_from_line_to_line(window->buffer->text, window->line, window->line + window->lines - 1);
 	print_string(window, contents);
 	refresh_window(window);
 	free(contents);
@@ -265,12 +281,15 @@ static PyModuleDef VxModule = {
 static PyObject*
 PyInit_vx(void)
 {
+	PyObject *v;
+	PyObject *mod;
+
 	vx_mod = PyModule_Create(&VxModule);
 	keymap = PyDict_New();
 	PyObject_SetAttrString(vx_mod, "keymap", keymap);
 	update_vx_vars();
-	PyObject *v = Py_BuildValue("s", "*");
-	PyObject *mod = PyImport_ImportModuleEx("vx_intro", NULL, NULL, v);
+	v = Py_BuildValue("s", "*");
+	mod = PyImport_ImportModuleEx("vx_intro", NULL, NULL, v);
 	Py_DECREF(mod);
 	Py_DECREF(v);
 	return vx_mod;
@@ -322,9 +341,10 @@ static struct argp argp = { options, parse_opt, args_doc, doc };
 
 int main(int argc, char *argv[])
 {
+	struct arguments arguments;
+
 	signal(SIGINT, finish);
 
-	struct arguments arguments;
 	arguments.verbose = 0;
 	arguments.nopy = 0;
 	arguments.files = NULL;
@@ -336,12 +356,12 @@ int main(int argc, char *argv[])
 	wchar_t **wargv = calloc(arguments.num_files + 1, sizeof(wchar_t*));
 	wargv[0] = calloc(1, sizeof(wchar_t) * (strlen(argv[0]) + 1) + 1);
 	mbstowcs(wargv[0], argv[0], strlen(argv[0]));
-	for(int i = argc - arguments.num_files, j = 1; i < argc; ++i, ++j) {
+	for (int i = argc - arguments.num_files, j = 1; i < argc; ++i, ++j) {
 		wargv[j] = calloc(1, sizeof(wchar_t) * (strlen(argv[i]) + 1) + 1);
 		mbstowcs(wargv[j], argv[i], strlen(argv[i]));
 	}
 
-	if(!arguments.nopy) {
+	if (!arguments.nopy) {
 		Py_SetProgramName(wargv[0]);
 		PyImport_AppendInittab("vx", &PyInit_vx);
 		Py_Initialize();
@@ -361,7 +381,7 @@ int main(int argc, char *argv[])
 
 	getmaxyx(stdscr, row, col);
 
-	if(!arguments.nopy) {
+	if (!arguments.nopy) {
 		PyObject *pName = PyUnicode_FromString("start");
 		PyObject *imod = PyImport_Import(pName);
 		if (!imod) {
@@ -458,7 +478,7 @@ int main(int argc, char *argv[])
 
 	}
 
-	if(!arguments.nopy)
+	if (!arguments.nopy)
 		Py_Finalize();
 
 	finish(0);

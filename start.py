@@ -54,5 +54,3 @@ vx.status_line = lambda: 'line: {} col: {} / rows: {} cols: {}'.format(vx.line,
                                                                            vx.cols)
 
 bind(ctrl + keys.x - ctrl + keys.c, vx.quit)
-
-bind(ctrl + keys.x - keys.a - keys.e, vx.move_down)
