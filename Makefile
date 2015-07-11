@@ -3,7 +3,8 @@ TARGET=vx
 SOURCES=vx.c \
 	text.c \
 	buffer.c \
-	window.c
+	window.c \
+	vx_module.c
 
 OBJS = $(SOURCES:.c=.o)
 
