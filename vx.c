@@ -48,7 +48,7 @@ void update_vx_vars(void)
 static PyObject*
 vx_quit(PyObject *self, PyObject *args)
 {
-	if(!PyArg_ParseTuple(args, ":rows"))
+	if (!PyArg_ParseTuple(args, ":quit"))
 		return NULL;
 	lets_edit = 0;
 	Py_RETURN_NONE;
@@ -57,7 +57,7 @@ vx_quit(PyObject *self, PyObject *args)
 static PyObject*
 vx_move_up(PyObject *self, PyObject *args)
 {
-	if(!PyArg_ParseTuple(args, ":rows"))
+	if (!PyArg_ParseTuple(args, ":move_up"))
 		return NULL;
 	move_up(focused_window->buffer->text);
 	Py_RETURN_NONE;
@@ -66,7 +66,7 @@ vx_move_up(PyObject *self, PyObject *args)
 static PyObject*
 vx_move_down(PyObject *self, PyObject *args)
 {
-	if(!PyArg_ParseTuple(args, ":rows"))
+	if (!PyArg_ParseTuple(args, ":move_down"))
 		return NULL;
 	move_down(focused_window->buffer->text);
 	Py_RETURN_NONE;
@@ -75,7 +75,7 @@ vx_move_down(PyObject *self, PyObject *args)
 static PyObject*
 vx_move_left(PyObject *self, PyObject *args)
 {
-	if(!PyArg_ParseTuple(args, ":rows"))
+	if (!PyArg_ParseTuple(args, ":move_left"))
 		return NULL;
 	move_left(focused_window->buffer->text);
 	Py_RETURN_NONE;
@@ -84,7 +84,7 @@ vx_move_left(PyObject *self, PyObject *args)
 static PyObject*
 vx_move_right(PyObject *self, PyObject *args)
 {
-	if(!PyArg_ParseTuple(args, ":rows"))
+	if (!PyArg_ParseTuple(args, ":move_right"))
 		return NULL;
 	move_right(focused_window->buffer->text);
 	Py_RETURN_NONE;
@@ -93,7 +93,7 @@ vx_move_right(PyObject *self, PyObject *args)
 static PyObject*
 vx_move_bol(PyObject *self, PyObject *args)
 {
-	if(!PyArg_ParseTuple(args, ":rows"))
+	if (!PyArg_ParseTuple(args, ":move_bol"))
 		return NULL;
 	move_cursor_bol(focused_window->buffer->text);
 	Py_RETURN_NONE;
@@ -102,7 +102,7 @@ vx_move_bol(PyObject *self, PyObject *args)
 static PyObject*
 vx_move_eol(PyObject *self, PyObject *args)
 {
-	if(!PyArg_ParseTuple(args, ":rows"))
+	if (!PyArg_ParseTuple(args, ":move_eol"))
 		return NULL;
 	move_cursor_eol(focused_window->buffer->text);
 	Py_RETURN_NONE;
@@ -111,7 +111,7 @@ vx_move_eol(PyObject *self, PyObject *args)
 static PyObject*
 vx_move_beg(PyObject *self, PyObject *args)
 {
-	if(!PyArg_ParseTuple(args, ":rows"))
+	if (!PyArg_ParseTuple(args, ":move_beg"))
 		return NULL;
 	move_cursor_to_beg(focused_window->buffer->text);
 	Py_RETURN_NONE;
@@ -120,7 +120,7 @@ vx_move_beg(PyObject *self, PyObject *args)
 static PyObject*
 vx_move_end(PyObject *self, PyObject *args)
 {
-	if(!PyArg_ParseTuple(args, ":rows"))
+	if (!PyArg_ParseTuple(args, ":move_end"))
 		return NULL;
 	move_cursor_to_end(focused_window->buffer->text);
 	Py_RETURN_NONE;
@@ -130,7 +130,7 @@ static PyObject*
 vx_add_string(PyObject *self, PyObject *args)
 {
 	char *str = NULL;
-	if(!PyArg_ParseTuple(args, "s", &str))
+	if (!PyArg_ParseTuple(args, "s:add_string", &str))
 		return NULL;
 	add_string(focused_window->buffer->text, str, strlen(str));
 	Py_RETURN_NONE;
@@ -139,7 +139,7 @@ vx_add_string(PyObject *self, PyObject *args)
 static PyObject*
 vx_backspace(PyObject *self, PyObject *args)
 {
-	if(!PyArg_ParseTuple(args, ":rows"))
+	if (!PyArg_ParseTuple(args, ":backspace"))
 		return NULL;
 	backspace(focused_window->buffer->text);
 	Py_RETURN_NONE;
@@ -148,7 +148,7 @@ vx_backspace(PyObject *self, PyObject *args)
 static PyObject*
 vx_save(PyObject *self, PyObject *args)
 {
-	if(!PyArg_ParseTuple(args, ":rows"))
+	if (!PyArg_ParseTuple(args, ":save"))
 		return NULL;
 	save_file(focused_window->buffer);
 	Py_RETURN_NONE;
@@ -158,7 +158,7 @@ static PyObject*
 vx_new_window(PyObject *self, PyObject *args)
 {
 	int nlines, ncols, begin_y, begin_x;
-	if(!PyArg_ParseTuple(args, "iiii", &nlines, &ncols, &begin_y, &begin_x))
+	if (!PyArg_ParseTuple(args, "iiii:new_window", &nlines, &ncols, &begin_y, &begin_x))
 		return NULL;
 	Window *w = new_window();
 	build_window(w, nlines, ncols, begin_y, begin_x);
@@ -171,7 +171,7 @@ vx_attach_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
 	char *file;
-	if(!PyArg_ParseTuple(args, "Os", &capsule, &file))
+	if (!PyArg_ParseTuple(args, "Os:attach_window", &capsule, &file))
 		return NULL;
 	Window *window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
 	Buffer *buffer = new_buffer();
@@ -184,7 +184,7 @@ static PyObject*
 vx_attach_window_blank(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
-	if(!PyArg_ParseTuple(args, "O", &capsule))
+	if (!PyArg_ParseTuple(args, "O:attach_window_blank", &capsule))
 		return NULL;
 	Window *window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
 	Buffer *buffer = new_buffer();
@@ -196,7 +196,7 @@ static PyObject*
 vx_focus_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
-	if(!PyArg_ParseTuple(args, "O", &capsule))
+	if (!PyArg_ParseTuple(args, "O:focus_window", &capsule))
 		return NULL;
 	Window *window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
 	focused_window = window;
@@ -207,7 +207,7 @@ static PyObject*
 vx_update_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
-	if(!PyArg_ParseTuple(args, "O", &capsule))
+	if (!PyArg_ParseTuple(args, "O:update_window", &capsule))
 		return NULL;
 	Window *window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
 	wmove(window->curses_window, 0, 0);
