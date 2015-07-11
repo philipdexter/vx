@@ -417,17 +417,13 @@ int main(int argc, char *argv[])
 		PyObject *key_callback = PyObject_GetAttrString(vx_mod, "register_key");
 		PyObject *args = Py_BuildValue("(O)", ll);
 		PyObject_CallObject(key_callback, args);
+		if (PyErr_Occurred()) {
+			endwin();
+			PyErr_Print();
+			exit(0);
+		}
 		Py_DECREF(args);
 		Py_DECREF(key_callback);
-
-		PyObject *callback = PyDict_GetItem(keymap, ll);
-		Py_DECREF(ll);
-		if (callback) {
-			PyObject *args = PyTuple_New(0);
-			PyObject *tmp = PyObject_CallObject(callback, args);
-			Py_DECREF(args);
-			Py_XDECREF(tmp);
-		}
 
 		get_cursor_rowcol(focused_window->buffer->text, &mr, &mc);
 		while (mr+1 < focused_window->line && focused_window->line > 1) --focused_window->line;
