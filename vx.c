@@ -134,12 +134,13 @@ int main(int argc, char *argv[])
 		}
 
 		vx_py_handle_key(c);
-		vx_py_update_vars();
-		vx_py_pump();
 
 		get_cursor_rowcol(focused_window->buffer->text, &mr, &mc);
 		while (mr+1 < focused_window->line && focused_window->line > 1) --focused_window->line;
 		while (mr+1 > focused_window->line + focused_window->lines - 1) ++focused_window->line;
+
+		vx_py_update_vars();
+		vx_py_pump();
 
 		wmove(local_win->curses_window, 0, 0);
 		werase(local_win->curses_window);
