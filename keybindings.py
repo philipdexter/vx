@@ -148,6 +148,10 @@ def _bind(keys, command=None):
             _bind(keys, func)
             return func
         return wrapper
+    # we split on space below so handle it here
+    if keys == ' ':
+        _keybindings[' '] = command
+        return
     keys = str(keys)
     if type(keys) is str:
         squares = list(map(lambda x: str(_tobinding(x)), keys.split(' ')))
