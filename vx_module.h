@@ -5,14 +5,11 @@
 
 #include "window.h"
 
-extern PyObject *vx_mod;
-extern Window *focused_window;
-
-extern int row, col;
-extern int mr, mc;
-extern int lets_edit;
-
-void update_vx_vars(void);
+void vx_py_init_python(int num_files, int argc, char **argv);
+void vx_py_deinit_python(void);
+void vx_py_load_start(void);
+void vx_py_update_vars(void);
+void vx_py_pump(void);
 
 PyObject *vx_quit(PyObject *self, PyObject *args);
 PyObject *vx_move_up(PyObject *self, PyObject *args);
@@ -34,7 +31,18 @@ PyObject *vx_update_window(PyObject *self, PyObject *args);
 
 PyObject *PyInit_vx(void);
 
+void vx_py_handle_key(int c);
+
+/* Defined in vx_module.c */
 extern PyMethodDef VxMethods[];
 extern PyModuleDef VxModule;
+extern PyObject *vx_mod;
+
+
+/* Defined elsewhere */
+extern Window *focused_window;
+extern int row, col;
+extern int mr, mc;
+extern int lets_edit;
 
 #endif

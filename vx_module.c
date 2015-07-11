@@ -1,6 +1,46 @@
 #include "vx_module.h"
 
-void update_vx_vars(void)
+#include <locale.h>
+#include <wchar.h>
+
+PyObject *vx_mod;
+
+void vx_py_init_python(int num_files, int argc, char **argv)
+{
+	setlocale(LC_ALL, "en_US.UTF-8");
+
+	wchar_t **wargv = calloc(num_files + 1, sizeof(wchar_t*));
+	wargv[0] = calloc(1, sizeof(wchar_t) * (strlen(argv[0]) + 1) + 1);
+	mbstowcs(wargv[0], argv[0], strlen(argv[0]));
+	for (int i = argc - num_files, j = 1; i < argc; ++i, ++j) {
+		wargv[j] = calloc(1, sizeof(wchar_t) * (strlen(argv[i]) + 1) + 1);
+		mbstowcs(wargv[j], argv[i], strlen(argv[i]));
+	}
+
+	Py_SetProgramName(wargv[0]);
+	PyImport_AppendInittab("vx", &PyInit_vx);
+	Py_Initialize();
+	PySys_SetArgv(num_files + 1, wargv);
+}
+
+void vx_py_deinit_python(void)
+{
+	Py_Finalize();
+}
+
+void vx_py_load_start(void)
+{
+	PyObject *pName = PyUnicode_FromString("start");
+	PyObject *imod = PyImport_Import(pName);
+	if (!imod) {
+		endwin();
+		PyErr_Print();
+		exit(0);
+	}
+	Py_DECREF(pName);
+}
+
+void vx_py_update_vars(void)
 {
 	PyObject *v = PyLong_FromLong(row);
 	PyObject_SetAttrString(vx_mod, "rows", v);
@@ -14,6 +54,15 @@ void update_vx_vars(void)
 	v = PyLong_FromLong(mc + 1);
 	PyObject_SetAttrString(vx_mod, "col", v);
 	Py_DECREF(v);
+}
+
+void vx_py_pump(void)
+{
+	PyObject *their_vx = PyObject_GetAttrString(vx_mod, "my_vx");
+	PyObject *tmp_args = PyTuple_New(0);
+	PyObject *tmp = PyObject_CallObject(their_vx, tmp_args);
+	Py_DECREF(tmp_args);
+	Py_XDECREF(tmp);
 }
 
 PyObject *vx_quit(PyObject *self, PyObject *args)
@@ -238,10 +287,27 @@ PyObject *PyInit_vx(void)
 	PyObject *mod;
 
 	vx_mod = PyModule_Create(&VxModule);
-	update_vx_vars();
+	vx_py_update_vars();
 	v = Py_BuildValue("s", "*");
 	mod = PyImport_ImportModuleEx("vx_intro", NULL, NULL, v);
 	Py_DECREF(mod);
 	Py_DECREF(v);
 	return vx_mod;
+}
+
+void vx_py_handle_key(int c)
+{
+	PyObject *ll = PyUnicode_FromOrdinal(c);
+
+	PyObject *key_callback = PyObject_GetAttrString(vx_mod, "register_key");
+	PyObject *args = Py_BuildValue("(O)", ll);
+	PyObject *callret = PyObject_CallObject(key_callback, args);
+	if (PyErr_Occurred()) {
+		endwin();
+		PyErr_Print();
+		exit(0);
+	}
+	Py_DECREF(callret);
+	Py_DECREF(args);
+	Py_DECREF(key_callback);
 }
