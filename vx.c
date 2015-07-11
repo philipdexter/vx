@@ -270,7 +270,8 @@ PyInit_vx(void)
 	PyObject_SetAttrString(vx_mod, "keymap", keymap);
 	update_vx_vars();
 	PyObject *v = Py_BuildValue("s", "*");
-	PyImport_ImportModuleEx("vx_intro", NULL, NULL, v);
+	PyObject *mod = PyImport_ImportModuleEx("vx_intro", NULL, NULL, v);
+	Py_DECREF(mod);
 	Py_DECREF(v);
 	return vx_mod;
 }
@@ -416,12 +417,13 @@ int main(int argc, char *argv[])
 
 		PyObject *key_callback = PyObject_GetAttrString(vx_mod, "register_key");
 		PyObject *args = Py_BuildValue("(O)", ll);
-		PyObject_CallObject(key_callback, args);
+		PyObject *callret = PyObject_CallObject(key_callback, args);
 		if (PyErr_Occurred()) {
 			endwin();
 			PyErr_Print();
 			exit(0);
 		}
+		Py_DECREF(callret);
 		Py_DECREF(args);
 		Py_DECREF(key_callback);
 
@@ -434,8 +436,9 @@ int main(int argc, char *argv[])
 		PyObject *their_vx = PyObject_GetAttrString(vx_mod, "my_vx");
 		PyObject *tmp_args = PyTuple_New(0);
 		PyObject *tmp = PyObject_CallObject(their_vx, tmp_args);
-		Py_DECREF(tmp_args);
 		Py_XDECREF(tmp);
+		Py_DECREF(tmp_args);
+		Py_DECREF(their_vx);
 
 		wmove(local_win->curses_window, 0, 0);
 		werase(local_win->curses_window);
