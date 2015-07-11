@@ -80,8 +80,6 @@ class _keymodifier:
         other.printable = self.printable + '-' + other.printable
         return other
 
-    __radd__ = __add__
-
 _ctrl = _keymodifier(lambda c: chr(0x1f & ord(c)), 'C')
 _alt =  _keymodifier(lambda c: chr(0x80 | ord(c)), 'M')
 
