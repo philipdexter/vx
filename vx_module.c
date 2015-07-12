@@ -3,32 +3,56 @@
 #include <locale.h>
 #include <wchar.h>
 
-PyObject *vx_mod;
-PyObject *vx_intro_mod;
-PyObject *start_mod;
+static PyObject *vx_mod;
+static PyObject *vx_intro_mod;
+static PyObject *start_mod;
 
-void vx_py_init_python(int num_files, int argc, char **argv)
+static PyObject *PyInit_vx(void);
+
+int vx_py_init_python(int num_files, int argc, char **argv)
 {
-	int i, j;
+	int i, j, ret;
+	wchar_t **wargv;
 
-	setlocale(LC_ALL, "en_US.UTF-8");
+	if (!setlocale(LC_ALL, "en_US.UTF-8"))
+		return -1;
 
-	wchar_t **wargv = calloc(num_files + 1, sizeof(wchar_t*));
+	wargv = calloc(num_files + 1, sizeof(wchar_t*));
+	if (!wargv) {
+		ret = -1;
+		goto cleanup;
+	}
 	wargv[0] = calloc(1, sizeof(wchar_t) * (strlen(argv[0]) + 1) + 1);
-	mbstowcs(wargv[0], argv[0], strlen(argv[0]));
+	if (!wargv[0]) {
+		ret = -1;
+		goto cleanup;
+	}
+	if ((size_t)-1 == mbstowcs(wargv[0], argv[0], strlen(argv[0]))) {
+		ret = -1;
+		goto cleanup;
+	}
 	for (i = argc - num_files, j = 1; i < argc; ++i, ++j) {
 		wargv[j] = calloc(1, sizeof(wchar_t) * (strlen(argv[i]) + 1) + 1);
-		mbstowcs(wargv[j], argv[i], strlen(argv[i]));
+		if ((size_t)-1 == mbstowcs(wargv[j], argv[i], strlen(argv[i]))) {
+			ret = -1;
+			goto cleanup;
+		}
 	}
 
 	Py_SetProgramName(wargv[0]);
-	PyImport_AppendInittab("vx", &PyInit_vx);
+	if (-1 == PyImport_AppendInittab("vx", &PyInit_vx)) {
+		goto cleanup;
+	}
 	Py_Initialize();
 	PySys_SetArgv(num_files + 1, wargv);
 
-	for (i = 0; i < num_files + 1; ++i)
+	ret = 0;
+
+cleanup:
+	for (i = argc - num_files, j = 1; i < argc; ++i, ++j)
 		free(wargv[i]);
 	free(wargv);
+	return ret;
 }
 
 void vx_py_deinit_python(void)
@@ -51,20 +75,30 @@ void vx_py_load_start(void)
 	Py_DECREF(pName);
 }
 
-void vx_py_update_vars(void)
+int vx_py_update_vars(void)
 {
 	PyObject *v = PyLong_FromLong(row);
-	PyObject_SetAttrString(vx_mod, "rows", v);
+	if (-1 == PyObject_SetAttrString(vx_mod, "rows", v))
+		goto err;
 	Py_DECREF(v);
 	v = PyLong_FromLong(col);
-	PyObject_SetAttrString(vx_mod, "cols", v);
+	if (-1 == PyObject_SetAttrString(vx_mod, "cols", v))
+		goto err;
 	Py_DECREF(v);
 	v = PyLong_FromLong(mr + 1);
-	PyObject_SetAttrString(vx_mod, "line", v);
+	if (-1 == PyObject_SetAttrString(vx_mod, "line", v))
+		goto err;
 	Py_DECREF(v);
 	v = PyLong_FromLong(mc + 1);
-	PyObject_SetAttrString(vx_mod, "col", v);
+	if (-1 == PyObject_SetAttrString(vx_mod, "col", v))
+		goto err;
 	Py_DECREF(v);
+
+	return 0;
+
+err:
+	Py_DECREF(v);
+	return -1;
 }
 
 void vx_py_pump(void)
@@ -72,11 +106,12 @@ void vx_py_pump(void)
 	PyObject *their_vx = PyObject_GetAttrString(vx_mod, "my_vx");
 	PyObject *tmp_args = PyTuple_New(0);
 	PyObject *tmp = PyObject_CallObject(their_vx, tmp_args);
+	Py_DECREF(their_vx);
 	Py_DECREF(tmp_args);
 	Py_XDECREF(tmp);
 }
 
-PyObject *vx_quit(PyObject *self, PyObject *args)
+static PyObject *vx_quit(PyObject *self, PyObject *args)
 {
 	if (!PyArg_ParseTuple(args, ":quit"))
 		return NULL;
@@ -84,7 +119,7 @@ PyObject *vx_quit(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
-PyObject *vx_move_up(PyObject *self, PyObject *args)
+static PyObject *vx_move_up(PyObject *self, PyObject *args)
 {
 	if (!PyArg_ParseTuple(args, ":move_up"))
 		return NULL;
@@ -92,7 +127,7 @@ PyObject *vx_move_up(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
-PyObject *vx_move_down(PyObject *self, PyObject *args)
+static PyObject *vx_move_down(PyObject *self, PyObject *args)
 {
 	if (!PyArg_ParseTuple(args, ":move_down"))
 		return NULL;
@@ -100,7 +135,7 @@ PyObject *vx_move_down(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
-PyObject *vx_move_left(PyObject *self, PyObject *args)
+static PyObject *vx_move_left(PyObject *self, PyObject *args)
 {
 	if (!PyArg_ParseTuple(args, ":move_left"))
 		return NULL;
@@ -108,7 +143,7 @@ PyObject *vx_move_left(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
-PyObject *vx_move_right(PyObject *self, PyObject *args)
+static PyObject *vx_move_right(PyObject *self, PyObject *args)
 {
 	if (!PyArg_ParseTuple(args, ":move_right"))
 		return NULL;
@@ -116,7 +151,7 @@ PyObject *vx_move_right(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
-PyObject *vx_move_bol(PyObject *self, PyObject *args)
+static PyObject *vx_move_bol(PyObject *self, PyObject *args)
 {
 	if (!PyArg_ParseTuple(args, ":move_bol"))
 		return NULL;
@@ -124,7 +159,7 @@ PyObject *vx_move_bol(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
-PyObject *vx_move_eol(PyObject *self, PyObject *args)
+static PyObject *vx_move_eol(PyObject *self, PyObject *args)
 {
 	if (!PyArg_ParseTuple(args, ":move_eol"))
 		return NULL;
@@ -132,7 +167,7 @@ PyObject *vx_move_eol(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
-PyObject *vx_move_beg(PyObject *self, PyObject *args)
+static PyObject *vx_move_beg(PyObject *self, PyObject *args)
 {
 	if (!PyArg_ParseTuple(args, ":move_beg"))
 		return NULL;
@@ -140,7 +175,7 @@ PyObject *vx_move_beg(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
-PyObject *vx_move_end(PyObject *self, PyObject *args)
+static PyObject *vx_move_end(PyObject *self, PyObject *args)
 {
 	if (!PyArg_ParseTuple(args, ":move_end"))
 		return NULL;
@@ -148,7 +183,7 @@ PyObject *vx_move_end(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
-PyObject *vx_add_string(PyObject *self, PyObject *args)
+static PyObject *vx_add_string(PyObject *self, PyObject *args)
 {
 	char *str = NULL;
 	if (!PyArg_ParseTuple(args, "s:add_string", &str))
@@ -158,7 +193,7 @@ PyObject *vx_add_string(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
-PyObject *vx_backspace(PyObject *self, PyObject *args)
+static PyObject *vx_backspace(PyObject *self, PyObject *args)
 {
 	if (!PyArg_ParseTuple(args, ":backspace"))
 		return NULL;
@@ -166,7 +201,7 @@ PyObject *vx_backspace(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
-PyObject *vx_save(PyObject *self, PyObject *args)
+static PyObject *vx_save(PyObject *self, PyObject *args)
 {
 	if (!PyArg_ParseTuple(args, ":save"))
 		return NULL;
@@ -174,7 +209,7 @@ PyObject *vx_save(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
-PyObject *vx_new_window(PyObject *self, PyObject *args)
+static PyObject *vx_new_window(PyObject *self, PyObject *args)
 {
 	int nlines, ncols, begin_y, begin_x;
 	Window *w;
@@ -188,7 +223,7 @@ PyObject *vx_new_window(PyObject *self, PyObject *args)
 	return capsule;
 }
 
-PyObject *vx_attach_window(PyObject *self, PyObject *args)
+static PyObject *vx_attach_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
 	char *file;
@@ -205,7 +240,7 @@ PyObject *vx_attach_window(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
-PyObject *vx_attach_window_blank(PyObject *self, PyObject *args)
+static PyObject *vx_attach_window_blank(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
 	Window *window;
@@ -219,7 +254,7 @@ PyObject *vx_attach_window_blank(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
-PyObject *vx_focus_window(PyObject *self, PyObject *args)
+static PyObject *vx_focus_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
 	Window *window;
@@ -231,7 +266,7 @@ PyObject *vx_focus_window(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
-PyObject *vx_clear_window(PyObject *self, PyObject *args)
+static PyObject *vx_clear_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
 	Window *window;
@@ -243,7 +278,7 @@ PyObject *vx_clear_window(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
-PyObject *vx_add_string_window(PyObject *self, PyObject *args)
+static PyObject *vx_add_string_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
 	Window *window;
@@ -256,7 +291,7 @@ PyObject *vx_add_string_window(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
-PyObject *vx_refresh_window(PyObject *self, PyObject *args)
+static PyObject *vx_refresh_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
 	Window *window;
@@ -268,36 +303,38 @@ PyObject *vx_refresh_window(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
-PyObject *vx_get_contents_window(PyObject *self, PyObject *args)
+static PyObject *vx_get_contents_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
 	Window *window;
 	char *contents;
+	PyObject *str;
 
 	if (!PyArg_ParseTuple(args, "O:refresh_window", &capsule))
 		return NULL;
 	window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
 	contents = get_str_from_line_to_line(window->buffer->text, window->line, window->line + window->lines - 1);
-	PyObject *str = Py_BuildValue("s", contents);
+	str = Py_BuildValue("s", contents);
 	free(contents);
 	return str;
 }
 
-PyObject *vx_set_color_window(PyObject *self, PyObject *args)
+static PyObject *vx_set_color_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
 	Window *window;
 	int fg, bg;
+	unsigned short color;
 
 	if (!PyArg_ParseTuple(args, "Oii:update_window", &capsule, &fg, &bg))
 		return NULL;
-	unsigned short color = (bg + 1) * COLORS + ((fg + 1) % COLORS);
 	window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
+	color = (bg + 1) * COLORS + ((fg + 1) % COLORS);
 	wcolor_set(window->curses_window, color, NULL);
 	Py_RETURN_NONE;
 }
 
-PyObject *vx_update_window(PyObject *self, PyObject *args)
+static PyObject *vx_update_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
 	Window *window;
@@ -315,7 +352,7 @@ PyObject *vx_update_window(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
-PyObject *vx_set_cursor_window(PyObject *self, PyObject *args)
+static PyObject *vx_set_cursor_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
 	Window *window;
@@ -329,7 +366,7 @@ PyObject *vx_set_cursor_window(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
-PyMethodDef VxMethods[] = {
+static PyMethodDef VxMethods[] = {
 	{"quit", vx_quit, METH_VARARGS,
 	 "Quit"},
 	{"move_up", vx_move_up, METH_VARARGS,
@@ -379,12 +416,12 @@ PyMethodDef VxMethods[] = {
 	{NULL, NULL, 0, NULL}
 };
 
-PyModuleDef VxModule = {
+static PyModuleDef VxModule = {
 	PyModuleDef_HEAD_INIT, "vx", NULL, -1, VxMethods,
 	NULL, NULL, NULL, NULL
 };
 
-PyObject *PyInit_vx(void)
+static PyObject *PyInit_vx(void)
 {
 	PyObject *v;
 
