@@ -220,6 +220,20 @@ PyObject *vx_focus_window(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
+PyObject *vx_set_color_window(PyObject *self, PyObject *args)
+{
+	PyObject *capsule;
+	Window *window;
+	int fg, bg;
+
+	if (!PyArg_ParseTuple(args, "Oii:update_window", &capsule, &fg, &bg))
+		return NULL;
+	unsigned short color = (bg + 1) * COLORS + ((fg + 1) % COLORS);
+	window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
+	wcolor_set(window->curses_window, color, NULL);
+	Py_RETURN_NONE;
+}
+
 PyObject *vx_update_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
@@ -273,6 +287,8 @@ PyMethodDef VxMethods[] = {
 	 "Focus a window"},
 	{"update_window", vx_update_window, METH_VARARGS,
 	 "Update a window"},
+	{"set_color_window", vx_set_color_window, METH_VARARGS,
+	 "Set the color"},
 	{NULL, NULL, 0, NULL}
 };
 

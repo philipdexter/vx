@@ -68,11 +68,17 @@ static struct argp argp = { options, parse_opt, args_doc, doc };
 
 void init_curses(void)
 {
+	int i;
+
 	initscr();
 	start_color();
 	use_default_colors();
-	for (int i = 0; i < COLORS; ++i)
-		init_pair(i, i, -1);
+	COLOR_PAIRS = 256;
+	COLORS = 16;
+	for (i = 0; i < COLOR_PAIRS; ++i) {
+		unsigned short bg = i / COLORS - 1;
+		init_pair(i, i % COLORS - 1, bg);
+	}
 	nonl();
 	raw();
 	noecho();
