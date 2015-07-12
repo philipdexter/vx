@@ -163,6 +163,9 @@ def _bind(keys, command=None):
     for h in prehops:
         if cur.get(h) is None:
             cur[h] = {}
+        elif not isinstance(cur[h], dict):
+            print('Warning, overwriting old keybinding')
+            cur[h] = {}
         cur = cur[h]
     cur[finalhop] = command
 
