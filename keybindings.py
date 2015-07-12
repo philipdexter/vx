@@ -152,6 +152,8 @@ def _bind(keys, command=None):
     if keys == ' ':
         _keybindings[' '] = command
         return
+    if isinstance(keys, Keys):
+        keys = keys.value
     keys = str(keys)
     if type(keys) is str:
         squares = list(map(lambda x: str(_tobinding(x)), keys.split(' ')))

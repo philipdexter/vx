@@ -120,9 +120,18 @@ int main(int argc, char *argv[])
 	{
 		int c = getch();
 
+		// Handle escape and alt
 		if (c == '\033') {
+			nodelay(stdscr, 1);
 			c = getch();
-			c |= 0x80;
+			if (c == ERR) {
+				// got an escape
+				c = '\033';
+			} else {
+				// got an alt+key
+				c |= 0x80;
+			}
+			nodelay(stdscr, 0);
 		}
 
 		vx_py_handle_key(c);
