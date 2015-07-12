@@ -205,7 +205,7 @@ def _register_key(key):
         _keybinding_traverser = _keybindings
     elif _keybinding_traverser is None:
         _keybinding_traverser = _keybindings
-        raise Exception('not found')
+        raise Exception('not found ' + key)
         return False
     return True
 
