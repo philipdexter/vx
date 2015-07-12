@@ -4,15 +4,19 @@
 #include <wchar.h>
 
 PyObject *vx_mod;
+PyObject *vx_intro_mod;
+PyObject *start_mod;
 
 void vx_py_init_python(int num_files, int argc, char **argv)
 {
+	int i, j;
+
 	setlocale(LC_ALL, "en_US.UTF-8");
 
 	wchar_t **wargv = calloc(num_files + 1, sizeof(wchar_t*));
 	wargv[0] = calloc(1, sizeof(wchar_t) * (strlen(argv[0]) + 1) + 1);
 	mbstowcs(wargv[0], argv[0], strlen(argv[0]));
-	for (int i = argc - num_files, j = 1; i < argc; ++i, ++j) {
+	for (i = argc - num_files, j = 1; i < argc; ++i, ++j) {
 		wargv[j] = calloc(1, sizeof(wchar_t) * (strlen(argv[i]) + 1) + 1);
 		mbstowcs(wargv[j], argv[i], strlen(argv[i]));
 	}
@@ -21,18 +25,25 @@ void vx_py_init_python(int num_files, int argc, char **argv)
 	PyImport_AppendInittab("vx", &PyInit_vx);
 	Py_Initialize();
 	PySys_SetArgv(num_files + 1, wargv);
+
+	for (i = 0; i < num_files + 1; ++i)
+		free(wargv[i]);
+	free(wargv);
 }
 
 void vx_py_deinit_python(void)
 {
+	Py_DECREF(start_mod);
+	Py_DECREF(vx_mod);
+	Py_DECREF(vx_intro_mod);
 	Py_Finalize();
 }
 
 void vx_py_load_start(void)
 {
 	PyObject *pName = PyUnicode_FromString("start");
-	PyObject *imod = PyImport_Import(pName);
-	if (!imod) {
+	start_mod = PyImport_Import(pName);
+	if (!start_mod) {
 		endwin();
 		PyErr_Print();
 		exit(0);
@@ -300,13 +311,11 @@ PyModuleDef VxModule = {
 PyObject *PyInit_vx(void)
 {
 	PyObject *v;
-	PyObject *mod;
 
 	vx_mod = PyModule_Create(&VxModule);
 	vx_py_update_vars();
 	v = Py_BuildValue("s", "*");
-	mod = PyImport_ImportModuleEx("vx_intro", NULL, NULL, v);
-	Py_DECREF(mod);
+	vx_intro_mod = PyImport_ImportModuleEx("vx_intro", NULL, NULL, v);
 	Py_DECREF(v);
 	return vx_mod;
 }
