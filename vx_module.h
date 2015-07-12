@@ -16,7 +16,7 @@ void vx_py_handle_key(int c);
 /* Defined elsewhere */
 extern Window *focused_window;
 extern int row, col;
-extern int mr, mc;
+extern int screen_rows, screen_cols;
 extern int lets_edit;
 
 #endif

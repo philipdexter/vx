@@ -18,7 +18,7 @@ int lets_edit = 1;
 int row=0;
 int col=0;
 
-int mr=0, mc=0;
+int screen_rows=0, screen_cols=0;
 
 Window *focused_window = NULL;
 
@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
 	clear();
 	refresh();
 
-	get_cursor_rowcol(focused_window->buffer->text, &mr, &mc);
+	get_cursor_rowcol(focused_window->buffer->text, &screen_rows, &screen_cols);
 
 	vx_py_update_vars();
 
@@ -136,14 +136,14 @@ int main(int argc, char *argv[])
 
 		vx_py_handle_key(c);
 
-		get_cursor_rowcol(focused_window->buffer->text, &mr, &mc);
-		while (mr+1 < focused_window->line && focused_window->line > 1) --focused_window->line;
-		while (mr+1 > focused_window->line + focused_window->lines - 1) ++focused_window->line;
+		get_cursor_rowcol(focused_window->buffer->text, &screen_rows, &screen_cols);
+		while (screen_rows+1 < focused_window->line && focused_window->line > 1) --focused_window->line;
+		while (screen_rows+1 > focused_window->line + focused_window->lines - 1) ++focused_window->line;
 
 		vx_py_update_vars();
 		vx_py_pump();
 
-		wmove(focused_window->curses_window, mr - (focused_window->line - 1), mc);
+		wmove(focused_window->curses_window, screen_rows - (focused_window->line - 1), screen_cols);
 
 		refresh_window(focused_window);
 

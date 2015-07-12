@@ -85,11 +85,11 @@ int vx_py_update_vars(void)
 	if (-1 == PyObject_SetAttrString(vx_mod, "cols", v))
 		goto err;
 	Py_DECREF(v);
-	v = PyLong_FromLong(mr + 1);
+	v = PyLong_FromLong(screen_rows + 1);
 	if (-1 == PyObject_SetAttrString(vx_mod, "line", v))
 		goto err;
 	Py_DECREF(v);
-	v = PyLong_FromLong(mc + 1);
+	v = PyLong_FromLong(screen_cols + 1);
 	if (-1 == PyObject_SetAttrString(vx_mod, "col", v))
 		goto err;
 	Py_DECREF(v);
@@ -346,24 +346,6 @@ static PyObject *vx_set_color_window(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
-static PyObject *vx_update_window(PyObject *self, PyObject *args)
-{
-	PyObject *capsule;
-	Window *window;
-	char *contents;
-
-	if (!PyArg_ParseTuple(args, "O:update_window", &capsule))
-		return NULL;
-	window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
-	wmove(window->curses_window, 0, 0);
-	wclear(window->curses_window);
-	contents = get_str_from_line_to_line(window->buffer->text, window->line, window->line + window->lines - 1);
-	print_string(window, contents);
-	refresh_window(window);
-	free(contents);
-	Py_RETURN_NONE;
-}
-
 static PyObject *vx_set_cursor_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
@@ -421,8 +403,6 @@ static PyMethodDef VxMethods[] = {
 	 "Refresh a window"},
 	{"get_contents_window", vx_get_contents_window, METH_VARARGS,
 	 "Get the contents of a window"},
-	{"update_window", vx_update_window, METH_VARARGS,
-	 "Update a window"},
 	{"set_color_window", vx_set_color_window, METH_VARARGS,
 	 "Set the color"},
 	{"set_cursor", vx_set_cursor_window, METH_VARARGS,
