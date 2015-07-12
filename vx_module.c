@@ -231,6 +231,58 @@ PyObject *vx_focus_window(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
+PyObject *vx_clear_window(PyObject *self, PyObject *args)
+{
+	PyObject *capsule;
+	Window *window;
+
+	if (!PyArg_ParseTuple(args, "O:clear_window", &capsule))
+		return NULL;
+	window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
+	wclear(window->curses_window);
+	Py_RETURN_NONE;
+}
+
+PyObject *vx_add_string_window(PyObject *self, PyObject *args)
+{
+	PyObject *capsule;
+	Window *window;
+	char *string;
+
+	if (!PyArg_ParseTuple(args, "Os:add_string_window", &capsule, &string))
+		return NULL;
+	window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
+	print_string(window, string);
+	Py_RETURN_NONE;
+}
+
+PyObject *vx_refresh_window(PyObject *self, PyObject *args)
+{
+	PyObject *capsule;
+	Window *window;
+
+	if (!PyArg_ParseTuple(args, "O:refresh_window", &capsule))
+		return NULL;
+	window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
+	refresh_window(window);
+	Py_RETURN_NONE;
+}
+
+PyObject *vx_get_contents_window(PyObject *self, PyObject *args)
+{
+	PyObject *capsule;
+	Window *window;
+	char *contents;
+
+	if (!PyArg_ParseTuple(args, "O:refresh_window", &capsule))
+		return NULL;
+	window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
+	contents = get_str_from_line_to_line(window->buffer->text, window->line, window->line + window->lines - 1);
+	PyObject *str = Py_BuildValue("s", contents);
+	free(contents);
+	return str;
+}
+
 PyObject *vx_set_color_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
@@ -260,6 +312,20 @@ PyObject *vx_update_window(PyObject *self, PyObject *args)
 	print_string(window, contents);
 	refresh_window(window);
 	free(contents);
+	Py_RETURN_NONE;
+}
+
+PyObject *vx_set_cursor_window(PyObject *self, PyObject *args)
+{
+	PyObject *capsule;
+	Window *window;
+	int y, x;
+
+	if (!PyArg_ParseTuple(args, "Oii:set_cursor_window", &capsule, &y, &x))
+		return NULL;
+	window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
+	wmove(window->curses_window, y, x);
+
 	Py_RETURN_NONE;
 }
 
@@ -296,10 +362,20 @@ PyMethodDef VxMethods[] = {
 	 "Attach a window to a blank buffer"},
 	{"focus_window", vx_focus_window, METH_VARARGS,
 	 "Focus a window"},
+	{"clear_window", vx_clear_window, METH_VARARGS,
+	 "Clear a window"},
+	{"add_string_window", vx_add_string_window, METH_VARARGS,
+	 "Add a string to a window"},
+	{"refresh_window", vx_refresh_window, METH_VARARGS,
+	 "Refresh a window"},
+	{"get_contents_window", vx_get_contents_window, METH_VARARGS,
+	 "Get the contents of a window"},
 	{"update_window", vx_update_window, METH_VARARGS,
 	 "Update a window"},
 	{"set_color_window", vx_set_color_window, METH_VARARGS,
 	 "Set the color"},
+	{"set_cursor", vx_set_cursor_window, METH_VARARGS,
+	 "Set the cursor in a window"},
 	{NULL, NULL, 0, NULL}
 };
 

@@ -28,6 +28,7 @@ PyObject *vx_attach_window(PyObject *self, PyObject *args);
 PyObject *vx_attach_window_blank(PyObject *self, PyObject *args);
 PyObject *vx_focus_window(PyObject *self, PyObject *args);
 PyObject *vx_update_window(PyObject *self, PyObject *args);
+PyObject *vx_set_cursor_window(PyObject *self, PyObject *args);
 
 PyObject *PyInit_vx(void);
 

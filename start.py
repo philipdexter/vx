@@ -1,7 +1,7 @@
 import vx
 import sys
 import math
-from vx import bind, alt, ctrl, keys, window
+from vx import bind, alt, ctrl, keys, window, window_file, graffiti
 
 from functools import partial
 
@@ -27,30 +27,16 @@ if len(vx.files) == 0:
     win = window(vx.rows - 1, vx.cols, 0, 0)
     win.blank()
     win.focus()
-    vx.windows.append(win)
 else:
     d = math.floor((vx.rows - 1) / (len(vx.files)))
     y = 0
     for f in vx.files:
-        win = window(d, vx.cols, y, 0)
+        win = window_file(f, d, vx.cols, y, 0)
         y += d
-        win.attach_file(f)
         win.focus()
-        vx.windows.append(win)
 
 vx.bind('C-q', vx.quit)
 
 vx.bind('C-o', vx.next_window)
-
-def my_vx():
-    for w in vx.windows:
-        w.update()
-
-vx.my_vx = my_vx
-
-vx.status_line = lambda: 'line: {} col: {} / rows: {} cols: {}'.format(vx.line,
-                                                                           vx.col,
-                                                                           vx.rows,
-                                                                           vx.cols)
 
 bind(ctrl + keys.x - ctrl + keys.c, vx.quit)
