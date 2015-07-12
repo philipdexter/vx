@@ -34,12 +34,6 @@ PyObject *PyInit_vx(void);
 
 void vx_py_handle_key(int c);
 
-/* Defined in vx_module.c */
-extern PyMethodDef VxMethods[];
-extern PyModuleDef VxModule;
-extern PyObject *vx_mod;
-
-
 /* Defined elsewhere */
 extern Window *focused_window;
 extern int row, col;

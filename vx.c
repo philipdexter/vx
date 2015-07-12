@@ -113,20 +113,6 @@ int main(int argc, char *argv[])
 
 	vx_py_pump();
 
-	Window *local_win = new_window();
-	build_window(local_win, 2, col, row-1, 0);
-	wmove(local_win->curses_window, 0, 0);
-	PyObject *status_line = PyObject_GetAttrString(vx_mod, "status_line");
-	PyObject *args = PyTuple_New(0);
-	PyObject *ret = PyObject_CallObject(status_line, args);
-	char *status_line_str = PyUnicode_AsUTF8(ret);
-	wattron(local_win->curses_window, COLOR_PAIR(55));
-	wprintw(local_win->curses_window, "%s", status_line_str);
-	Py_DECREF(status_line);
-	Py_DECREF(ret);
-	Py_DECREF(args);
-	refresh_window(local_win);
-
 	wmove(focused_window->curses_window, 0, 0);
 	refresh_window(focused_window);
 
@@ -147,18 +133,6 @@ int main(int argc, char *argv[])
 
 		vx_py_update_vars();
 		vx_py_pump();
-
-		wmove(local_win->curses_window, 0, 0);
-		werase(local_win->curses_window);
-		PyObject *status_line = PyObject_GetAttrString(vx_mod, "status_line");
-		args = PyTuple_New(0);
-		PyObject *ret = PyObject_CallObject(status_line, args);
-		char *status_line_str = PyUnicode_AsUTF8(ret);
-		wprintw(local_win->curses_window, "%s", status_line_str);
-		Py_DECREF(status_line);
-		Py_DECREF(ret);
-		Py_DECREF(args);
-		refresh_window(local_win);
 
 		wmove(focused_window->curses_window, mr - (focused_window->line - 1), mc);
 
