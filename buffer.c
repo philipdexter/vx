@@ -16,6 +16,13 @@ Buffer *new_buffer(void)
 	return buffer;
 }
 
+void delete_buffer(Buffer *buffer)
+{
+	delete_text(buffer->text);
+	free(buffer->filename);
+	free(buffer);
+}
+
 int attach_file(Buffer *buffer, char *filename)
 {
 	FILE *fp;

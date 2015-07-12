@@ -14,8 +14,8 @@ typedef struct _WINDOW {
 } Window;
 
 Window *new_window(void);
+void delete_window(Window*);
 int build_window(Window*, int, int, int, int);
-int delete_window(Window*);
 void attach_buffer(Window*, Buffer*);
 int refresh_window(Window*);
 int print_string(Window*, char*);

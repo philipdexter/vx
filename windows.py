@@ -24,6 +24,10 @@ class _window:
         if traversable:
             _windows_traversable.append(self)
 
+    def remove(self):
+        _windows.remove(self)
+        vx.delete_window(self._c_window)
+
     def set_text(self, text):
         self.murals = []
         self.graffitis.append(_graffiti(0, 0, text))

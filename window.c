@@ -10,12 +10,20 @@ Window *new_window(void)
 	return window;
 }
 
+void delete_window(Window *window)
+{
+	delwin(window->curses_window);
+	if (window->buffer)
+		delete_buffer(window->buffer);
+	free(window);
+}
+
 int build_window(Window *window, int nlines, int ncols, int begin_y, int begin_x)
 {
 	if (!window) return -1;
 
 	if (window->curses_window)
-		if (0 != delete_window(window))
+		if (OK != delwin(window->curses_window))
 			return -1;
 	window->curses_window = newwin(nlines, ncols, begin_y, begin_x);
 	window->lines = (size_t)nlines;
@@ -24,19 +32,10 @@ int build_window(Window *window, int nlines, int ncols, int begin_y, int begin_x
 	return 0;
 }
 
-int delete_window(Window *window)
-{
-	if (OK != delwin(window->curses_window))
-		return -1;
-	free(window->buffer);
-	window->buffer = NULL;
-	return 0;
-}
-
 void attach_buffer(Window *window, Buffer *buffer)
 {
 	if (window->buffer) {
-		free(window->buffer); // TODO create and use delete_buffer function
+		free(window->buffer);
 	}
 	window->buffer = buffer;
 }

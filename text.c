@@ -15,6 +15,12 @@ Text *new_document(void)
 	return calloc(1, sizeof(Text));
 }
 
+void delete_text(Text *text)
+{
+	free(text->buf);
+	free(text);
+}
+
 int resize_gap(Text *text, size_t new_gap)
 {
 	size_t gap = GAPSIZE(text);

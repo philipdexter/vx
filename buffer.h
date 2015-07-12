@@ -10,6 +10,7 @@ typedef struct _BUFFER {
 } Buffer;
 
 Buffer *new_buffer(void);
+void delete_buffer(Buffer*);
 int attach_file(Buffer*, char*);
 int save_file(Buffer*);
 

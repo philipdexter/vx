@@ -212,15 +212,27 @@ static PyObject *vx_save(PyObject *self, PyObject *args)
 static PyObject *vx_new_window(PyObject *self, PyObject *args)
 {
 	int nlines, ncols, begin_y, begin_x;
-	Window *w;
+	Window *window;
 	PyObject *capsule;
 
 	if (!PyArg_ParseTuple(args, "iiii:new_window", &nlines, &ncols, &begin_y, &begin_x))
 		return NULL;
-	w = new_window();
-	build_window(w, nlines, ncols, begin_y, begin_x);
-	capsule = PyCapsule_New((void*)w, "vx.window", NULL);
+	window = new_window();
+	build_window(window, nlines, ncols, begin_y, begin_x);
+	capsule = PyCapsule_New((void*)window, "vx.window", NULL);
 	return capsule;
+}
+
+static PyObject *vx_delete_window(PyObject *self, PyObject *args)
+{
+	PyObject *capsule;
+	Window *window;
+
+	if (!PyArg_ParseTuple(args, "O:delete_window", &capsule))
+		return NULL;
+	window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
+	delete_window(window);
+	Py_RETURN_NONE;
 }
 
 static PyObject *vx_attach_window(PyObject *self, PyObject *args)
@@ -393,6 +405,8 @@ static PyMethodDef VxMethods[] = {
 	 "Delete a character to the left"},
 	{"new_window", vx_new_window, METH_VARARGS,
 	 "Create a new window"},
+	{"delete_window", vx_delete_window, METH_VARARGS,
+	 "Delete window"},
 	{"attach_window", vx_attach_window, METH_VARARGS,
 	 "Attach a window to a file"},
 	{"attach_window_blank", vx_attach_window_blank, METH_VARARGS,
