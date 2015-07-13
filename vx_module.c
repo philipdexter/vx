@@ -429,10 +429,17 @@ static PyObject *PyInit_vx(void)
 
 void vx_py_handle_key(int c)
 {
-	PyObject *ll = PyUnicode_FromOrdinal(c);
+	char *str = calloc(1, 2);
+	str[0] = c;
+	vx_py_handle_key_utf8(str);
+	free(str);
+	return;
+}
 
+void vx_py_handle_key_utf8(char *str)
+{
 	PyObject *key_callback = PyObject_GetAttrString(vx_mod, "register_key");
-	PyObject *args = Py_BuildValue("(O)", ll);
+	PyObject *args = Py_BuildValue("(y)", str);
 	PyObject *callret = PyObject_CallObject(key_callback, args);
 	if (PyErr_Occurred()) {
 		endwin();

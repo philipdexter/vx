@@ -30,4 +30,6 @@ void move_right(Text *text);
 void move_up(Text *text);
 void move_down(Text *text);
 
+extern const char more_bytes_utf8[];
+
 #endif

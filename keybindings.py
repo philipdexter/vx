@@ -1,5 +1,7 @@
 import vx
 
+from unicodedata import category
+
 from functools import partial
 from enum import Enum
 
@@ -62,6 +64,9 @@ class _keybinding:
     def __str__(self):
         return str(self.key)
 
+    def bytes(self):
+        return bytes(self.key)
+
     def __sub__(self, other):
         return self + _keyseparator() + other
 
@@ -77,8 +82,8 @@ class _keymodifier:
         other.printable = self.printable + '-' + other.printable
         return other
 
-_ctrl = _keymodifier(lambda c: chr(0x1f & ord(c)), 'C')
-_alt =  _keymodifier(lambda c: chr(0x80 | ord(c)), 'M')
+_ctrl = _keymodifier(lambda c: bytes([0x1f & ord(c)]), 'C')
+_alt =  _keymodifier(lambda c: bytes([0x80 | ord(c)]), 'M')
 
 class _keyseparator:
     def __init__(self):
@@ -110,6 +115,15 @@ class _keyseparator:
         if isinstance(other, Keys):
             other = _keybinding(other, other)
         return self + _keyseparator() + other
+
+    def flatten(self):
+        ret = b''
+        if self.left:
+            ret += self.left.key
+        ret += b' '
+        if self.right:
+            ret += self.right.key
+        return ret
 
     def __str__(self):
         ret = ''
@@ -154,11 +168,19 @@ def _bind(keys, command=None):
         return
     if isinstance(keys, Keys):
         keys = keys.value
-    keys = str(keys)
-    if type(keys) is str:
-        squares = list(map(lambda x: str(_tobinding(x)), keys.split(' ')))
+
+    if isinstance(keys, str):
+        squares = [_tobinding(keys)]
+        if isinstance(squares[0], _keyseparator):
+            squares = squares[0].flatten().split(b' ')
+    elif isinstance(keys, _keybinding):
+        squares = [keys.bytes()]
+    elif isinstance(keys, _keyseparator):
+        squares = keys.flatten().split(b' ')
     else:
         squares = [keys]
+    if isinstance(squares[0], str):
+        squares[0] = bytes(squares[0], 'utf8')
     prehops = squares[0:-1]
     finalhop = squares[-1]
     cur = _keybindings
@@ -201,17 +223,24 @@ _bind(chr(127), vx.backspace)
 
 def _register_key(key):
     global _keybinding_traverser
+    first = _keybinding_traverser is _keybindings
     _keybinding_traverser = _keybinding_traverser.get(key)
     if callable(_keybinding_traverser):
         _keybinding_traverser()
         _keybinding_traverser = _keybindings
     elif _keybinding_traverser is None:
         _keybinding_traverser = _keybindings
-        raise Exception('not found ' + key)
+        # if this is a first key and not a control character then try to print it
+        try:
+            if first and category(key.decode('utf8'))[0] != 'C':
+                vx.add_string(key.decode('utf8'))
+            else:
+                raise Exception(b'not found ' + key)
+        except:
+            raise Exception(b'invalid unicode entered ' + key)
+        _keybinding_traverser = _keybindings
         return False
     return True
-
-
 
 _key_callbacks = []
 _key_callbacks.append(_register_key)

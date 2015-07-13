@@ -10,6 +10,17 @@
 
 #define RESIZE_BY 20
 
+const char more_bytes_utf8[256] = {
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,4,4,4,4,5,5,5,5
+};
+
 Text *new_document(void)
 {
 	return calloc(1, sizeof(Text));
@@ -238,13 +249,16 @@ size_t get_cursor_pos(Text *text)
 void get_cursor_rowcol(Text *text, int *row, int *col)
 {
 	int r = 0, c = 0;
-	size_t i;
+	size_t i, bytes;
 	for (i = 0; i < text->gap_start; ++i) {
 		if (text->buf[i] == '\n') {
 			++r; c = 0;
 		} else if (text->buf[i] == '\t') {
 			c += 8;
 		} else {
+			// Handle unicode
+			bytes = more_bytes_utf8[(unsigned int)(unsigned char)text->buf[i]];
+			i += bytes;
 			++c;
 		}
 	}
@@ -258,21 +272,34 @@ void backspace(Text *text)
 		--text->gap_start;
 }
 
+int is_utf8_start(unsigned char c)
+{
+	return c <= 0x7F || (c & 0xC0) != 0xC0;
+}
+
 void move_left(Text *text)
 {
 	if (text->gap_start > 0) {
-		text->buf[text->text_start-1] = text->buf[text->gap_start-1];
-		--text->text_start;
-		--text->gap_start;
+		do {
+			text->buf[text->text_start-1] = text->buf[text->gap_start-1];
+			--text->text_start;
+			--text->gap_start;
+		} while (text->gap_start > 0 && !is_utf8_start(text->buf[text->gap_start - 1]));
 	}
 }
 
 void move_right(Text *text)
 {
+	int bytes, i;
 	if (text->size - text->text_start > 0) {
-		text->buf[text->gap_start] = text->buf[text->text_start];
-		++text->text_start;
-		++text->gap_start;
+		// Handle unicode
+		bytes = more_bytes_utf8[(unsigned int)(unsigned char)text->buf[text->text_start]] + 1;
+
+		for (i = 0; i < bytes; ++i) {
+			text->buf[text->gap_start] = text->buf[text->text_start];
+			++text->text_start;
+			++text->gap_start;
+		}
 	}
 }
 
