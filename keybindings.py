@@ -61,9 +61,6 @@ class _keybinding:
             self.key = key
         self.printable = printable
 
-    def __str__(self):
-        return str(self.key)
-
     def bytes(self):
         return bytes(self.key)
 
@@ -124,16 +121,6 @@ class _keyseparator:
         if self.right:
             ret += self.right.key
         return ret
-
-    def __str__(self):
-        ret = ''
-        if self.left:
-            ret += str(self.left)
-        ret += ' '
-        if self.right:
-            ret += str(self.right)
-        return ret
-
 
 def _tobinding(s):
     '''Convert a key string (C-o) to a keycode.'''
