@@ -24,11 +24,11 @@ bind(alt + keys.rangle, vx.move_end)
 bind(alt + keys.s, vx.move_beg)
 
 if len(vx.files) == 0:
-    win = window(vx.rows - 1, vx.cols, 0, 0)
+    win = window(vx.rows, vx.cols, 0, 0)
     win.blank()
     win.focus()
 else:
-    d = math.floor((vx.rows - 1) / (len(vx.files)))
+    d = math.floor(vx.rows / (len(vx.files)))
     y = 0
     for f in vx.files:
         win = window_file(f, d, vx.cols, y, 0)

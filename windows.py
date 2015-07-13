@@ -14,15 +14,22 @@ class _graffiti:
         vx.add_string_window(window._c_window, self.text)
 
 class _window:
-    def __init__(self, rows, columns, y, x, refresh=None, traversable=True):
-        self._c_window = vx.new_window(rows, columns, y, x)
+    def __init__(self, rows, columns, y, x, refresh=None, traversable=True, status_bar=True):
+        self._c_window = vx.new_window(rows-1, columns, y, x)
         self.graffitis = []
         self.tick = None
+        self.line = 1
+        self.col = 1
         if refresh is not None:
             self.tick = refresh
         _windows.append(self)
         if traversable:
             _windows_traversable.append(self)
+
+        if status_bar:
+            self.status_bar = vx.window(2, columns, y + rows - 1, x, traversable=False, status_bar=False)
+            self.status_bar.blank()
+            self.status_bar.set_color(5, -1)
 
     def remove(self):
         _windows.remove(self)
@@ -41,6 +48,12 @@ class _window:
     def prepare(self):
         vx.clear_window(self._c_window)
         vx.set_cursor(self._c_window, 0, 0)
+        self.line, self.col = vx.get_linecol_window(self._c_window)
+        if hasattr(self, 'status_bar'):
+            self.status_bar.set_text('line: {} col: {} / rows: {} cols: {}\n'.format(self.line,
+                                                                                     self.col,
+                                                                                     vx.rows,
+                                                                                     vx.cols))
 
     def refresh(self):
         vx.refresh_window(self._c_window)

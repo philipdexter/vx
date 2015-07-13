@@ -17,4 +17,3 @@ vx.files = argv[1:]
 import utils
 import keybindings
 import windows
-import status_bar

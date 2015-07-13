@@ -290,6 +290,23 @@ static PyObject *vx_clear_window(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
+static PyObject *vx_get_linecol_window(PyObject *self, PyObject *args)
+{
+	PyObject *capsule;
+	Window *window;
+	PyObject *ret;
+
+	if (!PyArg_ParseTuple(args, "O:clear_window", &capsule))
+		return NULL;
+	window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
+
+	int r, c;
+	get_cursor_rowcol(window->buffer->text, &r, &c);
+	ret = Py_BuildValue("(ii)", ++r, ++c);
+
+	return ret;
+}
+
 static PyObject *vx_add_string_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
@@ -397,6 +414,8 @@ static PyMethodDef VxMethods[] = {
 	 "Focus a window"},
 	{"clear_window", vx_clear_window, METH_VARARGS,
 	 "Clear a window"},
+	{"get_linecol_window", vx_get_linecol_window, METH_VARARGS,
+	 "Get the line and column the cursor is on of a window"},
 	{"add_string_window", vx_add_string_window, METH_VARARGS,
 	 "Add a string to a window"},
 	{"refresh_window", vx_refresh_window, METH_VARARGS,
