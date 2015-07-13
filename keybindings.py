@@ -160,6 +160,8 @@ def _bind(keys, command=None):
         squares = [_tobinding(keys)]
         if isinstance(squares[0], _keyseparator):
             squares = squares[0].flatten().split(b' ')
+        elif isinstance(squares[0], _keybinding):
+            squares = [squares[0].bytes()]
     elif isinstance(keys, _keybinding):
         squares = [keys.bytes()]
     elif isinstance(keys, _keyseparator):
