@@ -20,6 +20,7 @@ class _window:
         self.tick = None
         self.line = 1
         self.col = 1
+        self.keybinding_table = vx.keybinding_table()
         if refresh is not None:
             self.tick = refresh
         _windows.append(self)
@@ -43,7 +44,15 @@ class _window:
         vx.attach_window_blank(self._c_window)
 
     def focus(self):
+        global _focused_window
+        if _focused_window:
+            _focused_window.unfocus()
+        _focused_window = self
+        vx.keybinding_tables.insert(0, self.keybinding_table)
         vx.focus_window(self._c_window)
+
+    def unfocus(self):
+        vx.keybinding_tables.remove(self.keybinding_table)
 
     def prepare(self):
         vx.clear_window(self._c_window)
@@ -88,6 +97,7 @@ class _window_file(_window):
         vx.add_string_window(self._c_window, contents)
         super().render()
 
+_focused_window = None
 _current_window = -1
 def _next_window():
     global _current_window
