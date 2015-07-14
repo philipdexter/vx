@@ -139,109 +139,107 @@ def _tobinding(s):
         binding = binding + c
     return binding
 
-_keybindings = {}
-_keybinding_traverser = _keybindings
+class _keybinding_table:
+    class MATCH_STATE(Enum):
+        reject = 1
+        keep_going = 2
+        accept = 3
+
+    def __init__(self):
+        self._keybindings = {}
+
+    def bind(self, keys, command):
+        """Bind a key to a command."""
+        # we split on space below so handle it here
+        if keys == ' ':
+            self._keybindings[' '] = command
+            return
+        if isinstance(keys, Keys):
+            keys = keys.value
+
+        if isinstance(keys, str):
+            squares = [_tobinding(keys)]
+            if isinstance(squares[0], _keyseparator):
+                squares = squares[0].flatten().split(b' ')
+            elif isinstance(squares[0], _keybinding):
+                squares = [squares[0].bytes()]
+        elif isinstance(keys, _keybinding):
+            squares = [keys.bytes()]
+        elif isinstance(keys, _keyseparator):
+            squares = keys.flatten().split(b' ')
+        else:
+            squares = [keys]
+        if isinstance(squares[0], str):
+            squares[0] = bytes(squares[0], 'utf8')
+        prehops = squares[0:-1]
+        finalhop = squares[-1]
+        cur = self._keybindings
+        for h in prehops:
+            if cur.get(h) is None:
+                cur[h] = {}
+            elif not isinstance(cur[h], dict):
+                print('Warning, overwriting old keybinding')
+                cur[h] = {}
+            cur = cur[h]
+        cur[finalhop] = command
+
+    def match_key_sequence(self, key_sequence):
+        cur = self._keybindings
+        for key in key_sequence:
+            cur = cur.get(key)
+            if cur is None:
+                return _keybinding_table.MATCH_STATE.reject
+            elif callable(cur):
+                cur()
+                return _keybinding_table.MATCH_STATE.accept
+        return _keybinding_table.MATCH_STATE.keep_going
+
+_global_keybinding_table = _keybinding_table()
 
 def _bind(keys, command=None):
-    """Bind a key to a command. Can be used as a decorator"""
+    """Bind a key to the global keybinding table. Can be used as a decorator"""
     if command is None:
         def wrapper(func):
             _bind(keys, func)
             return func
         return wrapper
-    # we split on space below so handle it here
-    if keys == ' ':
-        _keybindings[' '] = command
-        return
-    if isinstance(keys, Keys):
-        keys = keys.value
+    _global_keybinding_table.bind(keys, command)
 
-    if isinstance(keys, str):
-        squares = [_tobinding(keys)]
-        if isinstance(squares[0], _keyseparator):
-            squares = squares[0].flatten().split(b' ')
-        elif isinstance(squares[0], _keybinding):
-            squares = [squares[0].bytes()]
-    elif isinstance(keys, _keybinding):
-        squares = [keys.bytes()]
-    elif isinstance(keys, _keyseparator):
-        squares = keys.flatten().split(b' ')
-    else:
-        squares = [keys]
-    if isinstance(squares[0], str):
-        squares[0] = bytes(squares[0], 'utf8')
-    prehops = squares[0:-1]
-    finalhop = squares[-1]
-    cur = _keybindings
-    for h in prehops:
-        if cur.get(h) is None:
-            cur[h] = {}
-        elif not isinstance(cur[h], dict):
-            print('Warning, overwriting old keybinding')
-            cur[h] = {}
-        cur = cur[h]
-    cur[finalhop] = command
 
-def _quick_bind(key):
-    '''Bind a keycode to insert itself as text.'''
-    _bind(key, partial(vx.add_string, key))
+_keybinding_tables = []
+_keybinding_tables.append(_global_keybinding_table)
 
-# Quick-bind letter keys
-for i in range(26):
-    char = chr(ord('a') + i)
-    _quick_bind(char)
-
-    char = chr(ord('A') + i)
-    _quick_bind(char)
-
-# ...number keys
-for i in range(10):
-    _quick_bind(str(i))
-
-# ...symbols
-for char in ['?', '<', '>', '\'', '/', '"', ':',
-             ';', '.', ',', '!', '@', '#', '$',
-             '%', '^', '&', '*', '(', ')', '-',
-             '_', '+', '=', '\\', '|', '`', '~',
-             ' ']:
-    _quick_bind(char)
-
-# ...return/backspace
-_bind(chr(13), partial(vx.add_string, '\n'))
-_bind(chr(127), vx.backspace)
-
+_keybinding_queue = []
 def _register_key(key):
-    global _keybinding_traverser
-    first = _keybinding_traverser is _keybindings
-    _keybinding_traverser = _keybinding_traverser.get(key)
-    if callable(_keybinding_traverser):
-        _keybinding_traverser()
-        _keybinding_traverser = _keybindings
-    elif _keybinding_traverser is None:
-        _keybinding_traverser = _keybindings
-        # if this is a first key and not a control character then try to print it
+    global _keybinding_queue
+    _keybinding_queue.append(key)
+
+    for table in _keybinding_tables:
+        match = table.match_key_sequence(_keybinding_queue)
+        if match == _keybinding_table.MATCH_STATE.accept:
+            break
+
+    if match == _keybinding_table.MATCH_STATE.reject:
         try:
-            if first and category(key.decode('utf8'))[0] != 'C':
+            if category(key.decode('utf8')[0])[0] != 'C':
                 vx.add_string(key.decode('utf8'))
-            else:
-                raise Exception(b'not found ' + key)
-        except:
-            raise Exception(b'invalid unicode entered ' + key)
-        _keybinding_traverser = _keybindings
-        return False
-    return True
+        except UnicodeDecodeError:
+            # Invalid unicode, don't print
+            pass
+        _keybinding_queue = []
+    elif match == _keybinding_table.MATCH_STATE.accept:
+        _keybinding_queue = []
 
-_key_callbacks = []
-_key_callbacks.append(_register_key)
+## Exports and defaults
 
-def _register_key(key):
-    for c in _key_callbacks:
-        if c(key): break
-
-vx.key_callbacks = _key_callbacks
+vx.keybinding_table = _keybinding_table
+vx.keybinding_tables = _keybinding_tables
 vx.register_key = _register_key
-vx.tobinding = _tobinding
 vx.bind = _bind
 vx.ctrl = _ctrl
 vx.alt = _alt
 vx.keys = Keys
+
+# bind return and backspace
+vx.bind(Keys.enter, partial(vx.add_string, '\n'))
+vx.bind(Keys.backspace, vx.backspace)
