@@ -20,6 +20,7 @@ class _window:
         self.tick = None
         self.line = 1
         self.col = 1
+        self.has_file = False
         self.keybinding_table = vx.keybinding_table()
         if refresh is not None:
             self.tick = refresh
@@ -68,6 +69,9 @@ class _window:
         vx.refresh_window(self._c_window)
 
     def render(self):
+        if self.has_file:
+            contents = vx.get_contents_window(self._c_window)
+            vx.add_string_window(self._c_window, contents)
         for m in self.graffitis:
             m.render(self)
 
@@ -84,18 +88,9 @@ class _window:
     def set_color(self, fg, bg):
         vx.set_color_window(self._c_window, fg, bg)
 
-class _window_file(_window):
-    def __init__(self, file, rows, columns, y, x):
-        super(_window_file, self).__init__(rows, columns, y, x)
-        self.attach_file(file)
-
     def attach_file(self, filename):
         vx.attach_window(self._c_window, filename)
-
-    def render(self):
-        contents = vx.get_contents_window(self._c_window)
-        vx.add_string_window(self._c_window, contents)
-        super().render()
+        self.has_file = True
 
 _focused_window = None
 _current_window = -1
@@ -112,6 +107,5 @@ def _tick():
 vx.register_tick_function(_tick)
 
 vx.window = _window
-vx.window_file = _window_file
 vx.graffiti = _graffiti
 vx.next_window = _next_window

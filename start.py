@@ -1,7 +1,7 @@
 import vx
 import sys
 import math
-from vx import bind, alt, ctrl, keys, window, window_file, graffiti
+from vx import bind, alt, ctrl, keys, window, graffiti
 
 from functools import partial
 
@@ -31,7 +31,8 @@ else:
     d = math.floor(vx.rows / (len(vx.files)))
     y = 0
     for f in vx.files:
-        win = window_file(f, d, vx.cols, y, 0)
+        win = window(d, vx.cols, y, 0)
+        win.attach_file(f)
         y += d
         win.focus()
 
