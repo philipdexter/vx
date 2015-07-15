@@ -1,4 +1,5 @@
 import vx
+import math
 
 _windows = []
 _windows_traversable = []
@@ -22,14 +23,16 @@ class _window:
         self.col = 1
 
         self.rows = rows
+        self.columns = columns
         self.y = y
         self.x = x
 
-        self.has_file = False
+        self.has_contents = False
         self.keybinding_table = vx.keybinding_table()
         if refresh is not None:
             self.tick = refresh
         _windows.append(self)
+        _windows.sort(key=lambda w: w.y)
         if traversable:
             _windows_traversable.append(self)
 
@@ -44,6 +47,7 @@ class _window:
 
     def resize(self, lines, columns):
         self.rows = lines
+        self.columns = columns
         vx.resize_window(self._c_window, lines, columns)
         if hasattr(self, 'status_bar'):
             vx.resize_window(self._c_window, lines - 1, columns)
@@ -62,6 +66,7 @@ class _window:
         self.graffitis.append(_graffiti(0, 0, text))
 
     def blank(self):
+        self.has_contents = True
         vx.attach_window_blank(self._c_window)
 
     def focus(self):
@@ -89,7 +94,7 @@ class _window:
         vx.refresh_window(self._c_window)
 
     def render(self):
-        if self.has_file:
+        if self.has_contents:
             contents = vx.get_contents_window(self._c_window)
             vx.add_string_window(self._c_window, contents)
         for m in self.graffitis:
@@ -109,8 +114,18 @@ class _window:
         vx.set_color_window(self._c_window, fg, bg)
 
     def attach_file(self, filename):
+        self.filename = filename
         vx.attach_window(self._c_window, filename)
-        self.has_file = True
+        self.has_contents = True
+
+    def split_h(self):
+        split_height = math.floor(self.rows / 2)
+        split_width = self.columns
+        self.resize(split_height, self.columns)
+        new = _window(split_height, split_width, self.y + split_height, 0)
+        new.blank() #attach_file('README.md')
+        new.focus()
+        return new
 
 _focused_window = None
 _current_window = -1
