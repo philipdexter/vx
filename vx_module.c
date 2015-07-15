@@ -332,6 +332,32 @@ static PyObject *vx_refresh_window(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
+static PyObject *vx_resize_window(PyObject *self, PyObject *args)
+{
+	PyObject *capsule;
+	Window *window;
+	int lines, columns;
+
+	if (!PyArg_ParseTuple(args, "Oii:resize_window", &capsule, &lines, &columns))
+		return NULL;
+	window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
+	resize_window(window, lines, columns);
+	Py_RETURN_NONE;
+}
+
+static PyObject *vx_move_window(PyObject *self, PyObject *args)
+{
+	PyObject *capsule;
+	Window *window;
+	int y, x;
+
+	if (!PyArg_ParseTuple(args, "Oii:move_window", &capsule, &y, &x))
+		return NULL;
+	window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
+	move_window(window, y, x);
+	Py_RETURN_NONE;
+}
+
 static PyObject *vx_get_contents_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
@@ -420,6 +446,10 @@ static PyMethodDef VxMethods[] = {
 	 "Add a string to a window"},
 	{"refresh_window", vx_refresh_window, METH_VARARGS,
 	 "Refresh a window"},
+	{"resize_window", vx_resize_window, METH_VARARGS,
+	 "Resize a window"},
+	{"move_window", vx_move_window, METH_VARARGS,
+	 "Move a window"},
 	{"get_contents_window", vx_get_contents_window, METH_VARARGS,
 	 "Get the contents of a window"},
 	{"set_color_window", vx_set_color_window, METH_VARARGS,

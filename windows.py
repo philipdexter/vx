@@ -20,6 +20,11 @@ class _window:
         self.tick = None
         self.line = 1
         self.col = 1
+
+        self.rows = rows
+        self.y = y
+        self.x = x
+
         self.has_file = False
         self.keybinding_table = vx.keybinding_table()
         if refresh is not None:
@@ -29,13 +34,28 @@ class _window:
             _windows_traversable.append(self)
 
         if status_bar:
-            self.status_bar = vx.window(2, columns, y + rows - 1, x, traversable=False, status_bar=False)
+            self.status_bar = vx.window(1, columns, y + rows - 1, x, traversable=False, status_bar=False)
             self.status_bar.blank()
             self.status_bar.set_color(5, -1)
 
     def remove(self):
         _windows.remove(self)
         vx.delete_window(self._c_window)
+
+    def resize(self, lines, columns):
+        self.rows = lines
+        vx.resize_window(self._c_window, lines, columns)
+        if hasattr(self, 'status_bar'):
+            vx.resize_window(self._c_window, lines - 1, columns)
+            self.status_bar.resize(1, columns)
+            self.status_bar.move(self.y + self.rows - 1, self.x)
+
+    def move(self, y, x):
+        self.y = y
+        self.x = x
+        vx.move_window(self._c_window, y, x)
+        if hasattr(self, 'status_bar'):
+            self.status_bar.move(y + self.rows - 1, x)
 
     def set_text(self, text):
         self.murals = []

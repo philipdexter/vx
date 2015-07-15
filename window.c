@@ -18,6 +18,18 @@ void delete_window(Window *window)
 	free(window);
 }
 
+void resize_window(Window *window, int lines, int columns)
+{
+	wresize(window->curses_window, lines, columns);
+	window->lines = lines;
+	window->columns = columns;
+}
+
+void move_window(Window *window, int y, int x)
+{
+	mvwin(window->curses_window, y, x);
+}
+
 int build_window(Window *window, int nlines, int ncols, int begin_y, int begin_x)
 {
 	if (!window) return -1;
