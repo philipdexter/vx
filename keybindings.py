@@ -56,7 +56,7 @@ Keys = Enum('Keys', _keys)
 class _keybinding:
     def __init__(self, key, printable):
         if isinstance(key, Keys):
-            self.key = key.value
+            self.key = bytes(key.value, 'utf8')
         else:
             self.key = key
         self.printable = printable
@@ -119,6 +119,8 @@ class _keyseparator:
             ret += self.left.key
         ret += b' '
         if self.right:
+            if isinstance(self.right, str):
+                self.right = _keybinding(bytes(self.right, 'utf8'), self.right)
             ret += self.right.key
         return ret
 
