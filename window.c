@@ -47,7 +47,7 @@ int build_window(Window *window, int nlines, int ncols, int begin_y, int begin_x
 void attach_buffer(Window *window, Buffer *buffer)
 {
 	if (window->buffer) {
-		free(window->buffer);
+		delete_buffer(window->buffer);
 	}
 	window->buffer = buffer;
 }
