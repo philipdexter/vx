@@ -3,6 +3,7 @@ import math
 
 _windows = []
 _windows_traversable = []
+_focused_window = None
 
 class _graffiti:
     def __init__(self, y, x, text):
@@ -32,6 +33,7 @@ class _window:
         _windows.sort(key=lambda w: w.y)
         if traversable:
             _windows_traversable.append(self)
+            _windows_traversable.sort(key=lambda w: w.y)
 
         if status_bar:
             self.status_bar = vx.window(1, columns, y + rows - 1, x, traversable=False, status_bar=False)
@@ -131,14 +133,14 @@ class _window:
         new.focus()
         return new
 
-_focused_window = None
-_current_window = -1
 def _next_window():
-    global _current_window
-    _current_window += 1
-    if _current_window >= len(_windows_traversable):
-        _current_window = 0
-    _windows_traversable[_current_window].focus()
+    if _focused_window is None:
+        return
+    current = _windows_traversable.index(_focused_window)
+    after = current + 1
+    if after == len(_windows_traversable):
+        after = 0
+    _windows_traversable[after].focus()
 
 def _tick():
     for w in _windows:
