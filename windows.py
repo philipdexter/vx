@@ -15,10 +15,9 @@ class _graffiti:
         vx.add_string_window(window._c_window, self.text)
 
 class _window:
-    def __init__(self, rows, columns, y, x, refresh=None, traversable=True, status_bar=True):
+    def __init__(self, rows, columns, y, x, traversable=True, status_bar=True):
         self._c_window = vx.new_window(rows-1, columns, y, x)
         self.graffitis = []
-        self.tick = None
         self.line = 1
         self.col = 1
 
@@ -29,8 +28,6 @@ class _window:
 
         self.has_contents = False
         self.keybinding_table = vx.keybinding_table()
-        if refresh is not None:
-            self.tick = refresh
         _windows.append(self)
         _windows.sort(key=lambda w: w.y)
         if traversable:
@@ -102,8 +99,6 @@ class _window:
 
     def update(self):
         self.prepare()
-        if self.tick is not None:
-            self.tick(self)
         self.render()
         self.refresh()
 
