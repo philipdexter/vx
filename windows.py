@@ -2,9 +2,32 @@ import vx
 import math
 import contextlib
 import traceback
+from functools import partial, wraps
 from io import StringIO
 
 import sys
+
+_last_seeked_column = 0
+def _seek_setting(f):
+    @wraps(f)
+    def g(*args, **kwargs):
+        global _last_seeked_column
+        ret = f(*args, **kwargs)
+        _, _last_seeked_column = vx.get_linecol_window(_focused_window._c_window)
+        return ret
+    return g
+def _seek_preserving(f):
+    @wraps(f)
+    def g(*args, **kwargs):
+        ret = f(*args, **kwargs)
+        _, c = vx.get_linecol_window(_focused_window._c_window)
+        if c < _last_seeked_column:
+            vx.move_eol_window(_focused_window._c_window)
+            _, c = vx.get_linecol_window(_focused_window._c_window)
+            if _last_seeked_column < c:
+                vx.repeat(vx.move_left, c - _last_seeked_column)
+        return ret
+    return g
 
 _windows = []
 _windows_traversable = []
@@ -230,31 +253,42 @@ class _prompt(_window):
                     vx.add_string(tb)
             self.remove()
         self.keybinding_table.bind(vx.keys.enter, getout)
-        self.keybinding_table.bind(vx.ctrl + vx.keys.j, vx.add_string('\n'))
+        def _enter_and_expand():
+            expand()
+            vx.add_string('\n')
+        self.keybinding_table.bind(vx.ctrl + vx.keys.j, _enter_and_expand)
 
 vx.prompt = _prompt
 
+@_seek_preserving
 def _move_up():
     vx.move_up_window(_focused_window._c_window)
 vx.move_up = _move_up
+@_seek_preserving
 def _move_down():
     vx.move_down_window(_focused_window._c_window)
 vx.move_down = _move_down
+@_seek_setting
 def _move_left():
     vx.move_left_window(_focused_window._c_window)
 vx.move_left = _move_left
+@_seek_setting
 def _move_right():
     vx.move_right_window(_focused_window._c_window)
 vx.move_right = _move_right
+@_seek_setting
 def _move_eol():
     vx.move_eol_window(_focused_window._c_window)
 vx.move_eol = _move_eol
+@_seek_setting
 def _move_bol():
     vx.move_bol_window(_focused_window._c_window)
 vx.move_bol = _move_bol
+@_seek_setting
 def _move_beg():
     vx.move_beg_window(_focused_window._c_window)
 vx.move_beg = _move_beg
+@_seek_setting
 def _move_end():
     vx.move_end_window(_focused_window._c_window)
 vx.move_end = _move_end
