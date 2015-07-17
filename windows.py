@@ -1,5 +1,10 @@
 import vx
 import math
+import contextlib
+import traceback
+from io import StringIO
+
+import sys
 
 _windows = []
 _windows_traversable = []
@@ -13,7 +18,7 @@ class _graffiti:
 
     def render(self, window):
         vx.set_cursor(window._c_window, self.y, self.x)
-        vx.add_string_window(window._c_window, self.text)
+        vx.print_string_window(window._c_window, self.text)
 
 class _window:
     def __init__(self, rows, columns, y, x, traversable=True, status_bar=True):
@@ -31,6 +36,7 @@ class _window:
         self.keybinding_table = vx.keybinding_table()
         _windows.append(self)
         _windows.sort(key=lambda w: w.y)
+        self.traversable = traversable
         if traversable:
             _windows_traversable.append(self)
             _windows_traversable.sort(key=lambda w: w.y)
@@ -40,8 +46,13 @@ class _window:
             self.status_bar.blank()
             self.status_bar.set_color(5, -1)
 
+    def add_string(self, s):
+        vx.add_string_window(self._c_window, s)
+
     def remove(self):
         _windows.remove(self)
+        if self.traversable:
+            _windows_traversable.remove(self)
         vx.delete_window(self._c_window)
 
     def resize(self, lines, columns):
@@ -84,10 +95,9 @@ class _window:
         vx.set_cursor(self._c_window, 0, 0)
         self.line, self.col = vx.get_linecol_window(self._c_window)
         if hasattr(self, 'status_bar'):
-            self.status_bar.set_text('line: {} col: {} / rows: {} cols: {}\n'.format(self.line,
-                                                                                     self.col,
-                                                                                     vx.rows,
-                                                                                     vx.cols))
+            self.status_bar.set_text('line: {} col: {} - {}\n'.format(self.line,
+                                                                      self.col,
+                                                                      self.filename if hasattr(self, 'filename') else '<none>'))
 
     def refresh(self):
         vx.refresh_window(self._c_window)
@@ -95,7 +105,7 @@ class _window:
     def render(self):
         if self.has_contents:
             contents = vx.get_contents_window(self._c_window)
-            vx.add_string_window(self._c_window, contents)
+            vx.print_string_window(self._c_window, contents)
         for m in self.graffitis:
             m.render(self)
 
@@ -133,6 +143,9 @@ class _window:
         new.focus()
         return new
 
+def _focus_window(window):
+    _windows_traversable[_windows_traversable.index(window)].focus()
+
 def _next_window():
     if _focused_window is None:
         return
@@ -150,3 +163,47 @@ vx.register_tick_function(_tick)
 vx.window = _window
 vx.graffiti = _graffiti
 vx.next_window = _next_window
+vx.get_focused_window = lambda: _focused_window
+
+class _prompt(_window):
+    def __init__(self, attached_to):
+        super(_prompt, self).__init__(2, attached_to.columns,
+                                      attached_to.y + attached_to.rows-1, attached_to.x,
+                                      status_bar=False)
+        attached_to.status_bar.move(attached_to.y + attached_to.rows-2, attached_to.x)
+        self.blank()
+        self.focus()
+
+        @contextlib.contextmanager
+        def stdoutIO(stdout=None):
+            old = sys.stdout
+            if stdout is None:
+                stdout = StringIO()
+            sys.stdout = stdout
+            yield stdout
+            sys.stdout = old
+
+        def getout():
+            attached_to.status_bar.move(attached_to.y + attached_to.rows-1, attached_to.x)
+            _focus_window(attached_to)
+            contents = vx.get_contents_window(self._c_window)
+            with stdoutIO() as s:
+                try:
+                    exec(contents)
+                except Exception as e:
+                    tb = traceback.format_exc()
+                else:
+                    tb = None
+            s = s.getvalue()
+            if len(s) > 0 or tb:
+                split = vx.get_focused_window().split_h()
+                split.focus()
+                if not tb:
+                    vx.add_string(s)
+                else:
+                    vx.add_string(tb)
+            self.remove()
+        self.keybinding_table.bind(vx.keys.enter, getout)
+        self.keybinding_table.bind(vx.ctrl + vx.keys.j, vx.add_string('\n'))
+
+vx.prompt = _prompt

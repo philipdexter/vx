@@ -41,3 +41,4 @@ vx.bind('C-q', vx.quit)
 vx.bind('C-o', vx.next_window)
 
 bind(ctrl + keys.x - ctrl + keys.c, vx.quit)
+bind(ctrl + keys.x - '4', lambda: vx.prompt(vx.get_focused_window()))

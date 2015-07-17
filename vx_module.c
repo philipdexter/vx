@@ -193,6 +193,19 @@ static PyObject *vx_add_string(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
+static PyObject *vx_add_string_window(PyObject *self, PyObject *args)
+{
+	PyObject *capsule;
+	Window *window;
+	char *str = NULL;
+	if (!PyArg_ParseTuple(args, "Os:add_string_window", &capsule, &str))
+		return NULL;
+	if (!str) return NULL;
+	window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
+	add_string(window->buffer->text, str, strlen(str));
+	Py_RETURN_NONE;
+}
+
 static PyObject *vx_backspace(PyObject *self, PyObject *args)
 {
 	if (!PyArg_ParseTuple(args, ":backspace"))
@@ -307,13 +320,13 @@ static PyObject *vx_get_linecol_window(PyObject *self, PyObject *args)
 	return ret;
 }
 
-static PyObject *vx_add_string_window(PyObject *self, PyObject *args)
+static PyObject *vx_print_string_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
 	Window *window;
 	char *string;
 
-	if (!PyArg_ParseTuple(args, "Os:add_string_window", &capsule, &string))
+	if (!PyArg_ParseTuple(args, "Os:print_string_window", &capsule, &string))
 		return NULL;
 	window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
 	print_string(window, string);
@@ -425,7 +438,9 @@ static PyMethodDef VxMethods[] = {
 	{"save", vx_save, METH_VARARGS,
 	 "Save the file"},
 	{"add_string", vx_add_string, METH_VARARGS,
-	 "Add a string to the buffer"},
+	 "Add a string to the focused window"},
+	{"add_string_window", vx_add_string_window, METH_VARARGS,
+	 "Add a string to a window"},
 	{"backspace", vx_backspace, METH_VARARGS,
 	 "Delete a character to the left"},
 	{"new_window", vx_new_window, METH_VARARGS,
@@ -442,7 +457,7 @@ static PyMethodDef VxMethods[] = {
 	 "Clear a window"},
 	{"get_linecol_window", vx_get_linecol_window, METH_VARARGS,
 	 "Get the line and column the cursor is on of a window"},
-	{"add_string_window", vx_add_string_window, METH_VARARGS,
+	{"print_string_window", vx_print_string_window, METH_VARARGS,
 	 "Add a string to a window"},
 	{"refresh_window", vx_refresh_window, METH_VARARGS,
 	 "Refresh a window"},
