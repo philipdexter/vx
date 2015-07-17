@@ -311,6 +311,15 @@ static PyObject *vx_focus_window(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
+static PyObject *vx_redraw_all(PyObject *self, PyObject *args)
+{
+	if (!PyArg_ParseTuple(args, ":redraw_all"))
+		return NULL;
+	clear();
+	refresh();
+	Py_RETURN_NONE;
+}
+
 static PyObject *vx_clear_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
@@ -471,6 +480,8 @@ static PyMethodDef VxMethods[] = {
 	 "Attach a window to a blank buffer"},
 	{"focus_window", vx_focus_window, METH_VARARGS,
 	 "Focus a window"},
+	{"redraw_all", vx_redraw_all, METH_VARARGS,
+	 "Redraw the entire window"},
 	{"clear_window", vx_clear_window, METH_VARARGS,
 	 "Clear a window"},
 	{"get_linecol_window", vx_get_linecol_window, METH_VARARGS,

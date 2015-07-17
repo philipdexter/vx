@@ -45,6 +45,8 @@ class _window:
             self.status_bar = vx.window(1, columns, y + rows - 1, x, traversable=False, status_bar=False)
             self.status_bar.blank()
             self.status_bar.set_color(5, -1)
+        else:
+            self.status_bar = None
 
     def add_string(self, s):
         vx.add_string_window(self._c_window, s)
@@ -59,16 +61,34 @@ class _window:
         self.rows = lines
         self.columns = columns
         vx.resize_window(self._c_window, lines, columns)
-        if hasattr(self, 'status_bar'):
+        if self.status_bar:
             vx.resize_window(self._c_window, lines - 1, columns)
             self.status_bar.resize(1, columns)
             self.status_bar.move(self.y + self.rows - 1, self.x)
+
+    def pad(self, top=0, bottom=0, left=0, right=0):
+        if top > 0 or left > 0:
+            self.resize(self.rows - top, self.columns - left)
+            self.move(self.y + top, self.x + left)
+        if bottom > 0 or right > 0:
+            self.resize(self.rows - (bottom + top), self.columns - (right + left))
+            if self.status_bar:
+                self.status_bar.move(self.y + self.rows - 1, self.x)
+        vx.redraw_all()
+
+    def grow(self, top=0, bottom=0, left=0, right=0):
+        if top > 0 or left > 0:
+            self.move(self.y - top, self.x - left)
+            self.resize(self.rows + top, self.columns + left)
+        if bottom > 0 or right > 0:
+            self.resize(self.rows + (bottom + top), self.columns + (right + left))
+        vx.redraw_all()
 
     def move(self, y, x):
         self.y = y
         self.x = x
         vx.move_window(self._c_window, y, x)
-        if hasattr(self, 'status_bar'):
+        if self.status_bar:
             self.status_bar.move(y + self.rows - 1, x)
 
     def set_text(self, text):
@@ -170,7 +190,7 @@ class _prompt(_window):
         super(_prompt, self).__init__(2, attached_to.columns,
                                       attached_to.y + attached_to.rows-1, attached_to.x,
                                       status_bar=False)
-        attached_to.status_bar.move(attached_to.y + attached_to.rows-2, attached_to.x)
+        attached_to.pad(bottom=1)
         self.blank()
         self.focus()
 
@@ -184,7 +204,7 @@ class _prompt(_window):
             sys.stdout = old
 
         def getout():
-            attached_to.status_bar.move(attached_to.y + attached_to.rows-1, attached_to.x)
+            attached_to.grow(bottom=1)
             _focus_window(attached_to)
             contents = vx.get_contents_window(self._c_window)
             with stdoutIO() as s:
