@@ -16,8 +16,6 @@ bind(ctrl + keys.f, vx.move_right)
 bind(ctrl + keys.a, vx.move_bol)
 bind(ctrl + keys.e, vx.move_eol)
 
-bind(ctrl + keys.s, vx.save)
-
 bind(alt + keys.langle, vx.move_beg)
 bind(alt + keys.rangle, vx.move_end)
 

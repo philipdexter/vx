@@ -207,3 +207,35 @@ class _prompt(_window):
         self.keybinding_table.bind(vx.ctrl + vx.keys.j, vx.add_string('\n'))
 
 vx.prompt = _prompt
+
+def _move_up():
+    vx.move_up_window(_focused_window._c_window)
+vx.move_up = _move_up
+def _move_down():
+    vx.move_down_window(_focused_window._c_window)
+vx.move_down = _move_down
+def _move_left():
+    vx.move_left_window(_focused_window._c_window)
+vx.move_left = _move_left
+def _move_right():
+    vx.move_right_window(_focused_window._c_window)
+vx.move_right = _move_right
+def _move_eol():
+    vx.move_eol_window(_focused_window._c_window)
+vx.move_eol = _move_eol
+def _move_bol():
+    vx.move_bol_window(_focused_window._c_window)
+vx.move_bol = _move_bol
+def _move_beg():
+    vx.move_beg_window(_focused_window._c_window)
+vx.move_beg = _move_beg
+def _move_end():
+    vx.move_end_window(_focused_window._c_window)
+vx.move_end = _move_end
+
+def _add_string(s):
+    _focused_window.add_string(s)
+vx.add_string = _add_string
+def _backspace():
+    vx.backspace_window(_focused_window._c_window)
+vx.backspace = _backspace

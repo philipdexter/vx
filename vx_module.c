@@ -119,77 +119,91 @@ static PyObject *vx_quit(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
-static PyObject *vx_move_up(PyObject *self, PyObject *args)
+static PyObject *vx_move_up_window(PyObject *self, PyObject *args)
 {
-	if (!PyArg_ParseTuple(args, ":move_up"))
+	PyObject *capsule;
+	Window *window;
+	if (!PyArg_ParseTuple(args, "O:move_up", &capsule))
 		return NULL;
-	move_up(focused_window->buffer->text);
+	window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
+	move_up(window->buffer->text);
 	Py_RETURN_NONE;
 }
 
-static PyObject *vx_move_down(PyObject *self, PyObject *args)
+static PyObject *vx_move_down_window(PyObject *self, PyObject *args)
 {
-	if (!PyArg_ParseTuple(args, ":move_down"))
+	PyObject *capsule;
+	Window *window;
+	if (!PyArg_ParseTuple(args, "O:move_down", &capsule))
 		return NULL;
-	move_down(focused_window->buffer->text);
+	window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
+	move_down(window->buffer->text);
 	Py_RETURN_NONE;
 }
 
-static PyObject *vx_move_left(PyObject *self, PyObject *args)
+static PyObject *vx_move_left_window(PyObject *self, PyObject *args)
 {
-	if (!PyArg_ParseTuple(args, ":move_left"))
+	PyObject *capsule;
+	Window *window;
+	if (!PyArg_ParseTuple(args, "O:move_left", &capsule))
 		return NULL;
-	move_left(focused_window->buffer->text);
+	window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
+	move_left(window->buffer->text);
 	Py_RETURN_NONE;
 }
 
-static PyObject *vx_move_right(PyObject *self, PyObject *args)
+static PyObject *vx_move_right_window(PyObject *self, PyObject *args)
 {
-	if (!PyArg_ParseTuple(args, ":move_right"))
+	PyObject *capsule;
+	Window *window;
+	if (!PyArg_ParseTuple(args, "O:move_right", &capsule))
 		return NULL;
-	move_right(focused_window->buffer->text);
+	window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
+	move_right(window->buffer->text);
 	Py_RETURN_NONE;
 }
 
-static PyObject *vx_move_bol(PyObject *self, PyObject *args)
+static PyObject *vx_move_bol_window(PyObject *self, PyObject *args)
 {
-	if (!PyArg_ParseTuple(args, ":move_bol"))
+	PyObject *capsule;
+	Window *window;
+	if (!PyArg_ParseTuple(args, "O:move_bol", &capsule))
 		return NULL;
-	move_cursor_bol(focused_window->buffer->text);
+	window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
+	move_cursor_bol(window->buffer->text);
 	Py_RETURN_NONE;
 }
 
-static PyObject *vx_move_eol(PyObject *self, PyObject *args)
+static PyObject *vx_move_eol_window(PyObject *self, PyObject *args)
 {
-	if (!PyArg_ParseTuple(args, ":move_eol"))
+	PyObject *capsule;
+	Window *window;
+	if (!PyArg_ParseTuple(args, "O:move_eol", &capsule))
 		return NULL;
-	move_cursor_eol(focused_window->buffer->text);
+	window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
+	move_cursor_eol(window->buffer->text);
 	Py_RETURN_NONE;
 }
 
-static PyObject *vx_move_beg(PyObject *self, PyObject *args)
+static PyObject *vx_move_beg_window(PyObject *self, PyObject *args)
 {
-	if (!PyArg_ParseTuple(args, ":move_beg"))
+	PyObject *capsule;
+	Window *window;
+	if (!PyArg_ParseTuple(args, "O:move_beg", &capsule))
 		return NULL;
-	move_cursor_to_beg(focused_window->buffer->text);
+	window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
+	move_cursor_to_beg(window->buffer->text);
 	Py_RETURN_NONE;
 }
 
-static PyObject *vx_move_end(PyObject *self, PyObject *args)
+static PyObject *vx_move_end_window(PyObject *self, PyObject *args)
 {
-	if (!PyArg_ParseTuple(args, ":move_end"))
+	PyObject *capsule;
+	Window *window;
+	if (!PyArg_ParseTuple(args, "O:move_end", &capsule))
 		return NULL;
-	move_cursor_to_end(focused_window->buffer->text);
-	Py_RETURN_NONE;
-}
-
-static PyObject *vx_add_string(PyObject *self, PyObject *args)
-{
-	char *str = NULL;
-	if (!PyArg_ParseTuple(args, "s:add_string", &str))
-		return NULL;
-	if (!str) return NULL;
-	add_string(focused_window->buffer->text, str, strlen(str));
+	window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
+	move_cursor_to_end(window->buffer->text);
 	Py_RETURN_NONE;
 }
 
@@ -206,19 +220,25 @@ static PyObject *vx_add_string_window(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
-static PyObject *vx_backspace(PyObject *self, PyObject *args)
+static PyObject *vx_backspace_window(PyObject *self, PyObject *args)
 {
-	if (!PyArg_ParseTuple(args, ":backspace"))
+	PyObject *capsule;
+	Window *window;
+	if (!PyArg_ParseTuple(args, "O:backspace", &capsule))
 		return NULL;
-	backspace(focused_window->buffer->text);
+	window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
+	backspace(window->buffer->text);
 	Py_RETURN_NONE;
 }
 
-static PyObject *vx_save(PyObject *self, PyObject *args)
+static PyObject *vx_save_window(PyObject *self, PyObject *args)
 {
-	if (!PyArg_ParseTuple(args, ":save"))
+	PyObject *capsule;
+	Window *window;
+	if (!PyArg_ParseTuple(args, "O:save", &capsule))
 		return NULL;
-	save_file(focused_window->buffer);
+	window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
+	save_file(window->buffer);
 	Py_RETURN_NONE;
 }
 
@@ -419,29 +439,27 @@ static PyObject *vx_set_cursor_window(PyObject *self, PyObject *args)
 static PyMethodDef VxMethods[] = {
 	{"quit", vx_quit, METH_VARARGS,
 	 "Quit"},
-	{"move_up", vx_move_up, METH_VARARGS,
+	{"move_up_window", vx_move_up_window, METH_VARARGS,
 	 "Move the cursor up one row"},
-	{"move_down", vx_move_down, METH_VARARGS,
+	{"move_down_window", vx_move_down_window, METH_VARARGS,
 	 "Move the cursor down one row"},
-	{"move_left", vx_move_left, METH_VARARGS,
+	{"move_left_window", vx_move_left_window, METH_VARARGS,
 	 "Move the cursor left one row"},
-	{"move_right", vx_move_right, METH_VARARGS,
+	{"move_right_window", vx_move_right_window, METH_VARARGS,
 	 "Move the cursor right one row"},
-	{"move_bol", vx_move_bol, METH_VARARGS,
+	{"move_bol_window", vx_move_bol_window, METH_VARARGS,
 	 "Move the cursor to the beginning of the line"},
-	{"move_eol", vx_move_eol, METH_VARARGS,
+	{"move_eol_window", vx_move_eol_window, METH_VARARGS,
 	 "Move the cursor to the end of the line"},
-	{"move_beg", vx_move_beg, METH_VARARGS,
+	{"move_beg_window", vx_move_beg_window, METH_VARARGS,
 	 "Move the cursor to the beginning of the buffer"},
-	{"move_end", vx_move_end, METH_VARARGS,
+	{"move_end_window", vx_move_end_window, METH_VARARGS,
 	 "Move the cursor to the end of the buffer"},
-	{"save", vx_save, METH_VARARGS,
+	{"save_window", vx_save_window, METH_VARARGS,
 	 "Save the file"},
-	{"add_string", vx_add_string, METH_VARARGS,
-	 "Add a string to the focused window"},
 	{"add_string_window", vx_add_string_window, METH_VARARGS,
 	 "Add a string to a window"},
-	{"backspace", vx_backspace, METH_VARARGS,
+	{"backspace_window", vx_backspace_window, METH_VARARGS,
 	 "Delete a character to the left"},
 	{"new_window", vx_new_window, METH_VARARGS,
 	 "Create a new window"},
