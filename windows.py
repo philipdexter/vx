@@ -56,6 +56,8 @@ class _window:
         self.x = x
 
         self.has_contents = False
+        self.dirty = False
+
         self.keybinding_table = vx.keybinding_table()
         _windows.append(self)
         _windows.sort(key=lambda w: w.y)
@@ -73,6 +75,7 @@ class _window:
 
     def add_string(self, s):
         vx.add_string_window(self._c_window, s)
+        self.dirty = True
 
     def remove(self):
         _windows.remove(self)
@@ -137,10 +140,11 @@ class _window:
         vx.clear_window(self._c_window)
         vx.set_cursor(self._c_window, 0, 0)
         self.line, self.col = vx.get_linecol_window(self._c_window)
-        if hasattr(self, 'status_bar'):
-            self.status_bar.set_text('line: {} col: {} - {}\n'.format(self.line,
-                                                                      self.col,
-                                                                      self.filename if hasattr(self, 'filename') else '<none>'))
+        if self.status_bar:
+            self.status_bar.set_text('line: {} col: {} - {}{}\n'.format(self.line,
+                                                                        self.col,
+                                                                        self.filename if hasattr(self, 'filename') else '<none>',
+                                                                        '(d)' if self.dirty else ''))
 
     def refresh(self):
         vx.refresh_window(self._c_window)
