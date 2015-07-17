@@ -1,25 +1,11 @@
 import vx
 import sys
 import math
-from vx import bind, alt, ctrl, keys, window, graffiti
-
 from functools import partial
+from vx import bind, alt, ctrl, keys, window
 
-bind(ctrl + keys.v, partial(vx.repeat, vx.move_down))
-bind(alt + keys.v, partial(vx.repeat, vx.move_up))
-
-bind(ctrl + keys.n, vx.move_down)
-bind(ctrl + keys.p, vx.move_up)
-bind(ctrl + keys.b, vx.move_left)
-bind(ctrl + keys.f, vx.move_right)
-
-bind(ctrl + keys.a, vx.move_bol)
-bind(ctrl + keys.e, vx.move_eol)
-
-bind(alt + keys.langle, vx.move_beg)
-bind(alt + keys.rangle, vx.move_end)
-
-bind(alt + keys.s, vx.move_beg)
+# which keybinding do we want
+from keybindings import hopscotch
 
 if len(vx.files) == 0:
     win = window(vx.rows, vx.cols, 0, 0)
@@ -34,9 +20,5 @@ else:
         y += d
         win.focus()
 
-vx.bind('C-q', vx.quit)
 
-vx.bind('C-o', vx.next_window)
-
-bind(ctrl + keys.x - ctrl + keys.c, vx.quit)
 bind(ctrl + keys.x - '4', lambda: vx.prompt(vx.get_focused_window()))

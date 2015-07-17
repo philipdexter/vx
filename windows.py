@@ -185,6 +185,12 @@ vx.graffiti = _graffiti
 vx.next_window = _next_window
 vx.get_focused_window = lambda: _focused_window
 
+def _close_window():
+    w = _focused_window
+    _next_window()
+    w.remove()
+vx.close_window = _close_window
+
 class _prompt(_window):
     def __init__(self, attached_to):
         super(_prompt, self).__init__(2, attached_to.columns,
