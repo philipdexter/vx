@@ -259,3 +259,6 @@ vx.add_string = _add_string
 def _backspace():
     vx.backspace_window(_focused_window._c_window)
 vx.backspace = _backspace
+def _delete():
+    vx.backspace_delete_window(_focused_window._c_window)
+vx.delete = _delete

@@ -266,9 +266,11 @@ void get_cursor_rowcol(Text *text, int *row, int *col)
 	*col = c;
 }
 
-void backspace(Text *text)
+void backspace(Text *text, int delete)
 {
-	if (text->gap_start > 0)
+	if (delete && text->text_start < text->size)
+		++text->text_start;
+	else if (!delete && text->gap_start > 0)
 		--text->gap_start;
 }
 

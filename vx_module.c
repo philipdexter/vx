@@ -220,6 +220,17 @@ static PyObject *vx_add_string_window(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
+static PyObject *vx_backspace_delete_window(PyObject *self, PyObject *args)
+{
+	PyObject *capsule;
+	Window *window;
+	if (!PyArg_ParseTuple(args, "O:backspace", &capsule))
+		return NULL;
+	window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
+	backspace(window->buffer->text, 1);
+	Py_RETURN_NONE;
+}
+
 static PyObject *vx_backspace_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
@@ -227,7 +238,7 @@ static PyObject *vx_backspace_window(PyObject *self, PyObject *args)
 	if (!PyArg_ParseTuple(args, "O:backspace", &capsule))
 		return NULL;
 	window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
-	backspace(window->buffer->text);
+	backspace(window->buffer->text, 0);
 	Py_RETURN_NONE;
 }
 
@@ -468,6 +479,8 @@ static PyMethodDef VxMethods[] = {
 	 "Save the file"},
 	{"add_string_window", vx_add_string_window, METH_VARARGS,
 	 "Add a string to a window"},
+	{"backspace_delete_window", vx_backspace_delete_window, METH_VARARGS,
+	 "Delete a character to the right"},
 	{"backspace_window", vx_backspace_window, METH_VARARGS,
 	 "Delete a character to the left"},
 	{"new_window", vx_new_window, METH_VARARGS,
