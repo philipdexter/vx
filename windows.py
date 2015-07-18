@@ -14,17 +14,17 @@ def _seek_setting(f):
     def g(*args, **kwargs):
         global _last_seeked_column
         ret = f(*args, **kwargs)
-        _, _last_seeked_column = vx.get_linecol_window(_focused_window._c_window)
+        _, _last_seeked_column = vx.get_linecol_window(_focused_window)
         return ret
     return g
 def _seek_preserving(f):
     @wraps(f)
     def g(*args, **kwargs):
         ret = f(*args, **kwargs)
-        _, c = vx.get_linecol_window(_focused_window._c_window)
+        _, c = vx.get_linecol_window(_focused_window)
         if c < _last_seeked_column:
-            vx.move_eol_window(_focused_window._c_window)
-            _, c = vx.get_linecol_window(_focused_window._c_window)
+            vx.move_eol_window(_focused_window)
+            _, c = vx.get_linecol_window(_focused_window)
             if _last_seeked_column < c:
                 vx.repeat(vx.move_left, c - _last_seeked_column)
         return ret
@@ -42,8 +42,8 @@ class _graffiti:
         self.text = text
 
     def render(self, window):
-        vx.set_cursor(window._c_window, self.y, self.x)
-        vx.print_string_window(window._c_window, self.text)
+        vx.set_cursor(window, self.y, self.x)
+        vx.print_string_window(window, self.text)
 
 @vx.expose
 class _window:
@@ -77,7 +77,7 @@ class _window:
             self.status_bar = None
 
     def add_string(self, s, track=True):
-        vx.add_string_window(self._c_window, s)
+        vx.add_string_window(self, s)
         self.dirty = True
         if track:
             undo.register_change(s)
@@ -86,14 +86,14 @@ class _window:
         _windows.remove(self)
         if self.traversable:
             _windows_traversable.remove(self)
-        vx.delete_window(self._c_window)
+        vx.delete_window(self)
 
     def resize(self, lines, columns):
         self.rows = lines
         self.columns = columns
-        vx.resize_window(self._c_window, lines, columns)
+        vx.resize_window(self, lines, columns)
         if self.status_bar:
-            vx.resize_window(self._c_window, lines - 1, columns)
+            vx.resize_window(self, lines - 1, columns)
             self.status_bar.resize(1, columns)
             self.status_bar.move(self.y + self.rows - 1, self.x)
 
@@ -118,7 +118,7 @@ class _window:
     def move(self, y, x):
         self.y = y
         self.x = x
-        vx.move_window(self._c_window, y, x)
+        vx.move_window(self, y, x)
         if self.status_bar:
             self.status_bar.move(y + self.rows - 1, x)
 
@@ -128,7 +128,7 @@ class _window:
 
     def blank(self):
         self.has_contents = True
-        vx.attach_window_blank(self._c_window)
+        vx.attach_window_blank(self)
 
     def focus(self):
         global _focused_window
@@ -136,15 +136,15 @@ class _window:
             _focused_window.unfocus()
         _focused_window = self
         vx.keybinding_tables.insert(0, self.keybinding_table)
-        vx.focus_window(self._c_window)
+        vx.focus_window(self)
 
     def unfocus(self):
         vx.keybinding_tables.remove(self.keybinding_table)
 
     def prepare(self):
-        vx.clear_window(self._c_window)
-        vx.set_cursor(self._c_window, 0, 0)
-        self.line, self.col = vx.get_linecol_window(self._c_window)
+        vx.clear_window(self)
+        vx.set_cursor(self, 0, 0)
+        self.line, self.col = vx.get_linecol_window(self)
         if self.status_bar:
             self.status_bar.set_text('line: {} col: {} - {}{}\n'.format(self.line,
                                                                         self.col,
@@ -152,12 +152,12 @@ class _window:
                                                                         '(d)' if self.dirty else ''))
 
     def refresh(self):
-        vx.refresh_window(self._c_window)
+        vx.refresh_window(self)
 
     def render(self):
         if self.has_contents:
-            contents = vx.get_contents_window(self._c_window)
-            vx.print_string_window(self._c_window, contents)
+            contents = vx.get_contents_window(self)
+            vx.print_string_window(self, contents)
         for m in self.graffitis:
             m.render(self)
 
@@ -167,14 +167,14 @@ class _window:
         self.refresh()
 
     def set_cursor(self, y, x):
-        vx.set_cursor(self._c_window, y, x)
+        vx.set_cursor(self, y, x)
 
     def set_color(self, fg, bg):
-        vx.set_color_window(self._c_window, fg, bg)
+        vx.set_color_window(self, fg, bg)
 
     def attach_file(self, filename):
         self.filename = filename
-        vx.attach_window(self._c_window, filename)
+        vx.attach_window(self, filename)
         self.has_contents = True
 
     def split_h(self):
@@ -252,10 +252,10 @@ class _prompt(_window):
             sys.stdout = old
 
         def getout():
-            y, x = vx.get_window_size(self._c_window)
+            y, x = vx.get_window_size(self)
             attached_to.grow(bottom=y)
             _focus_window(attached_to)
-            contents = vx.get_contents_window(self._c_window)
+            contents = vx.get_contents_window(self)
             with stdoutIO() as s:
                 try:
                     exec(contents)
@@ -278,42 +278,47 @@ class _prompt(_window):
             vx.add_string('\n')
         self.keybinding_table.bind(vx.ctrl + vx.keys.j, _enter_and_expand)
 
+# Exposed functions
+
 @vx.expose
 @_seek_preserving
 def _move_up():
-    vx.move_up_window(_focused_window._c_window)
+    vx.move_up_window(_focused_window)
 @vx.expose
 @_seek_preserving
 def _move_down():
-    vx.move_down_window(_focused_window._c_window)
+    vx.move_down_window(_focused_window)
 @vx.expose
 @_seek_setting
 def _move_left():
-    vx.move_left_window(_focused_window._c_window)
+    vx.move_left_window(_focused_window)
 @vx.expose
 @_seek_setting
 def _move_right():
-    vx.move_right_window(_focused_window._c_window)
+    vx.move_right_window(_focused_window)
+
 @vx.expose
 @_seek_setting
 def _move_eol():
-    vx.move_eol_window(_focused_window._c_window)
+    vx.move_eol_window(_focused_window)
 @vx.expose
 @_seek_setting
 def _move_bol():
-    vx.move_bol_window(_focused_window._c_window)
+    vx.move_bol_window(_focused_window)
+
 @vx.expose
 @_seek_setting
 def _move_beg():
-    vx.move_beg_window(_focused_window._c_window)
+    vx.move_beg_window(_focused_window)
 @vx.expose
 @_seek_setting
 def _move_end():
-    vx.move_end_window(_focused_window._c_window)
+    vx.move_end_window(_focused_window)
+
 @vx.expose
+@_seek_setting
 def _add_string(s, **kwargs):
     _focused_window.add_string(s, **kwargs)
-
 @vx.expose
 @_seek_setting
 def _backspace(track=True):
@@ -332,5 +337,6 @@ def _backspace(track=True):
             undo.register_removal(ch, r, c)
     vx.backspace_window(_focused_window)
 @vx.expose
+@_seek_setting
 def _delete():
-    vx.backspace_delete_window(_focused_window._c_window)
+    vx.backspace_delete_window(_focused_window)
