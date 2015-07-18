@@ -1,8 +1,9 @@
 import vx
+from vx import bind, alt, ctrl, keys, window
+
 import sys
 import math
 from functools import partial
-from vx import bind, alt, ctrl, keys, window
 
 # which keybinding do we want
 from keybindings import hopscotch

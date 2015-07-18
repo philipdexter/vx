@@ -1,5 +1,6 @@
 import vx
 from vx import bind, alt, ctrl, keys
+
 from functools import partial
 
 # simple movement

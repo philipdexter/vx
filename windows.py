@@ -1,13 +1,12 @@
 import vx
+import undo
+
 import math
 import contextlib
 import traceback
+import sys
 from functools import partial, wraps
 from io import StringIO
-
-import undo
-
-import sys
 
 _last_seeked_column = 0
 def _seek_setting(f):

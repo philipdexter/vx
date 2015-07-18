@@ -2,7 +2,6 @@ import vx
 import windows
 
 from unicodedata import category
-
 from functools import partial
 from enum import Enum
 
