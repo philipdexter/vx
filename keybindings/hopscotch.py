@@ -27,8 +27,8 @@ bind(ctrl + keys.d, vx.delete)
 
 vx.bind(ctrl + keys.x - keys.o, vx.next_window)
 
-bind(ctrl + keys.x - '2', partial(lambda: vx.get_focused_window().split_h()))
-bind(ctrl + keys.x - '3', partial(lambda: vx.get_focused_window().split_v()))
+bind(ctrl + keys.x - '2', vx.split_h)
+bind(ctrl + keys.x - '3', vx.split_v)
 bind(ctrl + keys.x - '0', vx.close_window)
 
 # misc.

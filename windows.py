@@ -33,6 +33,7 @@ def _seek_preserving(f):
 _windows = []
 _windows_traversable = []
 _focused_window = None
+vx.get_focused_window = lambda: _focused_window
 
 class _graffiti:
     def __init__(self, y, x, text):
@@ -193,6 +194,13 @@ class _window:
         new.focus()
         return new
 
+@vx.expose
+def _split_h():
+    _focused_window.split_h()
+@vx.expose
+def _split_v():
+    _focused_window.split_v()
+
 def _focus_window(window):
     _windows_traversable[_windows_traversable.index(window)].focus()
 
@@ -213,7 +221,6 @@ vx.register_tick_function(_tick)
 vx.window = _window
 vx.graffiti = _graffiti
 vx.next_window = _next_window
-vx.get_focused_window = lambda: _focused_window
 
 def _close_window():
     w = _focused_window
