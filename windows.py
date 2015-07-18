@@ -45,6 +45,7 @@ class _graffiti:
         vx.set_cursor(window._c_window, self.y, self.x)
         vx.print_string_window(window._c_window, self.text)
 
+@vx.expose
 class _window:
     def __init__(self, rows, columns, y, x, traversable=True, status_bar=True):
         self._c_window = vx.new_window(rows-1, columns, y, x)
@@ -204,6 +205,7 @@ def _split_v():
 def _focus_window(window):
     _windows_traversable[_windows_traversable.index(window)].focus()
 
+@vx.expose
 def _next_window():
     if _focused_window is None:
         return
@@ -218,15 +220,11 @@ def _tick():
         w.update()
 vx.register_tick_function(_tick)
 
-vx.window = _window
-vx.graffiti = _graffiti
-vx.next_window = _next_window
-
+@vx.expose
 def _close_window():
     w = _focused_window
     _next_window()
     w.remove()
-vx.close_window = _close_window
 
 @vx.expose
 class _prompt(_window):
