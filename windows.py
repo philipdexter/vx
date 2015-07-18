@@ -5,6 +5,8 @@ import traceback
 from functools import partial, wraps
 from io import StringIO
 
+import undo
+
 import sys
 
 _last_seeked_column = 0
@@ -73,9 +75,11 @@ class _window:
         else:
             self.status_bar = None
 
-    def add_string(self, s):
+    def add_string(self, s, track=True):
         vx.add_string_window(self._c_window, s)
         self.dirty = True
+        if track:
+            undo.register_change(s)
 
     def remove(self):
         _windows.remove(self)

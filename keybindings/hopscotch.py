@@ -33,3 +33,7 @@ bind(ctrl + keys.x - '0', vx.close_window)
 # misc.
 
 bind(ctrl + keys.x - ctrl + keys.c, vx.quit)
+
+# undo/redo
+
+bind(ctrl + keys.underscore, vx.undo)
