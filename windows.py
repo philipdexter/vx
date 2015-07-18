@@ -272,45 +272,51 @@ class _prompt(_window):
 
 vx.prompt = _prompt
 
+def expose(f, name=None):
+    if name is None:
+        name = f.__name__.lstrip('_')
+    setattr(vx, name, f)
+    return f
+
+@expose
 @_seek_preserving
 def _move_up():
     vx.move_up_window(_focused_window._c_window)
-vx.move_up = _move_up
+@expose
 @_seek_preserving
 def _move_down():
     vx.move_down_window(_focused_window._c_window)
-vx.move_down = _move_down
+@expose
 @_seek_setting
 def _move_left():
     vx.move_left_window(_focused_window._c_window)
-vx.move_left = _move_left
+@expose
 @_seek_setting
 def _move_right():
     vx.move_right_window(_focused_window._c_window)
-vx.move_right = _move_right
+@expose
 @_seek_setting
 def _move_eol():
     vx.move_eol_window(_focused_window._c_window)
-vx.move_eol = _move_eol
+@expose
 @_seek_setting
 def _move_bol():
     vx.move_bol_window(_focused_window._c_window)
-vx.move_bol = _move_bol
+@expose
 @_seek_setting
 def _move_beg():
     vx.move_beg_window(_focused_window._c_window)
-vx.move_beg = _move_beg
+@expose
 @_seek_setting
 def _move_end():
     vx.move_end_window(_focused_window._c_window)
-vx.move_end = _move_end
+@expose
+def _add_string(s, **kwargs):
+    _focused_window.add_string(s, **kwargs)
 
-def _add_string(s):
-    _focused_window.add_string(s)
-vx.add_string = _add_string
+@expose
 def _backspace():
     vx.backspace_window(_focused_window._c_window)
-vx.backspace = _backspace
+@expose
 def _delete():
     vx.backspace_delete_window(_focused_window._c_window)
-vx.delete = _delete
