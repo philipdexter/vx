@@ -221,6 +221,7 @@ def _close_window():
     w.remove()
 vx.close_window = _close_window
 
+@vx.expose
 class _prompt(_window):
     def __init__(self, attached_to):
         super(_prompt, self).__init__(2, attached_to.columns,
@@ -270,53 +271,45 @@ class _prompt(_window):
             vx.add_string('\n')
         self.keybinding_table.bind(vx.ctrl + vx.keys.j, _enter_and_expand)
 
-vx.prompt = _prompt
-
-def expose(f, name=None):
-    if name is None:
-        name = f.__name__.lstrip('_')
-    setattr(vx, name, f)
-    return f
-
-@expose
+@vx.expose
 @_seek_preserving
 def _move_up():
     vx.move_up_window(_focused_window._c_window)
-@expose
+@vx.expose
 @_seek_preserving
 def _move_down():
     vx.move_down_window(_focused_window._c_window)
-@expose
+@vx.expose
 @_seek_setting
 def _move_left():
     vx.move_left_window(_focused_window._c_window)
-@expose
+@vx.expose
 @_seek_setting
 def _move_right():
     vx.move_right_window(_focused_window._c_window)
-@expose
+@vx.expose
 @_seek_setting
 def _move_eol():
     vx.move_eol_window(_focused_window._c_window)
-@expose
+@vx.expose
 @_seek_setting
 def _move_bol():
     vx.move_bol_window(_focused_window._c_window)
-@expose
+@vx.expose
 @_seek_setting
 def _move_beg():
     vx.move_beg_window(_focused_window._c_window)
-@expose
+@vx.expose
 @_seek_setting
 def _move_end():
     vx.move_end_window(_focused_window._c_window)
-@expose
+@vx.expose
 def _add_string(s, **kwargs):
     _focused_window.add_string(s, **kwargs)
 
-@expose
+@vx.expose
 def _backspace():
     vx.backspace_window(_focused_window._c_window)
-@expose
+@vx.expose
 def _delete():
     vx.backspace_delete_window(_focused_window._c_window)
