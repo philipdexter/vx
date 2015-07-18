@@ -343,17 +343,32 @@ static PyObject *vx_clear_window(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
+static PyObject *vx_get_window_size(PyObject *self, PyObject *args)
+{
+	PyObject *capsule;
+	Window *window;
+	PyObject *ret;
+	int y, x;
+
+	if (!PyArg_ParseTuple(args, "O:get_window_size", &capsule))
+		return NULL;
+	window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
+	get_window_size(window, &y, &x);
+	ret = Py_BuildValue("(ii)", y, x);
+	return ret;
+}
+
 static PyObject *vx_get_linecol_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
 	Window *window;
 	PyObject *ret;
+	int r, c;
 
 	if (!PyArg_ParseTuple(args, "O:get_linecol_window", &capsule))
 		return NULL;
 	window = (Window*)PyCapsule_GetPointer(capsule, "vx.window");
 
-	int r, c;
 	get_cursor_rowcol(window->buffer->text, &r, &c);
 	ret = Py_BuildValue("(ii)", ++r, ++c);
 
@@ -510,6 +525,8 @@ static PyMethodDef VxMethods[] = {
 	 "Redraw the entire window"},
 	{"clear_window", vx_clear_window, METH_VARARGS,
 	 "Clear a window"},
+	{"get_window_size", vx_get_window_size, METH_VARARGS,
+	 "Get the size of a window"},
 	{"get_linecol_window", vx_get_linecol_window, METH_VARARGS,
 	 "Get the line and column the cursor is on of a window"},
 	{"set_linecol_window", vx_set_linecol_window, METH_VARARGS,

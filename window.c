@@ -30,6 +30,11 @@ void move_window(Window *window, int y, int x)
 	mvwin(window->curses_window, y, x);
 }
 
+void get_window_size(Window *window, int *y, int *x)
+{
+	getmaxyx(window->curses_window, *y, *x);
+}
+
 int build_window(Window *window, int nlines, int ncols, int begin_y, int begin_x)
 {
 	if (!window) return -1;

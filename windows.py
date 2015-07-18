@@ -230,6 +230,10 @@ class _prompt(_window):
         self.blank()
         self.focus()
 
+        def expand():
+            attached_to.pad(bottom=1)
+            self.grow(top=1)
+
         @contextlib.contextmanager
         def stdoutIO(stdout=None):
             old = sys.stdout
@@ -240,7 +244,8 @@ class _prompt(_window):
             sys.stdout = old
 
         def getout():
-            attached_to.grow(bottom=1)
+            y, x = vx.get_window_size(self._c_window)
+            attached_to.grow(bottom=y)
             _focus_window(attached_to)
             contents = vx.get_contents_window(self._c_window)
             with stdoutIO() as s:
