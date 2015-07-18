@@ -315,8 +315,22 @@ def _add_string(s, **kwargs):
     _focused_window.add_string(s, **kwargs)
 
 @vx.expose
-def _backspace():
-    vx.backspace_window(_focused_window._c_window)
+@_seek_setting
+def _backspace(track=True):
+    if track:
+        r, c = vx.get_linecol_window(_focused_window)
+        if r > 1 or c > 1:
+            c = c - 1
+            if c == 0:
+                r -= 1
+                _move_up()
+                _move_eol()
+                _, c = vx.get_linecol_window(_focused_window)
+                _move_down()
+                _move_bol()
+            ch = vx.get_ch_linecol_window(_focused_window, r, c)
+            undo.register_removal(ch, r, c)
+    vx.backspace_window(_focused_window)
 @vx.expose
 def _delete():
     vx.backspace_delete_window(_focused_window._c_window)
