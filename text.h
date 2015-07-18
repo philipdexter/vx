@@ -23,6 +23,7 @@ char *get_str(Text*);
 char *get_str_from_line(Text*, size_t);
 char *get_str_from_line_to_line(Text*, size_t, size_t);
 size_t get_cursor_pos(Text *text);
+char *get_ch_rowcol(Text *text, int row, int col);
 void get_cursor_rowcol(Text *text, int *row, int *col);
 void set_cursor_rowcol(Text *text, int row, int col);
 void backspace(Text *text, int);

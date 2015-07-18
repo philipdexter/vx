@@ -363,6 +363,23 @@ static PyObject *vx_get_window_size(PyObject *self, PyObject *args)
 	return ret;
 }
 
+static PyObject *vx_get_ch_linecol_window(PyObject *self, PyObject *args)
+{
+	PyObject *capsule;
+	Window *window;
+	PyObject *ret;
+	int row, col;
+	char *ch;
+
+	if (!PyArg_ParseTuple(args, "Oii:get_ch_linecol_window", &capsule, &row, &col))
+		return NULL;
+	WINDOW_FROM_CAPSULE;
+	--row, --col;
+	ch = get_ch_rowcol(window->buffer->text, row, col);
+	ret = Py_BuildValue("s", ch);
+	return ret;
+}
+
 static PyObject *vx_get_linecol_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
@@ -532,6 +549,8 @@ static PyMethodDef VxMethods[] = {
 	 "Clear a window"},
 	{"get_window_size", vx_get_window_size, METH_VARARGS,
 	 "Get the size of a window"},
+	{"get_ch_linecol_window", vx_get_ch_linecol_window, METH_VARARGS,
+	 "Get the character at a linecol"},
 	{"get_linecol_window", vx_get_linecol_window, METH_VARARGS,
 	 "Get the line and column the cursor is on of a window"},
 	{"set_linecol_window", vx_set_linecol_window, METH_VARARGS,

@@ -246,6 +246,33 @@ size_t get_cursor_pos(Text *text)
 	return text->gap_start;
 }
 
+char *get_ch_rowcol(Text *text, int row, int col)
+{
+	int r = 0, c = 0;
+	size_t i, bytes;
+	char *ret;
+
+	for (i = 0; i < text->size; ++i) {
+		if (r >= row && c == col) break;
+		if (text->buf[i] == '\n') {
+			if (r == row && c == col - 1) break;
+			++r; c = 0;
+		} else if (text->buf[i] == '\t') {
+			c += 8;
+		} else {
+			// Handle unicode
+			bytes = more_bytes_utf8[(unsigned int)(unsigned char)text->buf[i]];
+			i += bytes;
+			++c;
+		}
+	}
+
+	bytes = more_bytes_utf8[(unsigned int)(unsigned char)text->buf[i]];
+	ret = calloc(1, bytes + 2);
+	memcpy(ret, text->buf + i, bytes+1);
+	return ret;
+}
+
 void get_cursor_rowcol(Text *text, int *row, int *col)
 {
 	int r = 0, c = 0;
@@ -269,10 +296,8 @@ void get_cursor_rowcol(Text *text, int *row, int *col)
 void set_cursor_rowcol(Text *text, int row, int col)
 {
 	int r, c;
-	size_t i, bytes;
+	size_t i;
 	int diff;
-
-	--row, --col;
 
 	get_cursor_rowcol(text, &r, &c);
 	diff = abs(r - row);
