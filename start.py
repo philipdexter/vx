@@ -21,5 +21,4 @@ else:
         y += d
         win.focus()
 
-
-bind(ctrl + keys.x - '4', lambda: vx.prompt(vx.get_focused_window()))
+bind(ctrl + keys.x - '4', vx.prompt)

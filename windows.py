@@ -223,7 +223,9 @@ vx.close_window = _close_window
 
 @vx.expose
 class _prompt(_window):
-    def __init__(self, attached_to):
+    def __init__(self, attached_to=None):
+        if attached_to is None:
+            attached_to = vx.get_focused_window()
         super(_prompt, self).__init__(2, attached_to.columns,
                                       attached_to.y + attached_to.rows-1, attached_to.x,
                                       status_bar=False)
