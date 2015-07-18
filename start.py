@@ -8,5 +8,3 @@ from functools import partial
 from keybindings import hopscotch
 
 vx.default_start()
-
-bind(ctrl + keys.x - '4', vx.prompt)
