@@ -1,5 +1,6 @@
 import vx
 
+import math
 from sys import argv
 
 _tick_functions = []
@@ -17,3 +18,18 @@ vx.files = argv[1:]
 import utils
 import keybindings
 import windows
+
+def _default_start():
+    if len(vx.files) == 0:
+        win = vx.window(vx.rows, vx.cols, 0, 0)
+        win.blank()
+        win.focus()
+    else:
+        d = math.floor(vx.rows / (len(vx.files)))
+        y = 0
+        for f in vx.files:
+            win = vx.window(d, vx.cols, y, 0)
+            win.attach_file(f)
+            y += d
+            win.focus()
+vx.default_start = _default_start
