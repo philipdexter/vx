@@ -24,6 +24,7 @@ char *get_str_from_line(Text*, size_t);
 char *get_str_from_line_to_line(Text*, size_t, size_t);
 size_t get_cursor_pos(Text *text);
 void get_cursor_rowcol(Text *text, int *row, int *col);
+void set_cursor_rowcol(Text *text, int row, int col);
 void backspace(Text *text, int);
 void move_left(Text *text);
 void move_right(Text *text);

@@ -266,6 +266,27 @@ void get_cursor_rowcol(Text *text, int *row, int *col)
 	*col = c;
 }
 
+void set_cursor_rowcol(Text *text, int row, int col)
+{
+	int r, c;
+	size_t i, bytes;
+	int diff;
+
+	--row, --col;
+
+	get_cursor_rowcol(text, &r, &c);
+	diff = abs(r - row);
+	for (i = 0; i < diff; ++i)
+		r > row ? move_up(text) : move_down(text);
+
+	get_cursor_rowcol(text, &r, &c);
+
+	diff = abs(c - col);
+	for (i = 0; i < diff; ++i)
+		if (text->buf[text->text_start] != '\n')
+			c > col ? move_left(text) : move_right(text);
+}
+
 void backspace(Text *text, int delete)
 {
 	if (delete && text->text_start < text->size)
