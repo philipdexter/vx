@@ -78,8 +78,8 @@ class _window:
 
     def add_string(self, s, track=True):
         vx.add_string_window(self, s)
-        self.dirty = True
         if track:
+            self.dirty = True
             undo.register_change(s)
 
     def remove(self):
@@ -323,6 +323,7 @@ def _add_string(s, **kwargs):
 @_seek_setting
 def _backspace(track=True):
     if track:
+        _focused_window.dirty = True
         r, c = vx.get_linecol_window(_focused_window)
         if r > 1 or c > 1:
             c = c - 1
@@ -338,5 +339,10 @@ def _backspace(track=True):
     vx.backspace_window(_focused_window)
 @vx.expose
 @_seek_setting
-def _delete():
+def _delete(track=True):
+    if track:
+        _focused_window.dirty = True
+        r, c = vx.get_linecol_window(_focused_window)
+        ch = vx.get_ch_linecol_window(_focused_window, r, c)
+        undo.register_removal(ch, r, c, hold=True)
     vx.backspace_delete_window(_focused_window)

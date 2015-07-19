@@ -6,10 +6,10 @@ def register_change(s):
     r, c = vx.get_linecol_window(vx.get_focused_window()._c_window)
     _changes.append({'string': s, 'row': r, 'col': c, 'type': 'addition'})
 
-def register_removal(s, r=None, c=None):
+def register_removal(s, r=None, c=None, hold=False):
     if r is None or c is None:
         r, c = vx.get_linecol_window(vx.get_focused_window()._c_window)
-    _changes.append({'string': s, 'row': r, 'col': c, 'type': 'removal'})
+    _changes.append({'string': s, 'row': r, 'col': c, 'type': 'removal', 'hold': hold})
 
 def _undo():
     if len(_changes) > 0:
@@ -19,6 +19,8 @@ def _undo():
             vx.backspace(track=False)
         elif change['type'] == 'removal':
             vx.add_string(change['string'], track=False)
+            if change['hold']:
+                vx.move_left()
         if len(_changes) == 0:
             vx.get_focused_window().dirty = False
 vx.undo = _undo
