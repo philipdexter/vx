@@ -352,6 +352,10 @@ char *get_ch_rowcol(Text *text, int row, int col)
 	char *ret;
 
 	for (i = 0; i < text->size; ++i) {
+		if (i == text->gap_start) {
+			i += GAPSIZE(text) - 1;
+			continue;
+		}
 		if (r >= row && c == col) break;
 		if (text->buf[i] == '\n') {
 			if (r == row && c == col - 1) break;
@@ -403,8 +407,9 @@ void set_cursor_rowcol(Text *text, int row, int col)
 	for (i = 0; i < diff; ++i)
 		r > row ? move_up(text) : move_down(text);
 
-	get_cursor_rowcol(text, &r, &c);
+	move_cursor_bol(text);
 
+	get_cursor_rowcol(text, &r, &c);
 	diff = abs(c - col);
 	for (i = 0; i < diff; ++i)
 		if (text->buf[text->text_start] != '\n')
