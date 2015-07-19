@@ -471,7 +471,7 @@ static PyObject *vx_get_contents_window(PyObject *self, PyObject *args)
 	if (!PyArg_ParseTuple(args, "O:refresh_window", &capsule))
 		return NULL;
 	WINDOW_FROM_CAPSULE;
-	contents = get_str_from_line_to_line(window->buffer->text, window->line, window->line + window->lines - 1);
+	contents = get_str_from_line_to_line_from_col_to_col(window->buffer->text, window->line, window->line + window->lines - 1, 0, window->columns);
 	str = Py_BuildValue("s", contents);
 	free(contents);
 	return str;

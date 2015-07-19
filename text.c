@@ -241,6 +241,84 @@ char *get_str_from_line_to_line(Text *text, size_t from, size_t to)
 	return buf;
 }
 
+char *get_str_from_line_to_line_from_col_to_col(Text *text, size_t from, size_t to, size_t col_from, size_t col_to)
+{
+	size_t pos_line = 1;
+	size_t pos_end = 1;
+	size_t i;
+	size_t j;
+	char *buf;
+	size_t buf_index = 0;
+	int column;
+	size_t k;
+
+	for (i = 0; i < text->size; ++i) {
+		if (pos_line == from) {
+			break;
+		}
+		if (i == text->gap_start) {
+			i += GAPSIZE(text) - 1;
+			continue;
+		}
+		if (text->buf[i] == '\n') {
+			++pos_line;
+			++pos_end;
+		}
+	}
+	for (j = i; j < text->size; ++j) {
+		if (pos_end == to+1) {
+			break;
+		}
+		if (j == text->gap_start) {
+			j += GAPSIZE(text) - 1;
+			continue;
+		}
+		if (text->buf[j] == '\n') {
+			++pos_end;
+		}
+	}
+
+	buf = calloc(1, j - i + 1);
+	if (!buf)
+		return NULL;
+	column = 0;
+	for (k = i; k < j; ++k) {
+		if (column == 0) {
+			for (; k < j; ++k) {
+				if (k == text->gap_start) {
+					k += GAPSIZE(text) - 1;
+					continue;
+				}
+				if (column >= col_from) break;
+				if (text->buf[k] == '\n') break;
+				++column;
+			}
+		}
+		if (k == text->gap_start) {
+			k += GAPSIZE(text) - 1;
+			continue;
+		}
+		if (text->buf[k] == '\n') {
+			column = -1;
+		}
+		buf[buf_index++] = text->buf[k];
+		++column;
+		if (column == col_to) {
+			buf[buf_index-1] = '\n';
+			column = 0;
+			for (;k < j; ++k) {
+				if (k == text->gap_start) {
+					k += GAPSIZE(text) - 1;
+					continue;
+				}
+				if (text->buf[k] == '\n') break;
+			}
+		}
+	}
+
+	return buf;
+}
+
 size_t get_cursor_pos(Text *text)
 {
 	return text->gap_start;
