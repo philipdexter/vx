@@ -278,19 +278,32 @@ char *get_str_from_line_to_line_from_col_to_col(Text *text, size_t from, size_t 
 		}
 	}
 
+	size_t siize = j - i + 1;
 	buf = calloc(1, j - i + 1);
 	if (!buf)
 		return NULL;
 	column = 0;
-	for (k = i; k < j; ++k) {
+	for (k = i; k < j && k < text->size && buf_index < siize-1; ++k) {
 		if (column == 0) {
-			for (; k < j; ++k) {
+			for (; k < j && k < text->size && buf_index < siize-1; ++k) {
 				if (k == text->gap_start) {
 					k += GAPSIZE(text) - 1;
 					continue;
 				}
-				if (column >= col_from) break;
+				if (column >= col_from) {
+					for (i = 0; i < column - col_from; ++i) {
+						buf[buf_index++] = ' ';
+					}
+					if (col_from > 0) {
+						if (buf[buf_index-(column-col_from)] != '\n') {
+							buf[buf_index-(column-col_from)] = '$';
+						}
+					}
+					break;
+				}
 				if (text->buf[k] == '\n') break;
+				if (text->buf[k] == '\t')
+					column += 7;
 				++column;
 			}
 		}
@@ -301,12 +314,20 @@ char *get_str_from_line_to_line_from_col_to_col(Text *text, size_t from, size_t 
 		if (text->buf[k] == '\n') {
 			column = -1;
 		}
-		buf[buf_index++] = text->buf[k];
+		if (text->buf[k] == '\t') {
+			column += 7;
+		}
+		if (buf[buf_index] != '$' || text->buf[k] == '\n')
+			buf[buf_index++] = text->buf[k];
+		else
+			buf_index++;
 		++column;
 		if (column == col_to) {
+			if (buf[buf_index-1] != '\n' && buf[buf_index-2] != '\n')
+				buf[buf_index-2] = '$';
 			buf[buf_index-1] = '\n';
 			column = 0;
-			for (;k < j; ++k) {
+			for (;k < j && k < text->size && buf_index < siize-1; ++k) {
 				if (k == text->gap_start) {
 					k += GAPSIZE(text) - 1;
 					continue;

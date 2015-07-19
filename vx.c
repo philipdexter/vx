@@ -160,11 +160,13 @@ int main(int argc, char *argv[])
 		get_cursor_rowcol(focused_window->buffer->text, &screen_rows, &screen_cols);
 		while (screen_rows+1 < focused_window->line && focused_window->line > 1) --focused_window->line;
 		while (screen_rows+1 > focused_window->line + focused_window->lines - 1) ++focused_window->line;
+		while (screen_cols < focused_window->column && focused_window->column > 1) --focused_window->column;
+		while (screen_cols+1 > focused_window->column + focused_window->columns - 4) ++focused_window->column;
 
 		vx_py_update_vars();
 		vx_py_pump();
 
-		wmove(focused_window->curses_window, screen_rows - (focused_window->line - 1), screen_cols);
+		wmove(focused_window->curses_window, screen_rows - (focused_window->line - 1), screen_cols - (focused_window->column - 1));
 
 		refresh_window(focused_window);
 

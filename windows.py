@@ -189,7 +189,7 @@ class _window:
     def split_v(self):
         split_height = self.rows
         split_width = math.floor(self.columns / 2)
-        self.resize(split_height, self.columns)
+        self.resize(split_height, split_width)
         new = _window(split_height, split_width, self.y, self.x + split_width)
         new.blank() #attach_file('README.md')
         new.focus()

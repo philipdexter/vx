@@ -7,6 +7,7 @@ Window *new_window(void)
 	Window *window = calloc(1, sizeof(Window));
 	if (!window) return NULL;
 	window->line = 1;
+	window->column = 1;
 	return window;
 }
 
