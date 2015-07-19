@@ -303,7 +303,7 @@ char *get_str_from_line_to_line_from_col_to_col(Text *text, size_t from, size_t 
 				}
 				if (text->buf[k] == '\n') break;
 				if (text->buf[k] == '\t')
-					column += 7;
+					column += 8 - (column % 8) - 1;
 				++column;
 			}
 		}
@@ -315,7 +315,7 @@ char *get_str_from_line_to_line_from_col_to_col(Text *text, size_t from, size_t 
 			column = -1;
 		}
 		if (text->buf[k] == '\t') {
-			column += 7;
+			column += 8 - (column % 8) - 1;
 		}
 		if (buf[buf_index] != '$' || text->buf[k] == '\n')
 			buf[buf_index++] = text->buf[k];
@@ -357,7 +357,7 @@ char *get_ch_rowcol(Text *text, int row, int col)
 			if (r == row && c == col - 1) break;
 			++r; c = 0;
 		} else if (text->buf[i] == '\t') {
-			c += 8;
+			c += 8 - (c % 8);
 		} else {
 			// Handle unicode
 			bytes = more_bytes_utf8[(unsigned int)(unsigned char)text->buf[i]];
@@ -380,7 +380,7 @@ void get_cursor_rowcol(Text *text, int *row, int *col)
 		if (text->buf[i] == '\n') {
 			++r; c = 0;
 		} else if (text->buf[i] == '\t') {
-			c += 8;
+			c += 8 - c % 8;
 		} else {
 			// Handle unicode
 			bytes = more_bytes_utf8[(unsigned int)(unsigned char)text->buf[i]];
