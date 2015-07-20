@@ -111,6 +111,11 @@ void vx_py_pump(void)
 	PyObject *their_vx = PyObject_GetAttrString(vx_mod, "my_vx");
 	PyObject *tmp_args = PyTuple_New(0);
 	PyObject *tmp = PyObject_CallObject(their_vx, tmp_args);
+	if (PyErr_Occurred()) {
+		endwin();
+		PyErr_Print();
+		exit(0);
+	}
 	Py_DECREF(their_vx);
 	Py_DECREF(tmp_args);
 	Py_XDECREF(tmp);
@@ -396,6 +401,23 @@ static PyObject *vx_get_linecol_window(PyObject *self, PyObject *args)
 	return ret;
 }
 
+static PyObject *vx_get_linecol_start_window(PyObject *self, PyObject *args)
+{
+	PyObject *capsule;
+	Window *window;
+	PyObject *ret;
+	int r, c;
+
+	if (!PyArg_ParseTuple(args, "O:get_linecol_start_window", &capsule))
+		return NULL;
+	WINDOW_FROM_CAPSULE;
+	r = window->line;
+	c = window->column;
+	ret = Py_BuildValue("(ii)", r, c);
+
+	return ret;
+}
+
 static PyObject *vx_set_linecol_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
@@ -471,7 +493,7 @@ static PyObject *vx_get_contents_window(PyObject *self, PyObject *args)
 	if (!PyArg_ParseTuple(args, "O:refresh_window", &capsule))
 		return NULL;
 	WINDOW_FROM_CAPSULE;
-	contents = get_str_from_line_to_line_from_col_to_col(window->buffer->text, window->line, window->line + window->lines - 1, window->column - 1, window->column + window->columns - 2);
+	contents = get_str(window->buffer->text);
 	str = Py_BuildValue("s", contents);
 	free(contents);
 	return str;
@@ -553,6 +575,8 @@ static PyMethodDef VxMethods[] = {
 	 "Get the character at a linecol"},
 	{"get_linecol_window", vx_get_linecol_window, METH_VARARGS,
 	 "Get the line and column the cursor is on of a window"},
+	{"get_linecol_start_window", vx_get_linecol_start_window, METH_VARARGS,
+	 "Get the line and column that the window starts at"},
 	{"set_linecol_window", vx_set_linecol_window, METH_VARARGS,
 	 "Set the line and column the cursor is on of a window"},
 	{"print_string_window", vx_print_string_window, METH_VARARGS,

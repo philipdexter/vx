@@ -157,7 +157,19 @@ class _window:
     def render(self):
         if self.has_contents:
             contents = vx.get_contents_window(self)
-            vx.print_string_window(self, contents)
+            r, c = vx.get_linecol_start_window(self)
+            y, x = vx.get_window_size(self)
+
+            lines = contents.split('\n')[r-1:r+y-1]
+
+            for i, line in enumerate(lines):
+                line = line.replace('\t', '        ')[c-1:c-1+x-2]
+                if len(line) == x - 2:
+                    line += '$'
+                if c-1 > 0:
+                    line = '$' + line[1:]
+                vx.print_string_window(self, line)
+                vx.print_string_window(self, '\n')
         for m in self.graffitis:
             m.render(self)
 
