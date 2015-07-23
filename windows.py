@@ -289,6 +289,13 @@ class _prompt(_window):
                     vx.add_string(tb)
             self.remove()
 
+        def cancel():
+            y, x = vx.get_window_size(self)
+            attached_to.grow(bottom=y)
+            _focus_window(attached_to)
+            self.remove()
+        self.keybinding_table.bind(vx.ctrl + vx.keys.g, cancel)
+
         def _history_pullback(): # TODO create clear_contents_window
             if len(_prompt._history) > 0:
                 vx.add_string(_prompt._history[-1])
@@ -336,6 +343,13 @@ class _file_prompt(_window):
                 split.focus()
                 vx.add_string('file "{}" does not exist'.format(contents))
             self.remove()
+
+        def cancel():
+            y, x = vx.get_window_size(self)
+            attached_to.grow(bottom=y)
+            _focus_window(attached_to)
+            self.remove()
+        self.keybinding_table.bind(vx.ctrl + vx.keys.g, cancel)
 
         def _history_pullback(): # TODO create clear_contents_window
             if len(_file_prompt._history) > 0:
