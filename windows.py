@@ -382,6 +382,13 @@ def _move_end():
     vx.move_end_window(_focused_window)
 
 @vx.expose
+def _center():
+    r, c = vx.get_window_size(_focused_window)
+    y, x = vx.get_linecol_window(_focused_window)
+    new_top = max(y - r // 2, 1)
+    vx.set_linecol_start_window(_focused_window,  new_top, x)
+
+@vx.expose
 @_seek_setting
 def _add_string(s, **kwargs):
     _focused_window.add_string(s, **kwargs)

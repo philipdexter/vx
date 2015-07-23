@@ -19,6 +19,8 @@ bind(alt + keys.v, partial(vx.repeat, vx.move_up))
 bind(alt + keys.langle, vx.move_beg)
 bind(alt + keys.rangle, vx.move_end)
 
+bind(ctrl + keys.l, vx.center)
+
 # text manipulation
 
 bind(ctrl + keys.d, vx.delete)

@@ -418,6 +418,20 @@ static PyObject *vx_get_linecol_start_window(PyObject *self, PyObject *args)
 	return ret;
 }
 
+static PyObject *vx_set_linecol_start_window(PyObject *self, PyObject *args)
+{
+	PyObject *capsule;
+	Window *window;
+	int r, c;
+
+	if (!PyArg_ParseTuple(args, "Oii:set_linecol_start_window", &capsule, &r, &c))
+		return NULL;
+	WINDOW_FROM_CAPSULE;
+	window->line = r;
+	window->column = c;
+	Py_RETURN_NONE;
+}
+
 static PyObject *vx_set_linecol_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
@@ -579,6 +593,8 @@ static PyMethodDef VxMethods[] = {
 	 "Get the line and column that the window starts at"},
 	{"set_linecol_window", vx_set_linecol_window, METH_VARARGS,
 	 "Set the line and column the cursor is on of a window"},
+	{"set_linecol_start_window", vx_set_linecol_start_window, METH_VARARGS,
+	 "Set the line and column that the window starts at"},
 	{"print_string_window", vx_print_string_window, METH_VARARGS,
 	 "Add a string to a window"},
 	{"refresh_window", vx_refresh_window, METH_VARARGS,
