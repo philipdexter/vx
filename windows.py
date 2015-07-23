@@ -9,13 +9,11 @@ from functools import partial, wraps
 from io import StringIO
 from os.path import isfile
 
-_last_seeked_column = 0
 def _seek_setting(f):
     @wraps(f)
     def g(*args, **kwargs):
-        global _last_seeked_column
         ret = f(*args, **kwargs)
-        _, _last_seeked_column = vx.get_linecol_window(_focused_window)
+        _, _focused_window.last_seeked_column = vx.get_linecol_window(_focused_window)
         return ret
     return g
 def _seek_preserving(f):
@@ -23,11 +21,11 @@ def _seek_preserving(f):
     def g(*args, **kwargs):
         ret = f(*args, **kwargs)
         _, c = vx.get_linecol_window(_focused_window)
-        if c < _last_seeked_column:
+        if c < _focused_window.last_seeked_column:
             vx.move_eol_window(_focused_window)
             _, c = vx.get_linecol_window(_focused_window)
-            if _last_seeked_column < c:
-                vx.repeat(vx.move_left, c - _last_seeked_column)
+            if _focused_window.last_seeked_column < c:
+                vx.repeat(vx.move_left, c - _focused_window.last_seeked_column)
         return ret
     return g
 
@@ -53,6 +51,8 @@ class _window:
         self.graffitis = []
         self.line = 1
         self.col = 1
+
+        self.last_seeked_column = 0
 
         self.rows = rows
         self.columns = columns
