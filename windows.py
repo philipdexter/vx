@@ -7,6 +7,7 @@ import traceback
 import sys
 from functools import partial, wraps
 from io import StringIO
+from os.path import isfile
 
 _last_seeked_column = 0
 def _seek_setting(f):
@@ -298,6 +299,50 @@ class _prompt(_window):
             expand()
             vx.add_string('\n')
         self.keybinding_table.bind(vx.ctrl + vx.keys.j, _enter_and_expand)
+
+@vx.expose
+class _file_prompt(_window):
+    _history = []
+
+    def __init__(self, attached_to=None):
+        if attached_to is None:
+            attached_to = vx.get_focused_window()
+        super(_file_prompt, self).__init__(2, attached_to.columns,
+                                      attached_to.y + attached_to.rows-1, attached_to.x,
+                                      status_bar=False)
+        attached_to.pad(bottom=1)
+        self.blank()
+        self.focus()
+
+        @contextlib.contextmanager
+        def stdoutIO(stdout=None):
+            old = sys.stdout
+            if stdout is None:
+                stdout = StringIO()
+            sys.stdout = stdout
+            yield stdout
+            sys.stdout = old
+
+        def getout():
+            y, x = vx.get_window_size(self)
+            attached_to.grow(bottom=y)
+            _focus_window(attached_to)
+            contents = vx.get_contents_window(self)
+            _file_prompt._history.append(contents)
+            if isfile(contents):
+                _focused_window.attach_file(contents)
+            else:
+                split = vx.get_focused_window().split_h()
+                split.focus()
+                vx.add_string('file "{}" does not exist'.format(contents))
+            self.remove()
+
+        def _history_pullback(): # TODO create clear_contents_window
+            if len(_file_prompt._history) > 0:
+                vx.add_string(_file_prompt._history[-1])
+        self.keybinding_table.bind(vx.alt + vx.keys.p, _history_pullback)
+
+        self.keybinding_table.bind(vx.keys.enter, getout)
 
 # Exposed functions
 

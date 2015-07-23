@@ -36,6 +36,8 @@ bind(ctrl + keys.x - '0', vx.close_window)
 bind(ctrl + keys.x - ctrl + keys.c, vx.quit)
 bind(alt + keys.x, vx.prompt)
 
+bind(ctrl + keys.x - ctrl + keys.f, vx.file_prompt)
+
 # undo/redo
 
 bind(ctrl + keys.underscore, vx.undo)
