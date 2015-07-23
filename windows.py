@@ -84,10 +84,23 @@ class _window:
             undo.register_change(s)
 
     def remove(self):
+        y, x = vx.get_window_size(self)
+        if hasattr(self, 'sibling'):
+            y += 1 if self.sibling.status_bar is not None else 0
+            if self.sibling_position == 'b':
+                self.sibling.grow(bottom=y)
+            elif self.sibling_position == 'r':
+                self.sibling.grow(right=x)
+            elif self.sibling_position == 't':
+                self.sibling.grow(top=y)
+            elif self.sibling_position == 'l':
+                self.sibling.grow(left=x)
         _windows.remove(self)
         if self.traversable:
             _windows_traversable.remove(self)
         vx.delete_window(self)
+        if self.status_bar is not None:
+            self.status_bar.remove()
 
     def resize(self, lines, columns):
         self.rows = lines
@@ -95,8 +108,8 @@ class _window:
         vx.resize_window(self, lines, columns)
         if self.status_bar:
             vx.resize_window(self, lines - 1, columns)
-            self.status_bar.resize(1, columns)
             self.status_bar.move(self.y + self.rows - 1, self.x)
+            self.status_bar.resize(1, columns)
 
     def pad(self, top=0, bottom=0, left=0, right=0):
         if top > 0 or left > 0:
@@ -193,9 +206,13 @@ class _window:
     def split_h(self):
         split_height = math.floor(self.rows / 2)
         split_width = self.columns
-        self.resize(split_height, self.columns)
+        self.resize(split_height, split_width)
         new = _window(split_height, split_width, self.y + split_height, self.x)
-        new.blank() #attach_file('README.md')
+        new.sibling = self
+        new.sibling_position = 'b'
+        self.sibling = new
+        self.sibling_position = 't'
+        new.blank()
         new.focus()
         return new
 
@@ -204,7 +221,11 @@ class _window:
         split_width = math.floor(self.columns / 2)
         self.resize(split_height, split_width)
         new = _window(split_height, split_width, self.y, self.x + split_width)
-        new.blank() #attach_file('README.md')
+        new.sibling = self
+        new.sibling_position = 'r'
+        self.sibling = new
+        self.sibling_position = 'l'
+        new.blank()
         new.focus()
         return new
 
