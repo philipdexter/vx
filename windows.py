@@ -240,6 +240,8 @@ def _close_window():
 
 @vx.expose
 class _prompt(_window):
+    _history = []
+
     def __init__(self, attached_to=None):
         if attached_to is None:
             attached_to = vx.get_focused_window()
@@ -268,6 +270,7 @@ class _prompt(_window):
             attached_to.grow(bottom=y)
             _focus_window(attached_to)
             contents = vx.get_contents_window(self)
+            _prompt._history.append(contents)
             with stdoutIO() as s:
                 try:
                     exec(contents)
@@ -284,6 +287,12 @@ class _prompt(_window):
                 else:
                     vx.add_string(tb)
             self.remove()
+
+        def _history_pullback(): # TODO create clear_contents_window
+            if len(_prompt._history) > 0:
+                vx.add_string(_prompt._history[-1])
+        self.keybinding_table.bind(vx.alt + vx.keys.p, _history_pullback)
+
         self.keybinding_table.bind(vx.keys.enter, getout)
         def _enter_and_expand():
             expand()
