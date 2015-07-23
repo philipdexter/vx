@@ -133,7 +133,7 @@ static PyObject *vx_move_up_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
 	Window *window;
-	if (!PyArg_ParseTuple(args, "O:move_up", &capsule))
+	if (!PyArg_ParseTuple(args, "O:move_up_window", &capsule))
 		return NULL;
 	WINDOW_FROM_CAPSULE;
 	move_up(window->buffer->text);
@@ -144,7 +144,7 @@ static PyObject *vx_move_down_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
 	Window *window;
-	if (!PyArg_ParseTuple(args, "O:move_down", &capsule))
+	if (!PyArg_ParseTuple(args, "O:move_down_window", &capsule))
 		return NULL;
 	WINDOW_FROM_CAPSULE;
 	move_down(window->buffer->text);
@@ -155,7 +155,7 @@ static PyObject *vx_move_left_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
 	Window *window;
-	if (!PyArg_ParseTuple(args, "O:move_left", &capsule))
+	if (!PyArg_ParseTuple(args, "O:move_left_window", &capsule))
 		return NULL;
 	WINDOW_FROM_CAPSULE;
 	move_left(window->buffer->text);
@@ -166,7 +166,7 @@ static PyObject *vx_move_right_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
 	Window *window;
-	if (!PyArg_ParseTuple(args, "O:move_right", &capsule))
+	if (!PyArg_ParseTuple(args, "O:move_right_window", &capsule))
 		return NULL;
 	WINDOW_FROM_CAPSULE;
 	move_right(window->buffer->text);
@@ -177,7 +177,7 @@ static PyObject *vx_move_bol_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
 	Window *window;
-	if (!PyArg_ParseTuple(args, "O:move_bol", &capsule))
+	if (!PyArg_ParseTuple(args, "O:move_bol_window", &capsule))
 		return NULL;
 	WINDOW_FROM_CAPSULE;
 	move_cursor_bol(window->buffer->text);
@@ -188,7 +188,7 @@ static PyObject *vx_move_eol_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
 	Window *window;
-	if (!PyArg_ParseTuple(args, "O:move_eol", &capsule))
+	if (!PyArg_ParseTuple(args, "O:move_eol_window", &capsule))
 		return NULL;
 	WINDOW_FROM_CAPSULE;
 	move_cursor_eol(window->buffer->text);
@@ -199,7 +199,7 @@ static PyObject *vx_move_beg_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
 	Window *window;
-	if (!PyArg_ParseTuple(args, "O:move_beg", &capsule))
+	if (!PyArg_ParseTuple(args, "O:move_beg_window", &capsule))
 		return NULL;
 	WINDOW_FROM_CAPSULE;
 	move_cursor_to_beg(window->buffer->text);
@@ -210,7 +210,7 @@ static PyObject *vx_move_end_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
 	Window *window;
-	if (!PyArg_ParseTuple(args, "O:move_end", &capsule))
+	if (!PyArg_ParseTuple(args, "O:move_end_window", &capsule))
 		return NULL;
 	WINDOW_FROM_CAPSULE;
 	move_cursor_to_end(window->buffer->text);
