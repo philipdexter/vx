@@ -349,7 +349,7 @@ static PyObject *vx_clear_window(PyObject *self, PyObject *args)
 	if (!PyArg_ParseTuple(args, "O:clear_window", &capsule))
 		return NULL;
 	WINDOW_FROM_CAPSULE;
-	wclear(window->curses_window);
+	werase(window->curses_window);
 	Py_RETURN_NONE;
 }
 
