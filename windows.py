@@ -77,6 +77,10 @@ class _window:
         else:
             self.status_bar = None
 
+    def save(self):
+        vx.save_window(self)
+        self.dirty = False
+
     def add_string(self, s, track=True):
         vx.add_string_window(self, s)
         if track:
