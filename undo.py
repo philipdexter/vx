@@ -11,6 +11,7 @@ def register_removal(s, r=None, c=None, hold=False):
         r, c = vx.get_linecol_window(vx.window.focused_window)
     _changes.append({'string': s, 'row': r, 'col': c, 'type': 'removal', 'hold': hold})
 
+@vx.expose
 def _undo():
     if len(_changes) > 0:
         change = _changes.pop()
@@ -25,4 +26,3 @@ def _undo():
                 vx.window.focused_window.set_linecol(r, c)
         if len(_changes) == 0:
             vx.window.focused_window.dirty = False
-vx.undo = _undo
