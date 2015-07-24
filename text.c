@@ -314,6 +314,37 @@ char *get_ch_rowcol(Text *text, int row, int col)
 	return ret;
 }
 
+char *get_chars_rowcol(Text *text, int row, int col, int length)
+{
+	int r = 0, c = 0;
+	size_t i, bytes;
+	char *ret;
+
+	for (i = 0; i < text->size; ++i) {
+		if (i == text->gap_start) {
+			i += GAPSIZE(text) - 1;
+			continue;
+		}
+		if (r >= row && c == col) break;
+		if (text->buf[i] == '\n') {
+			if (r == row && c == col - 1) break;
+			++r; c = 0;
+		} else if (text->buf[i] == '\t') {
+			c += 8 - (c % 8);
+		} else {
+			// Handle unicode
+			bytes = more_bytes_utf8[(unsigned int)(unsigned char)text->buf[i]];
+			i += bytes;
+			++c;
+		}
+	}
+
+	// TODO handle unicode
+	ret = calloc(1, length + 1);
+	memcpy(ret, text->buf + i, length);
+	return ret;
+}
+
 void get_cursor_rowcol(Text *text, int *row, int *col)
 {
 	int r = 0, c = 0;
