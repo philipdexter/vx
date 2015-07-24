@@ -18,6 +18,7 @@ vx.files = argv[1:]
 import utils
 import keybindings
 import windows
+import prompt
 
 def _default_start():
     if len(vx.files) == 0:

@@ -3,12 +3,12 @@ import vx
 _changes = []
 
 def register_change(s):
-    r, c = vx.get_linecol_window(vx.get_focused_window()._c_window)
+    r, c = vx.get_linecol_window(vx.get_focused_window())
     _changes.append({'string': s, 'row': r, 'col': c, 'type': 'addition'})
 
 def register_removal(s, r=None, c=None, hold=False):
     if r is None or c is None:
-        r, c = vx.get_linecol_window(vx.get_focused_window()._c_window)
+        r, c = vx.get_linecol_window(vx.get_focused_window())
     _changes.append({'string': s, 'row': r, 'col': c, 'type': 'removal', 'hold': hold})
 
 def _undo():

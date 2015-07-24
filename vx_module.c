@@ -627,7 +627,7 @@ static PyMethodDef VxMethods[] = {
 	 "Attach a window to a file"},
 	{"attach_window_blank", vx_attach_window_blank, METH_VARARGS,
 	 "Attach a window to a blank buffer"},
-	{"focus_window", vx_focus_window, METH_VARARGS,
+	{"focus_internal_window", vx_focus_window, METH_VARARGS,
 	 "Focus a window"},
 	{"redraw_all", vx_redraw_all, METH_VARARGS,
 	 "Redraw the entire window"},
