@@ -16,13 +16,13 @@ def _undo():
         change = _changes.pop()
         if change['type'] == 'removal' and change['hold']:
             r, c = vx.get_linecol_window(vx.get_focused_window())
-        vx.set_linecol_window(vx.get_focused_window()._c_window, change['row'], change['col'])
+        vx.get_focused_window().set_linecol(change['row'], change['col'])
         if change['type'] == 'addition':
             vx.backspace(track=False)
         elif change['type'] == 'removal':
             vx.add_string(change['string'], track=False)
             if change['hold']:
-                vx.set_linecol_window(vx.get_focused_window()._c_window, r, c)
+                vx.get_focused_window().set_linecol(r, c)
         if len(_changes) == 0:
             vx.get_focused_window().dirty = False
 vx.undo = _undo

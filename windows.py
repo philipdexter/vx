@@ -81,6 +81,13 @@ class _window:
         vx.save_window(self)
         self.dirty = False
 
+    @_seek_setting
+    def set_linecol(self, row, col):
+        vx.set_linecol_window(self, row, col)
+
+    def set_start_linecol(self, row, col):
+        vx.set_linecol_start_window(self,  row, col)
+
     def add_string(self, s, track=True):
         vx.add_string_window(self, s)
         if track:
@@ -407,7 +414,7 @@ def _center():
     r, c = vx.get_window_size(_focused_window)
     y, x = vx.get_linecol_window(_focused_window)
     new_top = max(y - r // 2, 1)
-    vx.set_linecol_start_window(_focused_window,  new_top, x)
+    _focused_window.set_start_linecol(new_top, x)
 
 @vx.expose
 @_seek_setting
