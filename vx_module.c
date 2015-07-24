@@ -517,6 +517,18 @@ static PyObject *vx_move_window(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
+static PyObject *vx_clear_contents_window(PyObject *self, PyObject *args)
+{
+	PyObject *capsule;
+	Window *window;
+
+	if (!PyArg_ParseTuple(args, "O:clear_contents_window", &capsule))
+		return NULL;
+	WINDOW_FROM_CAPSULE;
+	clear_text(window->buffer->text);
+	Py_RETURN_NONE;
+}
+
 static PyObject *vx_get_contents_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
@@ -625,6 +637,8 @@ static PyMethodDef VxMethods[] = {
 	 "Resize a window"},
 	{"move_window", vx_move_window, METH_VARARGS,
 	 "Move a window"},
+	{"clear_contents_window", vx_clear_contents_window, METH_VARARGS,
+	 "Clear the contents of a window"},
 	{"get_contents_window", vx_get_contents_window, METH_VARARGS,
 	 "Get the contents of a window"},
 	{"set_color_window", vx_set_color_window, METH_VARARGS,

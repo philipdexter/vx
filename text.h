@@ -12,6 +12,7 @@ typedef struct _TEXT {
 
 Text *new_document(void);
 void delete_text(Text*);
+void clear_text(Text*);
 int resize_gap(Text*, size_t);
 int add_character(Text*, char);
 int add_string(Text*, char*, size_t);

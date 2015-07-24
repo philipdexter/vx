@@ -32,6 +32,12 @@ void delete_text(Text *text)
 	free(text);
 }
 
+void clear_text(Text *text)
+{
+	text->gap_start = 0;
+	text->text_start = text->size;
+}
+
 int resize_gap(Text *text, size_t new_gap)
 {
 	size_t gap = GAPSIZE(text);
