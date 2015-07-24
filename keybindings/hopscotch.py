@@ -38,7 +38,7 @@ bind(ctrl + keys.x - '0', vx.close_window)
 # misc.
 
 bind(ctrl + keys.x - ctrl + keys.c, vx.quit)
-bind(alt + keys.x, vx.prompt)
+bind(alt + keys.x, vx.exec_prompt)
 
 bind(ctrl + keys.x - ctrl + keys.f, vx.file_prompt)
 
