@@ -1,8 +1,6 @@
 import vx
 import undo
 
-import sys
-
 import math
 from functools import partial, wraps
 
@@ -10,26 +8,24 @@ def _seek_setting(f):
     @wraps(f)
     def g(*args, **kwargs):
         ret = f(*args, **kwargs)
-        _, _focused_window.last_seeked_column = vx.get_linecol_window(_focused_window)
+        _, _window.focused_window.last_seeked_column = vx.get_linecol_window(_window.focused_window)
         return ret
     return g
 def _seek_preserving(f):
     @wraps(f)
     def g(*args, **kwargs):
         ret = f(*args, **kwargs)
-        _, c = vx.get_linecol_window(_focused_window)
-        if c < _focused_window.last_seeked_column:
-            vx.move_eol_window(_focused_window)
-            _, c = vx.get_linecol_window(_focused_window)
-            if _focused_window.last_seeked_column < c:
-                vx.repeat(vx.move_left, c - _focused_window.last_seeked_column)
+        _, c = vx.get_linecol_window(_window.focused_window)
+        if c < _window.focused_window.last_seeked_column:
+            vx.move_eol_window(_window.focused_window)
+            _, c = vx.get_linecol_window(_window.focused_window)
+            if _window.focused_window.last_seeked_column < c:
+                vx.repeat(vx.move_left, c - _window.focused_window.last_seeked_column)
         return ret
     return g
 
 _windows = []
 _windows_traversable = []
-_focused_window = None
-vx.get_focused_window = lambda: _focused_window
 
 class _graffiti:
     def __init__(self, y, x, text):
@@ -41,8 +37,19 @@ class _graffiti:
         vx.set_cursor(window, self.y, self.x)
         vx.print_string_window(window, self.text)
 
+class _window_meta(type):
+    _focused_window = None
+
+    def __get_focused_window(self):
+        return _window_meta._focused_window
+
+    def __set_focused_window(self, w):
+        _window_meta._focused_window = w
+
+    focused_window = property(__get_focused_window, __set_focused_window)
+
 @vx.expose
-class _window:
+class _window(metaclass=_window_meta):
     def __init__(self, rows, columns, y, x, traversable=True, status_bar=True):
         self._c_window = vx.new_window(rows-1, columns, y, x)
         self.graffitis = []
@@ -153,10 +160,9 @@ class _window:
         vx.attach_window_blank(self)
 
     def focus(self):
-        global _focused_window
-        if _focused_window:
-            _focused_window.unfocus()
-        _focused_window = self
+        if _window.focused_window:
+            _window.focused_window.unfocus()
+        _window.focused_window = self
         vx.keybinding_tables.insert(0, self.keybinding_table)
         vx.focus_internal_window(self)
 
@@ -239,10 +245,10 @@ class _window:
 
 @vx.expose
 def _split_h():
-    _focused_window.split_h()
+    _window.focused_window.split_h()
 @vx.expose
 def _split_v():
-    _focused_window.split_v()
+    _window.focused_window.split_v()
 
 @vx.expose
 def _focus_window(window):
@@ -250,9 +256,9 @@ def _focus_window(window):
 
 @vx.expose
 def _next_window():
-    if _focused_window is None:
+    if _window.focused_window is None:
         return
-    current = _windows_traversable.index(_focused_window)
+    current = _windows_traversable.index(_window.focused_window)
     after = current + 1
     if after == len(_windows_traversable):
         after = 0
@@ -265,7 +271,7 @@ vx.register_tick_function(_tick)
 
 @vx.expose
 def _close_window():
-    w = _focused_window
+    w = _window.focused_window
     _next_window()
     w.remove()
 
@@ -274,84 +280,84 @@ def _close_window():
 @vx.expose
 @_seek_preserving
 def _move_up():
-    vx.move_up_window(_focused_window)
+    vx.move_up_window(_window.focused_window)
 @vx.expose
 @_seek_preserving
 def _move_down():
-    vx.move_down_window(_focused_window)
+    vx.move_down_window(_window.focused_window)
 @vx.expose
 @_seek_setting
 def _move_left():
-    vx.move_left_window(_focused_window)
+    vx.move_left_window(_window.focused_window)
 @vx.expose
 @_seek_setting
 def _move_right():
-    vx.move_right_window(_focused_window)
+    vx.move_right_window(_window.focused_window)
 
 @vx.expose
 @_seek_setting
 def _move_eol():
-    vx.move_eol_window(_focused_window)
+    vx.move_eol_window(_window.focused_window)
 @vx.expose
 @_seek_setting
 def _move_bol():
-    vx.move_bol_window(_focused_window)
+    vx.move_bol_window(_window.focused_window)
 
 @vx.expose
 @_seek_setting
 def _move_beg():
-    vx.move_beg_window(_focused_window)
+    vx.move_beg_window(_window.focused_window)
 @vx.expose
 @_seek_setting
 def _move_end():
-    vx.move_end_window(_focused_window)
+    vx.move_end_window(_window.focused_window)
 
 @vx.expose
 def _center():
-    r, c = vx.get_window_size(_focused_window)
-    y, x = vx.get_linecol_window(_focused_window)
+    r, c = vx.get_window_size(_window.focused_window)
+    y, x = vx.get_linecol_window(_window.focused_window)
     new_top = max(y - r // 2, 1)
-    _focused_window.set_start_linecol(new_top, x)
+    _window.focused_window.set_start_linecol(new_top, x)
 
 @vx.expose
 @_seek_setting
 def _add_string(s, **kwargs):
-    _focused_window.add_string(s, **kwargs)
+    _window.focused_window.add_string(s, **kwargs)
 @vx.expose
 @_seek_setting
 def _backspace(track=True):
     if track:
-        _focused_window.dirty = True
-        r, c = vx.get_linecol_window(_focused_window)
+        _window.focused_window.dirty = True
+        r, c = vx.get_linecol_window(_window.focused_window)
         if r > 1 or c > 1:
             c = c - 1
             if c == 0:
                 r -= 1
                 _move_up()
                 _move_eol()
-                _, c = vx.get_linecol_window(_focused_window)
+                _, c = vx.get_linecol_window(_window.focused_window)
                 _move_down()
                 _move_bol()
-            ch = vx.get_ch_linecol_window(_focused_window, r, c)
+            ch = vx.get_ch_linecol_window(_window.focused_window, r, c)
             undo.register_removal(ch, r, c)
-    vx.backspace_window(_focused_window)
+    vx.backspace_window(_window.focused_window)
 @vx.expose
 @_seek_setting
 def _delete(track=True):
     if track:
-        _focused_window.dirty = True
-        r, c = vx.get_linecol_window(_focused_window)
-        ch = vx.get_ch_linecol_window(_focused_window, r, c)
+        _window.focused_window.dirty = True
+        r, c = vx.get_linecol_window(_window.focused_window)
+        ch = vx.get_ch_linecol_window(_window.focused_window, r, c)
         undo.register_removal(ch, r, c, hold=True)
-    vx.backspace_delete_window(_focused_window)
+    vx.backspace_delete_window(_window.focused_window)
 
 @vx.expose
 @_seek_setting
 def _kill_to_end():
-    (l, c, o) = vx.get_linecoloffset_of_str(_focused_window, '\n')
-    y, x = vx.get_linecol_window(_focused_window)
+    (l, c, o) = vx.get_linecoloffset_of_str(_window.focused_window, '\n')
+    y, x = vx.get_linecol_window(_window.focused_window)
     if o == 0:
         o += 1
-    removed_text = vx.get_str_linecol_window(_focused_window, y, x, o)
-    vx.repeat(partial(vx.backspace_delete_window, _focused_window), times=o)
+    removed_text = vx.get_str_linecol_window(_window.focused_window, y, x, o)
+    vx.repeat(partial(vx.backspace_delete_window, _window.focused_window), times=o)
     undo.register_removal(removed_text, y, x, hold=True)
