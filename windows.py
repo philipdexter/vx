@@ -454,3 +454,14 @@ def _delete(track=True):
         ch = vx.get_ch_linecol_window(_focused_window, r, c)
         undo.register_removal(ch, r, c, hold=True)
     vx.backspace_delete_window(_focused_window)
+
+@vx.expose
+@_seek_setting
+def _kill_to_end():
+    (l, c, o) = vx.get_linecoloffset_of_str(_focused_window, '\n')
+    y, x = vx.get_linecol_window(_focused_window)
+    if o == 0:
+        o += 1
+    removed_text = vx.get_str_linecol_window(_focused_window, y, x, o)
+    vx.repeat(partial(vx.backspace_delete_window, _focused_window), times=o)
+    undo.register_removal(removed_text, y, x, hold=True)

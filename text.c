@@ -246,6 +246,37 @@ size_t get_cursor_pos(Text *text)
 	return text->gap_start;
 }
 
+int get_rowcoloffset_of_char(Text *text, char *ch, int *row, int *col, int *offset)
+{
+	int r, c;
+	int i;
+
+	get_cursor_rowcol(text, &r, &c);
+	*offset = 0;
+
+	// TODO can optimize this a little to only use these instead of r and c
+
+	for (i = text->text_start; i < text->size; ++i) {
+		if (text->buf[i] == ch[0]) {
+			goto done;
+		}
+		if (text->buf[i] == '\n') {
+			++r;
+			c = 0;
+		}
+		else {
+			++c;
+		}
+		++(*offset);
+		// TODO handle unicode
+	}
+	return -1;
+done:
+	*row = r;
+	*col = c;
+	return 0;
+}
+
 char *get_ch_rowcol(Text *text, int row, int col)
 {
 	int r = 0, c = 0;

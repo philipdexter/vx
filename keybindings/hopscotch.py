@@ -25,6 +25,8 @@ bind(ctrl + keys.l, vx.center)
 
 bind(ctrl + keys.d, vx.delete)
 
+bind(ctrl + keys.k, vx.kill_to_end)
+
 # window management
 
 vx.bind(ctrl + keys.x - keys.o, vx.next_window)
