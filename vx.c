@@ -5,6 +5,7 @@
 #include <wchar.h>
 #include <locale.h>
 #include <argp.h>
+#include <time.h>
 
 #include "vx_module.h"
 #include "buffer.h"
@@ -116,46 +117,50 @@ int main(int argc, char *argv[])
 	wmove(focused_window->curses_window, 0, 0);
 	refresh_window(focused_window);
 
+	clock_t last_tick = clock();
+	float update_every = .25;
 	while (lets_edit)
 	{
+		float delay = update_every - ((float)(clock() - last_tick))/CLOCKS_PER_SEC;
+		timeout(delay*1000);
 		int c = getch();
 		size_t bytes;
 		int utf8q = 1;
 
 		/* Handle escape and alt */
-		if (c == '\033') {
-			nodelay(stdscr, 1);
-			c = getch();
-			if (c == ERR) {
-				// got an escape
-				c = '\033';
-			} else {
-				// got an alt+key
-				c |= 0x80;
-				utf8q = 0;
-			}
-			nodelay(stdscr, 0);
-		}
-
-		/* handle utf8 */
-		bytes = more_bytes_utf8[c];
-		if (utf8q && bytes > 0) {
-			int i;
-			char *c_utf8 = calloc(1, bytes + 2);
-			c_utf8[0] = c;
-			nodelay(stdscr, 1);
-			for (i = 0; i < bytes; ++i) {
+		if (c != ERR) {
+			if (c == '\033') {
+				nodelay(stdscr, 1);
 				c = getch();
-				c_utf8[i+1] = c;
+				if (c == ERR) {
+					// got an escape
+					c = '\033';
+				} else {
+					// got an alt+key
+					c |= 0x80;
+					utf8q = 0;
+				}
+				nodelay(stdscr, 0);
 			}
-			vx_py_handle_key_utf8(c_utf8);
-			nodelay(stdscr, 0);
-			free(c_utf8);
-		} else {
-			vx_py_handle_key(c);
+
+			/* handle utf8 */
+			bytes = more_bytes_utf8[c];
+			if (utf8q && bytes > 0) {
+				int i;
+				char *c_utf8 = calloc(1, bytes + 2);
+				c_utf8[0] = c;
+				nodelay(stdscr, 1);
+				for (i = 0; i < bytes; ++i) {
+					c = getch();
+					c_utf8[i+1] = c;
+				}
+				vx_py_handle_key_utf8(c_utf8);
+				nodelay(stdscr, 0);
+				free(c_utf8);
+			} else {
+				vx_py_handle_key(c);
+			}
 		}
-
-
 
 		get_cursor_rowcol(focused_window->buffer->text, &screen_rows, &screen_cols);
 		while (screen_rows+1 < focused_window->line && focused_window->line > 1) --focused_window->line;
@@ -170,6 +175,7 @@ int main(int argc, char *argv[])
 
 		refresh_window(focused_window);
 
+		last_tick = clock();
 	}
 
 	vx_py_deinit_python();
