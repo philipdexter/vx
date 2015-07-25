@@ -29,6 +29,7 @@ int attach_file(Buffer *buffer, char *filename)
 	char buf[20];
 	size_t nread;
 	int ret;
+	long file_size;
 	char *old_filename = buffer->filename;
 	buffer->filename = calloc(1, strlen(filename) + 1);
 	if (!buffer->filename) {
@@ -43,6 +44,11 @@ int attach_file(Buffer *buffer, char *filename)
 	fp = fopen(filename, "r");
 	if (!fp)
 		return -1;
+
+	fseek(fp, 0L, SEEK_END);
+	file_size = ftell(fp);
+	fseek(fp, 0L, SEEK_SET);
+	resize_gap(buffer->text, file_size);
 
 	while ((nread = fread(buf, 1, sizeof buf, fp)) > 0)
 		add_string(buffer->text, buf, nread);
