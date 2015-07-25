@@ -15,9 +15,9 @@ def register_removal(s, r=None, c=None, hold=False):
 def _undo():
     if len(_changes) > 0:
         change = _changes.pop()
+        vx.window.focused_window.set_linecol(change['row'], change['col'])
         if change['type'] == 'removal' and change['hold']:
             r, c = vx.get_linecol_window(vx.window.focused_window)
-        vx.window.focused_window.set_linecol(change['row'], change['col'])
         if change['type'] == 'addition':
             vx.backspace(track=False)
         elif change['type'] == 'removal':

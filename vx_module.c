@@ -353,8 +353,6 @@ static PyObject *vx_clear_window(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
-// TODO add get_linecoloffset_of_char
-
 static PyObject *vx_get_linecoloffset_of_ch(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
@@ -362,11 +360,12 @@ static PyObject *vx_get_linecoloffset_of_ch(PyObject *self, PyObject *args)
 	PyObject *ret;
 	char *ch;
 	int r, l, c, o;
+	int forwards = 1;
 
-	if (!PyArg_ParseTuple(args, "Os:get_linecoloffset_of_ch", &capsule, &ch))
+	if (!PyArg_ParseTuple(args, "Os|i:get_linecoloffset_of_ch", &capsule, &ch, &forwards))
 		return NULL;
 	WINDOW_FROM_CAPSULE;
-	r = get_rowcoloffset_of_char(window->buffer->text, ch, &l, &c, &o);
+	r = get_rowcoloffset_of_char(window->buffer->text, ch, &l, &c, &o, forwards);
 	if (r == -1)
 		o = -1;
 	ret = Py_BuildValue("(iii)", ++l, ++c, o);
@@ -413,12 +412,13 @@ static PyObject *vx_get_chars_linecol_window(PyObject *self, PyObject *args)
 	int row, col;
 	char *ch;
 	int chars;
+	int forwards = 1;
 
-	if (!PyArg_ParseTuple(args, "Oiii:get_ch_linecol_window", &capsule, &row, &col, &chars))
+	if (!PyArg_ParseTuple(args, "Oiii|i:get_ch_linecol_window", &capsule, &row, &col, &chars, &forwards))
 		return NULL;
 	WINDOW_FROM_CAPSULE;
 	--row, --col;
-	ch = get_chars_rowcol(window->buffer->text, row, col, chars);
+	ch = get_chars_rowcol(window->buffer->text, row, col, chars, forwards);
 	ret = Py_BuildValue("s", ch);
 	return ret;
 }

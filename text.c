@@ -252,7 +252,8 @@ size_t get_cursor_pos(Text *text)
 	return text->gap_start;
 }
 
-int get_rowcoloffset_of_char(Text *text, char *ch, int *row, int *col, int *offset)
+
+int get_rowcoloffset_of_char(Text *text, char *ch, int *row, int *col, int *offset, int forwards)
 {
 	int r, c;
 	int i;
@@ -261,20 +262,35 @@ int get_rowcoloffset_of_char(Text *text, char *ch, int *row, int *col, int *offs
 	*offset = 0;
 
 	// TODO can optimize this a little to only use these instead of r and c
-
-	for (i = text->text_start; i < text->size; ++i) {
-		if (text->buf[i] == ch[0]) {
-			goto done;
+	if (forwards) {
+		for (i = text->text_start; i < text->size; ++i) {
+			if (text->buf[i] == ch[0]) {
+				goto done;
+			}
+			if (text->buf[i] == '\n') {
+				++r;
+				c = 0;
+			}
+			else {
+				++c;
+			}
+			++(*offset);
+			// TODO handle unicode
 		}
-		if (text->buf[i] == '\n') {
-			++r;
-			c = 0;
+	} else {
+		for (i = ((int)text->gap_start)-1; i >= 0; --i) {
+			// TODO handle unicode
+			if (text->buf[i] == ch[0]) {
+				goto done;
+			}
+			if (text->buf[i] == '\n') {
+				--r;
+				c = 0;
+			} else {
+				--c;
+			}
+			++(*offset);
 		}
-		else {
-			++c;
-		}
-		++(*offset);
-		// TODO handle unicode
 	}
 	return -1;
 done:
@@ -314,7 +330,7 @@ char *get_ch_rowcol(Text *text, int row, int col)
 	return ret;
 }
 
-char *get_chars_rowcol(Text *text, int row, int col, int length)
+char *get_chars_rowcol(Text *text, int row, int col, int length, int forwards)
 {
 	int r = 0, c = 0;
 	size_t i, bytes;
@@ -341,7 +357,10 @@ char *get_chars_rowcol(Text *text, int row, int col, int length)
 
 	// TODO handle unicode
 	ret = calloc(1, length + 1);
-	memcpy(ret, text->buf + i, length);
+	if (forwards)
+		memcpy(ret, text->buf + i, length);
+	else
+		memcpy(ret, text->buf + i - length, length);
 	return ret;
 }
 
