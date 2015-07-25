@@ -279,7 +279,7 @@ def _next_window():
 def _tick():
     for w in _windows:
         w.update()
-vx.register_tick_function(_tick)
+vx.register_tick_function(_tick, front=True)
 
 @vx.expose
 def _close_window():
