@@ -21,6 +21,29 @@ const char more_bytes_utf8[256] = {
 	2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,4,4,4,4,5,5,5,5
 };
 
+void text_memcpy_from(char *dest, size_t dest_start, Text *src, size_t src_start, size_t n)
+{
+	size_t copied;
+
+	// Trying to start a copy in the gap
+	if (src_start >= src->gap_start && src_start < src->text_start) {
+		copied = src->text_start - src_start;
+		memcpy(dest + dest_start, src->buf + src->gap_start - copied, copied);
+		memcpy(dest + dest_start + copied, src->buf + src->text_start, n - copied);
+	}
+	// Try to end a copy in the gap or trying to copy completely across the gap
+	else if ((src_start + n > src->gap_start && src_start + n < src->text_start) ||
+		(src_start < src->gap_start && src_start + n >= src->text_start)) {
+		copied = src->gap_start - src_start;
+		memcpy(dest + dest_start, src->buf + src_start, copied);
+		memcpy(dest + dest_start + copied, src->buf + src->text_start, n - copied);
+	}
+	// No overlap, copy as normal
+	else {
+		memcpy(dest + dest_start, src->buf + src_start, n);
+	}
+}
+
 Text *new_document(void)
 {
 	return calloc(1, sizeof(Text));
@@ -358,9 +381,9 @@ char *get_chars_rowcol(Text *text, int row, int col, int length, int forwards)
 	// TODO handle unicode
 	ret = calloc(1, length + 1);
 	if (forwards)
-		memcpy(ret, text->buf + i, length);
+		text_memcpy_from(ret, 0, text, i, length);
 	else
-		memcpy(ret, text->buf + i - length, length);
+		text_memcpy_from(ret, 0, text, i - length, length);
 	return ret;
 }
 
