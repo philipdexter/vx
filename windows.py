@@ -361,3 +361,52 @@ def _kill_to_end():
     removed_text = vx.get_str_linecol_window(_window.focused_window, y, x, o)
     vx.repeat(partial(vx.backspace_delete_window, _window.focused_window), times=o)
     undo.register_removal(removed_text, y, x, hold=True)
+
+@vx.expose
+@_seek_setting
+def _kill_to_forward():
+    breaks = ('_', ' ', '\n')
+    offsets = []
+    for s in breaks:
+        (l, c, o) = vx.get_linecoloffset_of_str(_window.focused_window, s)
+        if o == -1:
+            continue
+        if o == 0 and s != '\n':
+            vx.move_right()
+            (l, c, o) = vx.get_linecoloffset_of_str(_window.focused_window, s)
+            o += 1
+            vx.move_left()
+        offsets.append(o)
+    if o == 0:
+        _kill_to_end()
+        return
+    y, x = vx.get_linecol_window(_window.focused_window)
+    o = min(offsets)
+    removed_text = vx.get_str_linecol_window(_window.focused_window, y, x, o)
+    vx.repeat(partial(vx.backspace_delete_window, _window.focused_window), times=o)
+    undo.register_removal(removed_text, y, x, hold=True)
+
+@vx.expose
+@_seek_setting
+def _kill_to_backward():
+    breaks = ('_', ' ', '\n')
+    offsets = []
+    for s in breaks:
+        (l, c, o) = vx.get_linecoloffset_of_str(_window.focused_window, s, 0)
+        if o == -1:
+            continue
+        if o == 0 and s != '\n':
+            vx.move_left()
+            (l, c, o) = vx.get_linecoloffset_of_str(_window.focused_window, s, 0)
+            o += 1
+            vx.move_right()
+        offsets.append(o)
+    if o == 0:
+        vx.backspace()
+        return
+    y, x = vx.get_linecol_window(_window.focused_window)
+    o = min(offsets)
+    removed_text = vx.get_str_linecol_window(_window.focused_window, y, x, o, 0)
+    vx.repeat(partial(vx.backspace_window, _window.focused_window), times=o)
+    y, x = vx.get_linecol_window(_window.focused_window)
+    undo.register_removal(removed_text, y, x, hold=False)

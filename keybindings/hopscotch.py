@@ -27,6 +27,9 @@ bind(ctrl + keys.d, vx.delete)
 
 bind(ctrl + keys.k, vx.kill_to_end)
 
+bind(alt + keys.d, vx.kill_to_forward)
+bind(alt + keys.backspace, vx.kill_to_backward)
+
 # window management
 
 vx.bind(ctrl + keys.x - keys.o, vx.next_window)
