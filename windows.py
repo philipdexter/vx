@@ -69,6 +69,10 @@ class _window(metaclass=_window_meta):
         self.keybinding_table = vx.keybinding_table()
         _windows.append(self)
         _windows.sort(key=lambda w: w.y)
+
+        self.parent = None
+        self.children = []
+
         self.traversable = traversable
         if traversable:
             _windows_traversable.append(self)
@@ -100,16 +104,28 @@ class _window(metaclass=_window_meta):
 
     def remove(self):
         y, x = vx.get_window_size(self)
-        if hasattr(self, 'sibling'):
-            y += 1 if self.sibling.status_bar is not None else 0
-            if self.sibling_position == 'b':
-                self.sibling.grow(bottom=y)
-            elif self.sibling_position == 'r':
-                self.sibling.grow(right=x)
-            elif self.sibling_position == 't':
-                self.sibling.grow(top=y)
-            elif self.sibling_position == 'l':
-                self.sibling.grow(left=x)
+        if self.parent:
+            if len(self.children) == 0:
+                dy = self.y - self.parent.y
+                dx = self.x - self.parent.x
+                y += 1 if self.parent.status_bar is not None else 0
+                if dy > 0:
+                    self.parent.grow(bottom=y)
+                if dx > 0:
+                    self.parent.grow(right=x)
+            else:
+                for c in self.children:
+                    c.parent = self.parent
+                    self.parent.children.append(c)
+                dy = self.children[0].y - self.y
+                dx = self.children[0].x - self.x
+                y += 1 if self.children[0].status_bar is not None else 0
+                if dy > 0:
+                    self.children[0].grow(top=y)
+                if dx > 0:
+                    self.children[0].grow(left=x)
+            self.parent.children.remove(self)
+            self.parent.focus()
         _windows.remove(self)
         if self.traversable:
             _windows_traversable.remove(self)
@@ -222,10 +238,8 @@ class _window(metaclass=_window_meta):
         split_width = self.columns
         self.resize(split_height, split_width)
         new = _window(split_height, split_width, self.y + split_height, self.x)
-        new.sibling = self
-        new.sibling_position = 'b'
-        self.sibling = new
-        self.sibling_position = 't'
+        new.parent = self
+        self.children.append(new)
         new.blank()
         new.focus()
         return new
@@ -235,10 +249,8 @@ class _window(metaclass=_window_meta):
         split_width = math.floor(self.columns / 2)
         self.resize(split_height, split_width)
         new = _window(split_height, split_width, self.y, self.x + split_width)
-        new.sibling = self
-        new.sibling_position = 'r'
-        self.sibling = new
-        self.sibling_position = 'l'
+        new.parent = self
+        self.children.append(new)
         new.blank()
         new.focus()
         return new
