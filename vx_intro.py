@@ -41,4 +41,7 @@ def _default_start():
 vx.default_start = _default_start
 
 sys.path.append(os.path.expanduser('~/.python'))
-import rc
+try:
+  import rc
+except ImportError:
+  pass # just means there was no ~/.python/rc module
