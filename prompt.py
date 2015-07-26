@@ -5,6 +5,7 @@ import traceback
 import sys
 from io import StringIO
 from os.path import isfile
+from functools import partial
 
 class _prompt(vx.window):
     def __init__(self, attached_to=None):
@@ -88,23 +89,49 @@ class _file_prompt(_prompt):
     def __init__(self, *args, **kwargs):
         super(_file_prompt, self).__init__(*args, **kwargs)
 
-        self.keybinding_table.bind(vx.keys.enter, self.getout)
+        self.completing = False
 
-    def getout(self):
-        if self.attached_to.dirty:
-            self.add_string('dirty window')
+        self.keybinding_table.bind(vx.keys.enter, self.getout)
+        self.keybinding_table.bind(vx.keys.tab, self.complete)
+
+    def complete(self):
+        import glob
+        if not self.completing:
+            self.completing = True
+            contents = vx.get_contents_window(self)
+            self.old_contents = contents
+            vx.clear_contents_window(self)
+            self.files = glob.glob('{}*'.format(contents))
+            if len(self.files) == 0:
+                self.completing = False
+        if len(self.files) == 0:
+            self.completing = False
+            vx.clear_contents_window(self)
+            vx.add_string(self.old_contents)
+        else:
+            completion = self.files.pop()
+            vx.clear_contents_window(self)
+            vx.add_string(completion)
+
+    def getout(self, force=False, cancel_open=False):
+        if not force and self.attached_to.dirty:
+            self.attached_to.focus()
+            _yn_prompt('Window is dirty, really open another file?',
+                       partial(self.getout, force=True),
+                       partial(self.getout, force=True, cancel_open=True))
             return
-        # TODO check if current window is dirty
         y, x = vx.get_window_size(self)
         self.attached_to.grow(bottom=y)
         vx.focus_window(self.attached_to)
-        contents = vx.get_contents_window(self)
-        if isfile(contents):
-            self.attached_to.attach_file(contents)
-        else:
-            split = self.attached_to.split_h()
-            split.focus()
-            vx.add_string('file "{}" does not exist'.format(contents))
+        if not cancel_open:
+            contents = vx.get_contents_window(self)
+            if isfile(contents):
+                self.attached_to.attach_file(contents)
+                self.attached_to.dirty = False
+            else:
+                split = self.attached_to.split_h()
+                split.focus()
+                vx.add_string('file "{}" does not exist'.format(contents))
         self.remove(force=True)
 
 @vx.expose
