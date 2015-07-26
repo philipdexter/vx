@@ -29,5 +29,5 @@ def _undo():
             vx.add_string(change['string'], track=False)
             if change['hold']:
                 vx.window.focused_window.set_linecol(r, c)
-        if len(_changes) == 0:
+        if len(change_list) == 0:
             vx.window.focused_window.dirty = False
