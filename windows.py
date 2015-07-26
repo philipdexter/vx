@@ -132,6 +132,14 @@ class _window(metaclass=_window_meta):
         vx.delete_window(self)
         if self.status_bar is not None:
             self.status_bar.remove()
+        # quit editor if there are no more windows
+        if len(_windows_traversable) == 0:
+            # create new blank window so we don't crash
+            # TODO fix c code so we don't need this
+            new = _window(1, 1, 1, 1)
+            new.blank()
+            new.focus()
+            vx.quit()
 
     def resize(self, lines, columns):
         self.rows = lines
