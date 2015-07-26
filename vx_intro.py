@@ -1,7 +1,8 @@
 import vx
 
 import math
-from sys import argv
+import os
+import sys
 
 _tick_functions = []
 def _register_tick_function(f, front=False):
@@ -16,7 +17,7 @@ def _tick():
 vx.my_vx = _tick
 vx.register_tick_function = _register_tick_function
 
-vx.files = argv[1:]
+vx.files = sys.argv[1:]
 
 import utils
 import scheduler
@@ -38,3 +39,6 @@ def _default_start():
             y += d
             win.focus()
 vx.default_start = _default_start
+
+sys.path.append(os.path.expanduser('~/.python'))
+import rc
