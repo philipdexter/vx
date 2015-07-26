@@ -389,10 +389,8 @@ def _kill_to_end():
     if o == 0:
         o += 1
     if o == -1:
-        _move_eol()
-        _, end = vx.get_linecol_window(_window.focused_window)
-        vx.set_linecol_window(_window.focused_window, y, x)
-        o = end - x
+        with vx.cursor_wander(_move_eol) as (_, end):
+            o = end - x
     removed_text = vx.get_str_linecol_window(_window.focused_window, y, x, o)
     vx.repeat(partial(vx.backspace_delete_window, _window.focused_window), times=o)
     undo.register_removal(removed_text, y, x, hold=True)
