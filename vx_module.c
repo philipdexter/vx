@@ -70,6 +70,7 @@ void vx_py_deinit_python(void)
 
 void vx_py_load_start(void)
 {
+	PyRun_SimpleString("import sys;" "import os;" "sys.path.append(os.path.expanduser('~/.vx'));");
 	PyObject *pName = PyUnicode_FromString("start");
 	start_mod = PyImport_Import(pName);
 	if (!start_mod) {

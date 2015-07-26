@@ -1,8 +1,7 @@
 import vx
 
 import math
-import os
-import sys
+from sys import argv
 
 _tick_functions = []
 def _register_tick_function(f, front=False):
@@ -17,7 +16,7 @@ def _tick():
 vx.my_vx = _tick
 vx.register_tick_function = _register_tick_function
 
-vx.files = sys.argv[1:]
+vx.files = argv[1:]
 
 import utils
 import scheduler
@@ -39,9 +38,3 @@ def _default_start():
             y += d
             win.focus()
 vx.default_start = _default_start
-
-sys.path.append(os.path.expanduser('~/.python'))
-try:
-  import rc
-except ImportError:
-  pass # just means there was no ~/.python/rc module
