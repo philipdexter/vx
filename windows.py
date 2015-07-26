@@ -373,6 +373,7 @@ def _kill_to_end():
     removed_text = vx.get_str_linecol_window(_window.focused_window, y, x, o)
     vx.repeat(partial(vx.backspace_delete_window, _window.focused_window), times=o)
     undo.register_removal(removed_text, y, x, hold=True)
+    _window.focused_window.dirty = True
 
 @vx.expose
 @_seek_setting
@@ -397,6 +398,7 @@ def _kill_to_forward():
     removed_text = vx.get_str_linecol_window(_window.focused_window, y, x, o)
     vx.repeat(partial(vx.backspace_delete_window, _window.focused_window), times=o)
     undo.register_removal(removed_text, y, x, hold=True)
+    _window.focused_window.dirty = True
 
 @vx.expose
 @_seek_setting
@@ -422,3 +424,4 @@ def _kill_to_backward():
     vx.repeat(partial(vx.backspace_window, _window.focused_window), times=o)
     y, x = vx.get_linecol_window(_window.focused_window)
     undo.register_removal(removed_text, y, x, hold=False)
+    _window.focused_window.dirty = True
