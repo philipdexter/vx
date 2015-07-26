@@ -25,7 +25,7 @@ class _prompt(vx.window):
         y, x = vx.get_window_size(self)
         self.attached_to.grow(bottom=y)
         vx.focus_window(self.attached_to)
-        self.remove()
+        self.remove(force=True)
 
 @contextlib.contextmanager
 def stdoutIO(stdout=None):
@@ -68,7 +68,7 @@ class _exec_prompt(_prompt):
                 vx.add_string(s)
             else:
                 vx.add_string(tb)
-        self.remove()
+        self.remove(force=True)
 
     def _enter_and_expand(self):
         self.expand()
@@ -105,4 +105,34 @@ class _file_prompt(_prompt):
             split = self.attached_to.split_h()
             split.focus()
             vx.add_string('file "{}" does not exist'.format(contents))
-        self.remove()
+        self.remove(force=True)
+
+@vx.expose
+class _yn_prompt(_prompt):
+    def __init__(self, message, yes, no, *args, **kwargs):
+        super(_yn_prompt, self).__init__(*args, **kwargs)
+
+        self.yes = yes
+        self.no = no
+
+        self.keybinding_table.bind(vx.keys.enter, self.getout)
+
+        vx.add_string('{} (y/n): '.format(message))
+
+    def getout(self):
+        contents = vx.get_contents_window(self)
+        ret = False
+        try:
+            answer = contents.split(':')[1].strip()
+            if answer.lower() in ('y', 'yes'):
+                ret = True
+        except:
+            return
+        y, x = vx.get_window_size(self)
+        self.attached_to.grow(bottom=y)
+        vx.focus_window(self.attached_to)
+        self.remove(force=True)
+        if ret and self.yes:
+            self.yes()
+        elif self.no:
+            self.no()

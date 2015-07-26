@@ -102,7 +102,10 @@ class _window(metaclass=_window_meta):
             self.dirty = True
             undo.register_change(s)
 
-    def remove(self):
+    def remove(self, force=False):
+        if not force and self.dirty:
+            vx.yn_prompt('Window is dirty, really close?', partial(self.remove, force=True), None)
+            return
         y, x = vx.get_window_size(self)
         if self.parent:
             if len(self.children) == 0:
