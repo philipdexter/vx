@@ -46,6 +46,7 @@ _keys = {
     'enter':        chr(13),
     'return':       chr(13), # this one is funky
     'escape':       chr(27),
+    'tab':          chr(9),
 }
 
 for x in 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789':
