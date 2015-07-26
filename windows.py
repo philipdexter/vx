@@ -388,6 +388,11 @@ def _kill_to_end():
     y, x = vx.get_linecol_window(_window.focused_window)
     if o == 0:
         o += 1
+    if o == -1:
+        _move_eol()
+        _, end = vx.get_linecol_window(_window.focused_window)
+        vx.set_linecol_window(_window.focused_window, y, x)
+        o = end - x
     removed_text = vx.get_str_linecol_window(_window.focused_window, y, x, o)
     vx.repeat(partial(vx.backspace_delete_window, _window.focused_window), times=o)
     undo.register_removal(removed_text, y, x, hold=True)
@@ -412,6 +417,9 @@ def _kill_to_forward():
         _kill_to_end()
         return
     y, x = vx.get_linecol_window(_window.focused_window)
+    if len(offsets) == 0:
+        _kill_to_end()
+        return
     o = min(offsets)
     removed_text = vx.get_str_linecol_window(_window.focused_window, y, x, o)
     vx.repeat(partial(vx.backspace_delete_window, _window.focused_window), times=o)
@@ -437,7 +445,10 @@ def _kill_to_backward():
         vx.backspace()
         return
     y, x = vx.get_linecol_window(_window.focused_window)
-    o = min(offsets)
+    if len(offsets) == 0:
+        o = x
+    else:
+        o = min(offsets)
     removed_text = vx.get_str_linecol_window(_window.focused_window, y, x, o, 0)
     vx.repeat(partial(vx.backspace_window, _window.focused_window), times=o)
     y, x = vx.get_linecol_window(_window.focused_window)
