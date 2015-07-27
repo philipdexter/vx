@@ -1,3 +1,11 @@
-# vx - the editor
+# vx
 
-vx is an editor that is easily customizable through Python
+*/veks/*
+
+An editor.
+
+## Core Tenets
+
+* **Minimal.** Zero defaults.
+* **Extensible.** Python.
+* **Powerful.** API.
