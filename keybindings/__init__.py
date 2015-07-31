@@ -83,7 +83,7 @@ class _keymodifier:
 _ctrl = _keymodifier(lambda c: bytes([0x1f & ord(c)]), 'C')
 _alt =  _keymodifier(lambda c: bytes([0x80 | ord(c)]), 'M')
 
-_print_printable = False
+_print_printable = True
 
 class _keyseparator:
     def __init__(self):
