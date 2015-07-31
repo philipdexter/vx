@@ -199,13 +199,14 @@ class _keybinding_table:
 
 _global_keybinding_table = _keybinding_table()
 
-def _bind(keys, command=None):
+@vx.expose
+def _bind(keys, command=None, *args, **kwargs):
     """Bind a key to the global keybinding table. Can be used as a decorator"""
+
+    # used as a decorator
     if command is None:
-        def wrapper(func):
-            _bind(keys, func)
-            return func
-        return wrapper
+        return partial(_bind, keys)
+
     _global_keybinding_table.bind(keys, command)
 
 
@@ -213,6 +214,8 @@ _keybinding_tables = []
 _keybinding_tables.append(_global_keybinding_table)
 
 _keybinding_queue = []
+
+@vx.expose
 def _register_key(key):
     global _keybinding_queue
     _keybinding_queue.append(key)
@@ -235,13 +238,11 @@ def _register_key(key):
 
 ## Exports and defaults
 
-vx.keybinding_table = _keybinding_table
-vx.keybinding_tables = _keybinding_tables
-vx.register_key = _register_key
-vx.bind = _bind
-vx.ctrl = _ctrl
-vx.alt = _alt
-vx.keys = Keys
+vx.expose(_keybinding_table, 'keybinding_table')
+vx.expose(_keybinding_tables, 'keybinding_tables')
+vx.expose(_ctrl, 'ctrl')
+vx.expose(_alt, 'alt')
+vx.expose(Keys, 'keys')
 
 # bind return and backspace
 vx.bind(Keys.enter, partial(vx.add_string, '\n'))
