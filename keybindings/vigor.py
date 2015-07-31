@@ -8,6 +8,8 @@ from functools import partial
 
 from enum import Enum
 
+vx.print_printable = False
+
 class Mode(Enum):
     normal = 0
     insert = 1
@@ -56,6 +58,7 @@ def vbind(key, command=None, mode=Mode.normal):
 def insert():
     '''Enter insert mode'''
     vx.window.focused_window.mode = Mode.insert
+    vx.print_printable = True
 
 @vbind(vx.keys.I)
 def bol_insert():
@@ -90,6 +93,7 @@ vbind('$', vx.move_eol)
 def escape():
     '''Return to normal mode'''
     vx.window.focused_window.mode = Mode.normal
+    vx.print_printable = False
 
 # quit
 vx.bind('C-x', vx.quit)

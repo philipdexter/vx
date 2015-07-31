@@ -83,6 +83,8 @@ class _keymodifier:
 _ctrl = _keymodifier(lambda c: bytes([0x1f & ord(c)]), 'C')
 _alt =  _keymodifier(lambda c: bytes([0x80 | ord(c)]), 'M')
 
+_print_printable = False
+
 class _keyseparator:
     def __init__(self):
         self.left = None
@@ -227,7 +229,7 @@ def _register_key(key):
 
     if match == _keybinding_table.MATCH_STATE.reject:
         try:
-            if category(key.decode('utf8')[0])[0] != 'C':
+            if vx.print_printable and len(_keybinding_queue) == 1 and category(key.decode('utf8')[0])[0] != 'C':
                 vx.add_string(key.decode('utf8'))
         except UnicodeDecodeError:
             # Invalid unicode, don't print
@@ -243,6 +245,7 @@ vx.expose(_keybinding_tables, 'keybinding_tables')
 vx.expose(_ctrl, 'ctrl')
 vx.expose(_alt, 'alt')
 vx.expose(Keys, 'keys')
+vx.expose(_print_printable, 'print_printable')
 
 # bind return and backspace
 vx.bind(Keys.enter, partial(vx.add_string, '\n'))
