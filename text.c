@@ -338,7 +338,11 @@ char *get_ch_rowcol(Text *text, int row, int col)
 			if (r == row && c == col - 1) break;
 			++r; c = 0;
 		} else if (text->buf[i] == '\t') {
-			c += 8 - (c % 8);
+			c += 8;// - (c % 8);
+			if (r == row && c >= col) {
+				if (c == col) ++i;
+				break;
+			}
 		} else {
 			// Handle unicode
 			bytes = more_bytes_utf8[(unsigned int)(unsigned char)text->buf[i]];
@@ -369,7 +373,7 @@ char *get_chars_rowcol(Text *text, int row, int col, int length, int forwards)
 			if (r == row && c == col - 1) break;
 			++r; c = 0;
 		} else if (text->buf[i] == '\t') {
-			c += 8 - (c % 8);
+			c += 8;// - (c % 8);
 		} else {
 			// Handle unicode
 			bytes = more_bytes_utf8[(unsigned int)(unsigned char)text->buf[i]];
@@ -395,7 +399,7 @@ void get_cursor_rowcol(Text *text, int *row, int *col)
 		if (text->buf[i] == '\n') {
 			++r; c = 0;
 		} else if (text->buf[i] == '\t') {
-			c += 8 - c % 8;
+			c += 8;// - c % 8;
 		} else {
 			// Handle unicode
 			bytes = more_bytes_utf8[(unsigned int)(unsigned char)text->buf[i]];
@@ -422,9 +426,13 @@ void set_cursor_rowcol(Text *text, int row, int col)
 
 	get_cursor_rowcol(text, &r, &c);
 	diff = abs(c - col);
-	for (i = 0; i < diff; ++i)
-		if (text->buf[text->text_start] != '\n')
+	for (i = 0; i < diff; ++i) {
+		if (text->buf[text->text_start] != '\n') {
+			if (text->buf[text->text_start] == '\t')
+				diff -= 7;
 			c > col ? move_left(text) : move_right(text);
+		}
+	}
 }
 
 void backspace(Text *text, int delete)

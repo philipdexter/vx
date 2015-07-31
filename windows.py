@@ -369,6 +369,8 @@ def _backspace(track=True):
                 _move_down()
                 _move_bol()
             ch = vx.get_ch_linecol_window(_window.focused_window, r, c)
+            if ch == '\t':
+                c -= 7
             undo.register_removal(ch, r, c)
     vx.backspace_window(_window.focused_window)
 @vx.expose
