@@ -21,6 +21,14 @@ const char more_bytes_utf8[256] = {
 	2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,4,4,4,4,5,5,5,5
 };
 
+size_t text_offset(Text *text, size_t start, int offset)
+{
+	if (start >= text->text_start && (int)start + offset < text->text_start) {
+		return start + offset - GAPSIZE(text);
+	}
+	return start + offset;
+}
+
 void text_memcpy_from(char *dest, size_t dest_start, Text *src, size_t src_start, size_t n)
 {
 	size_t copied;
@@ -387,7 +395,7 @@ char *get_chars_rowcol(Text *text, int row, int col, int length, int forwards)
 	if (forwards)
 		text_memcpy_from(ret, 0, text, i, length);
 	else
-		text_memcpy_from(ret, 0, text, i - length, length);
+		text_memcpy_from(ret, 0, text, text_offset(text, i,  -length), length);
 	return ret;
 }
 
