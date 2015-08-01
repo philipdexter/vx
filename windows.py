@@ -429,6 +429,34 @@ def _kill_to_forward():
 
 @vx.expose
 @_seek_setting
+def _forward_word():
+    breaks = ('_', ' ', '\n')
+    offsets = []
+    for s in breaks:
+        (l, c, o) = vx.get_linecoloffset_of_str(_window.focused_window, s)
+        if o == -1:
+            continue
+        if o == 0:
+            vx.move_right()
+            (l, c, o) = vx.get_linecoloffset_of_str(_window.focused_window, s)
+            if o == -1:
+                continue
+            else:
+                o += 1
+            vx.move_left()
+        offsets.append(o)
+    if o == 0:
+        _move_eol()
+        return
+    y, x = vx.get_linecol_window(_window.focused_window)
+    if len(offsets) == 0:
+        _move_eol()
+        return
+    o = min(offsets)
+    vx.repeat(vx.move_right, times=o)
+
+@vx.expose
+@_seek_setting
 def _kill_to_backward():
     breaks = ('_', ' ', '\n')
     offsets = []
@@ -455,3 +483,31 @@ def _kill_to_backward():
     y, x = vx.get_linecol_window(_window.focused_window)
     undo.register_removal(removed_text, y, x, hold=False)
     _window.focused_window.dirty = True
+
+@vx.expose
+@_seek_setting
+def _backward_word():
+    breaks = ('_', ' ', '\n')
+    offsets = []
+    for s in breaks:
+        (l, c, o) = vx.get_linecoloffset_of_str(_window.focused_window, s, 0)
+        if o == -1:
+            continue
+        if o == 0 and s != '\n':
+            vx.move_left()
+            (l, c, o) = vx.get_linecoloffset_of_str(_window.focused_window, s, 0)
+            if o == -1:
+                continue
+            else:
+                o += 1
+            vx.move_right()
+        offsets.append(o)
+    if o == 0:
+        vx.move_left()
+        return
+    y, x = vx.get_linecol_window(_window.focused_window)
+    if len(offsets) == 0:
+        o = x
+    else:
+        o = min(offsets)
+    vx.repeat(vx.move_left, times=o)
