@@ -15,12 +15,13 @@ def _seek_preserving(f):
     @wraps(f)
     def g(*args, **kwargs):
         ret = f(*args, **kwargs)
-        _, c = vx.get_linecol_window(_window.focused_window)
+        r, c = vx.get_linecol_window(_window.focused_window)
         if c < _window.focused_window.last_seeked_column:
-            vx.move_eol_window(_window.focused_window)
-            _, c = vx.get_linecol_window(_window.focused_window)
-            if _window.focused_window.last_seeked_column < c:
-                vx.repeat(vx.move_left, c - _window.focused_window.last_seeked_column)
+            vx.set_linecol_window(_window.focused_window, r, _window.focused_window.last_seeked_column)
+            # vx.move_eol_window(_window.focused_window)
+            # _, c = vx.get_linecol_window(_window.focused_window)
+            # if _window.focused_window.last_seeked_column < c:
+            #     vx.repeat(vx.move_left, c - _window.focused_window.last_seeked_column)
         return ret
     return g
 
