@@ -93,6 +93,7 @@ class _window(metaclass=_window_meta):
     def save(self):
         vx.save_window(self)
         self.dirty = False
+        vx.time_prompt('saved {}'.format(self.filename))
 
     @_seek_setting
     def set_linecol(self, row, col):

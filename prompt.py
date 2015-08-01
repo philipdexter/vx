@@ -163,3 +163,22 @@ class _yn_prompt(_prompt):
             self.yes()
         elif self.no:
             self.no()
+
+@vx.expose
+class _time_prompt(_prompt):
+    def __init__(self, message, seconds=2, *args, **kwargs):
+        super(_time_prompt, self).__init__(*args, **kwargs)
+
+        self.message = message
+
+        vx.add_string(message)
+
+        vx.schedule(seconds, self.getout)
+
+        self.attached_to.focus()
+
+    def getout(self):
+        y, x = vx.get_window_size(self)
+        self.attached_to.grow(bottom=y)
+        vx.focus_window(self.attached_to)
+        self.remove(force=True)
