@@ -167,7 +167,7 @@ class _window(metaclass=_window_meta):
             self.resize(self.rows - (bottom + top), self.columns - (right + left))
             if self.status_bar:
                 self.status_bar.move(self.y + self.rows - 1, self.x)
-        vx.redraw_all()
+        #vx.redraw_all()
 
     def grow(self, top=0, bottom=0, left=0, right=0):
         if top > 0 or left > 0:
@@ -175,7 +175,7 @@ class _window(metaclass=_window_meta):
             self.resize(self.rows + top, self.columns + left)
         if bottom > 0 or right > 0:
             self.resize(self.rows + (bottom + top), self.columns + (right + left))
-        vx.redraw_all()
+        #vx.redraw_all()
 
     def move(self, y, x):
         self.y = y
@@ -299,7 +299,7 @@ def _next_window():
 def _tick():
     for w in _windows:
         w.update()
-vx.register_tick_function(_tick, front=True)
+vx.register_tick_function(_tick)#, front=True)
 
 @vx.expose
 def _close_window():
