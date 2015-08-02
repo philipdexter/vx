@@ -24,6 +24,7 @@ import keybindings
 import windows
 import status_bar
 import prompt
+import test
 
 def _default_start():
     if len(vx.files) == 0:
