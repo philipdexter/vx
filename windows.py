@@ -80,13 +80,7 @@ class _window(metaclass=_window_meta):
             _windows_traversable.sort(key=lambda w: w.y)
 
         if status_bar:
-            self.status_bar = vx.window(1, columns, y + rows - 1, x, traversable=False, status_bar=False)
-            self.status_bar.blank()
-            self.status_bar.set_color(5, -1)
-            self.status_bar_text = lambda window: 'line: {} col: {} - {}{}\n'.format(window.line,
-                                                                                     window.col,
-                                                                                     window.filename if hasattr(window, 'filename') else '<none>',
-                                                                                     '(d)' if window.dirty else '')
+            self.status_bar = vx.status_bar(self)
         else:
             self.status_bar = None
 
@@ -188,12 +182,6 @@ class _window(metaclass=_window_meta):
         self.graffitis = []
         self.graffitis.append(_graffiti(0, 0, text))
 
-    def set_status_bar_text(self, text):
-        if callable(text):
-            self.status_bar_text = text
-        else:
-            self.status_bar_text = lambda _: text
-
     def blank(self):
         self.has_contents = True
         vx.attach_window_blank(self)
@@ -213,7 +201,7 @@ class _window(metaclass=_window_meta):
         vx.set_cursor(self, 0, 0)
         self.line, self.col = vx.get_linecol_window(self)
         if self.status_bar:
-            self.status_bar.set_text(self.status_bar_text(self))
+            self.status_bar.set_text(self.status_bar.text(self))
 
     def refresh(self):
         vx.refresh_window(self)
