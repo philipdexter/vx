@@ -22,6 +22,7 @@ import utils
 import scheduler
 import keybindings
 import windows
+import status_bar
 import prompt
 
 def _default_start():

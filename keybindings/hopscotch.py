@@ -48,6 +48,12 @@ bind(alt + keys.x, vx.exec_prompt)
 
 bind(ctrl + keys.x - ctrl + keys.f, vx.file_prompt)
 
+bind(ctrl + keys.x - keys.enter, vx.execute_window)
+
 # undo/redo
 
 bind(ctrl + keys.underscore, vx.undo)
+
+# save
+
+bind(ctrl + keys.x - ctrl + keys.s, lambda: vx.window.focused_window.save())

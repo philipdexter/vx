@@ -1,5 +1,6 @@
 import vx
 import undo
+import utils
 
 import math
 from functools import partial, wraps
@@ -500,3 +501,22 @@ def _backward_word():
     else:
         o = min(offsets)
     vx.repeat(vx.move_left, times=o)
+
+@vx.expose
+def execute_window():
+    contents = vx.get_contents_window(_window.focused_window)
+    with utils.stdoutIO() as s:
+        try:
+            exec(contents)
+        except Exception as e:
+            tb = traceback.format_exc()
+        else:
+            tb = None
+    s = s.getvalue()
+    if len(s) > 0 or tb:
+        split = _window.focused_window.split_h()
+        split.focus()
+        if not tb:
+            vx.add_string(s)
+        else:
+            vx.add_string(tb)

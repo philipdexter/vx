@@ -1,9 +1,6 @@
 import vx
+import utils
 
-import contextlib
-import traceback
-import sys
-from io import StringIO
 from os.path import isfile
 from functools import partial
 
@@ -28,15 +25,6 @@ class _prompt(vx.window):
         vx.focus_window(self.attached_to)
         self.remove(force=True)
 
-@contextlib.contextmanager
-def stdoutIO(stdout=None):
-    old = sys.stdout
-    if stdout is None:
-        stdout = StringIO()
-    sys.stdout = stdout
-    yield stdout
-    sys.stdout = old
-
 @vx.expose
 class _exec_prompt(_prompt):
     _history = []
@@ -54,7 +42,7 @@ class _exec_prompt(_prompt):
         vx.focus_window(self.attached_to)
         contents = vx.get_contents_window(self)
         _exec_prompt._history.append(contents)
-        with stdoutIO() as s:
+        with utils.stdoutIO() as s:
             try:
                 exec(contents)
             except Exception as e:
