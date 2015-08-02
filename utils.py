@@ -3,7 +3,6 @@ import vx
 from contextlib import contextmanager
 from functools import partial
 
-import traceback
 import sys
 from io import StringIO
 

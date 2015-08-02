@@ -50,6 +50,8 @@ bind(ctrl + keys.x - ctrl + keys.f, vx.file_prompt)
 
 bind(ctrl + keys.x - keys.enter, vx.execute_window)
 
+bind(ctrl + keys.t, vx.run_tests)
+
 # undo/redo
 
 bind(ctrl + keys.underscore, vx.undo)
