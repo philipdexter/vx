@@ -3,6 +3,7 @@ import undo
 import utils
 
 import math
+import traceback
 from functools import partial, wraps
 
 def _seek_setting(f):

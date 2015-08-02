@@ -1,6 +1,7 @@
 import vx
 import utils
 
+import traceback
 from os.path import isfile
 from functools import partial
 
