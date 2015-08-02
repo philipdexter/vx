@@ -287,7 +287,7 @@ size_t get_cursor_pos(Text *text)
 int get_rowcoloffset_of_char(Text *text, char *ch, int *row, int *col, int *offset, int forwards)
 {
 	int r, c;
-	int i;
+	int i, j, bytes, matched;
 
 	get_cursor_rowcol(text, &r, &c);
 	*offset = 0;
@@ -295,7 +295,15 @@ int get_rowcoloffset_of_char(Text *text, char *ch, int *row, int *col, int *offs
 	// TODO can optimize this a little to only use these instead of r and c
 	if (forwards) {
 		for (i = text->text_start; i < text->size; ++i) {
-			if (text->buf[i] == ch[0]) {
+			bytes = more_bytes_utf8[(unsigned int)(unsigned char)ch[0]];
+			matched = 1;
+			for (j = 0; j < bytes + 1; ++j) {
+				if (text->buf[i + j] != ch[j]) {
+					matched = 0;
+					break;
+				}
+			}
+			if (matched) {
 				goto done;
 			}
 			if (text->buf[i] == '\n') {
@@ -306,12 +314,18 @@ int get_rowcoloffset_of_char(Text *text, char *ch, int *row, int *col, int *offs
 				++c;
 			}
 			++(*offset);
-			// TODO handle unicode
 		}
 	} else {
 		for (i = ((int)text->gap_start)-1; i >= 0; --i) {
-			// TODO handle unicode
-			if (text->buf[i] == ch[0]) {
+			bytes = more_bytes_utf8[(unsigned int)(unsigned char)ch[0]];
+			matched = 1;
+			for (j = 0; j < bytes + 1; ++j) {
+				if (text->buf[i + j] != ch[j]) {
+					matched = 0;
+					break;
+				}
+			}
+			if (matched) {
 				goto done;
 			}
 			if (text->buf[i] == '\n') {
