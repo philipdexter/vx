@@ -264,3 +264,5 @@ bind(alt + keys.x, vx.exec_prompt)
 bind(ctrl + keys.x - keys['2'], vx.split_h)
 bind(ctrl + keys.x - keys['3'], vx.split_v)
 bind(ctrl + keys.x - keys['0'], vx.close_window)
+
+cb(keys.z, vx.suspend)
