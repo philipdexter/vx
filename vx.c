@@ -127,6 +127,18 @@ int main(int argc, char *argv[])
 		size_t bytes;
 		int utf8q = 1;
 
+		/* Handle resize */
+		if (c == KEY_RESIZE) {
+			endwin();
+			refresh();
+			clear();
+			getmaxyx(stdscr, row, col);
+
+			vx_py_update_vars();
+			vx_py_register_resize();
+			continue;
+		}
+
 		/* Handle escape and alt */
 		if (c != ERR) {
 			if (c == '\033') {

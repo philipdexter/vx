@@ -18,6 +18,10 @@ vx.register_tick_function = _register_tick_function
 
 vx.files = argv[1:]
 
+def _resize():
+    pass
+vx.resize_handler = _resize
+
 import utils
 import scheduler
 import keybindings

@@ -107,6 +107,21 @@ err:
 	return -1;
 }
 
+void vx_py_register_resize(void)
+{
+	PyObject *handler = PyObject_GetAttrString(vx_mod, "resize_handler");
+	PyObject *tmp_args = PyTuple_New(0);
+	PyObject *tmp = PyObject_CallObject(handler, tmp_args);
+	if (PyErr_Occurred()) {
+		endwin();
+		PyErr_Print();
+		exit(0);
+	}
+	Py_DECREF(handler);
+	Py_DECREF(tmp_args);
+	Py_XDECREF(tmp);
+}
+
 void vx_py_pump(void)
 {
 	PyObject *their_vx = PyObject_GetAttrString(vx_mod, "my_vx");
