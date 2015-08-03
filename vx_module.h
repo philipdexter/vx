@@ -20,5 +20,6 @@ extern Window *focused_window;
 extern int row, col;
 extern int screen_rows, screen_cols;
 extern int lets_edit;
+extern int lets_suspend;
 
 #endif
