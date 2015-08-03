@@ -195,7 +195,8 @@ class _keybinding_table:
             if cur is None:
                 return _keybinding_table.MATCH_STATE.reject
             elif callable(cur):
-                cur()
+                if cur() == _keybinding_table.MATCH_STATE.reject:
+                    return _keybinding_table.MATCH_STATE.reject
                 return _keybinding_table.MATCH_STATE.accept
         return _keybinding_table.MATCH_STATE.keep_going
 
