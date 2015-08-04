@@ -15,6 +15,7 @@
 static void finish(int sig);
 
 int lets_edit = 1;
+int lets_suspend = 0;
 
 int row=0;
 int col=0;
@@ -121,6 +122,20 @@ int main(int argc, char *argv[])
 	float update_every = .25;
 	while (lets_edit)
 	{
+		if (lets_suspend) {
+			endwin();
+			raise(SIGSTOP);
+			lets_suspend = 0;
+			refresh();
+			clear();
+			nonl();
+			raw();
+			noecho();
+			getmaxyx(stdscr, row, col);
+			vx_py_update_vars();
+			vx_py_register_resize();
+			continue;
+		}
 		float delay = update_every - ((float)(clock() - last_tick))/CLOCKS_PER_SEC;
 		timeout(delay*1000);
 		int c = getch();

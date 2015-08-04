@@ -419,32 +419,34 @@ def _kill_to_forward():
     _window.focused_window.dirty = True
 
 @vx.expose
+def _get_offsets_of(breaks, forward=True, ignore_pos=True, ignore_failed=True):
+    if ignore_pos: vx.move_right() if forward else vx.move_left()
+    offsets = map(lambda s: (s, vx.get_linecoloffset_of_str(_window.focused_window, s, int(forward))[2]), breaks)
+    offsets = list(map(lambda x: (x[0], x[1] + 1 if x[1] != -1 else x[1]), offsets)) if ignore_pos else offsets
+    if ignore_pos: vx.move_left() if forward else vx.move_right()
+    return list(filter(lambda x: x[1] != -1, offsets) if ignore_failed else offsets)
+
+@vx.expose
 @_seek_setting
 def _forward_word():
     breaks = ('_', ' ', '\n')
-    offsets = []
-    for s in breaks:
-        (l, c, o) = vx.get_linecoloffset_of_str(_window.focused_window, s)
-        if o == -1:
-            continue
-        if o == 0:
-            vx.move_right()
-            (l, c, o) = vx.get_linecoloffset_of_str(_window.focused_window, s)
-            if o == -1:
-                continue
-            else:
-                o += 1
-            vx.move_left()
-        offsets.append(o)
-    if o == 0:
-        _move_eol()
-        return
-    y, x = vx.get_linecol_window(_window.focused_window)
+    offsets = list(map(lambda x: x[1], _get_offsets_of(breaks)))
     if len(offsets) == 0:
-        _move_eol()
+        _move_end()
         return
     o = min(offsets)
     vx.repeat(vx.move_right, times=o)
+
+@vx.expose
+@_seek_setting
+def _backward_word():
+    breaks = ('_', ' ', '\n')
+    offsets = list(map(lambda x: x[1], _get_offsets_of(breaks, forward=False)))
+    if len(offsets) == 0:
+        _move_beg()
+        return
+    o = min(offsets)
+    vx.repeat(vx.move_left, times=o)
 
 @vx.expose
 @_seek_setting
@@ -474,34 +476,6 @@ def _kill_to_backward():
     y, x = vx.get_linecol_window(_window.focused_window)
     undo.register_removal(removed_text, y, x, hold=False)
     _window.focused_window.dirty = True
-
-@vx.expose
-@_seek_setting
-def _backward_word():
-    breaks = ('_', ' ', '\n')
-    offsets = []
-    for s in breaks:
-        (l, c, o) = vx.get_linecoloffset_of_str(_window.focused_window, s, 0)
-        if o == -1:
-            continue
-        if o == 0 and s != '\n':
-            vx.move_left()
-            (l, c, o) = vx.get_linecoloffset_of_str(_window.focused_window, s, 0)
-            if o == -1:
-                continue
-            else:
-                o += 1
-            vx.move_right()
-        offsets.append(o)
-    if o == 0:
-        vx.move_left()
-        return
-    y, x = vx.get_linecol_window(_window.focused_window)
-    if len(offsets) == 0:
-        o = x
-    else:
-        o = min(offsets)
-    vx.repeat(vx.move_left, times=o)
 
 @vx.expose
 def execute_window():

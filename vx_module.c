@@ -145,6 +145,14 @@ static PyObject *vx_quit(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
+static PyObject *vx_suspend(PyObject *self, PyObject *args)
+{
+	if (!PyArg_ParseTuple(args, ":suspend"))
+		return NULL;
+	lets_suspend = 1;
+	Py_RETURN_NONE;
+}
+
 static PyObject *vx_move_up_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
@@ -611,6 +619,8 @@ static PyObject *vx_set_cursor_window(PyObject *self, PyObject *args)
 static PyMethodDef VxMethods[] = {
 	{"quit", vx_quit, METH_VARARGS,
 	 "Quit"},
+	{"suspend", vx_suspend, METH_VARARGS,
+	 "Suspend"},
 	{"move_up_window", vx_move_up_window, METH_VARARGS,
 	 "Move the cursor up one row"},
 	{"move_down_window", vx_move_down_window, METH_VARARGS,
