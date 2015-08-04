@@ -218,10 +218,13 @@ _keybinding_tables.append(_global_keybinding_table)
 
 _keybinding_queue = []
 
+vx.last_pressed = ''
+
 @vx.expose
 def _register_key(key):
     global _keybinding_queue
     _keybinding_queue.append(key)
+    vx.last_pressed = key
 
     for table in _keybinding_tables:
         match = table.match_key_sequence(_keybinding_queue)
