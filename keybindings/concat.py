@@ -222,7 +222,18 @@ def kill():
     if not _stack:
         vx.kill_to_end()
     else:
-        command = vx.kill_to_end
+        def _command():
+            with vx.cursor_wander():
+                ra, ca = vx.get_linecol_window(vx.window.focused_window)
+                vx.move_eol()
+                rb, cb = vx.get_linecol_window(vx.window.focused_window)
+                if ca == cb:
+                    vx.move_right()
+                    rb, cb = vx.get_linecol_window(vx.window.focused_window)
+                removed = vx.get_str_linecol_to_linecol_window(vx.window.focused_window, ra, ca, rb, cb)
+                vx.remove_text_linecol_to_linecol(ra, ca, rb, cb)
+                return removed
+        command = _command
         x = 1
 
         i = _stack.pop(0)
@@ -235,19 +246,22 @@ def kill():
                 def _command():
                     ra, ca, rb, cb = finders[Place.line]()
                     removed = vx.get_str_linecol_to_linecol_window(vx.window.focused, ra, ca, rb, cb)
-                    undo.register_removal(removed, ra, ca, hold=True)
                     vx.remove_text_linecol_to_linecol(ra, ca, rb, cb)
+                    return removed
                 command = _command
             elif i == Place.word:
                 def _command():
                     ra, ca, rb, cb = finders[Place.word]()
                     removed = vx.get_str_linecol_to_linecol_window(vx.window.focused, ra, ca, rb, cb)
-                    undo.register_removal(removed, ra, ca, hold=True)
                     vx.remove_text_linecol_to_linecol(ra, ca, rb, cb)
+                    return removed
                 command = _command
             if _stack:
                 i = _stack.pop(0)
-        vx.repeat(command, times=x)
+        r, c = vx.get_linecol_window(vx.window.focused_window)
+        removed = vx.repeat(command, times=x)
+        undo.register_removal(''.join(removed), r, c, hold=True)
+        vx.window.focused_window.dirty = True
 
 def line():
     _stack.append(Place.line)
