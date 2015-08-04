@@ -337,7 +337,8 @@ def _move_end():
 @vx.expose
 def _center():
     r, c = vx.get_window_size(_window.focused)
-    y, x = vx.get_linecol_window(_window.focused)
+    y, _ = vx.get_linecol_window(_window.focused)
+    _, x = vx.get_linecol_start_window(_window.focused)
     new_top = max(y - r // 2, 1)
     _window.focused.set_start_linecol(new_top, x)
 
