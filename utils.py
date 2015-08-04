@@ -19,8 +19,10 @@ vx.expose = _expose
 
 @vx.expose
 def _repeat(c, times=4):
+    res = []
     for _ in range(times):
-        c()
+        res.append(c())
+    return res
 
 @vx.expose
 @contextmanager
