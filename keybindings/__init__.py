@@ -254,3 +254,5 @@ vx.expose(_print_printable, 'print_printable')
 # bind return and backspace
 vx.bind(Keys.enter, partial(vx.add_string, '\n'))
 vx.bind(Keys.backspace, vx.backspace)
+
+vx.bind(Keys.tab, partial(vx.add_string, '\t'))
