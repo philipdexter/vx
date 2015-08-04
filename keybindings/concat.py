@@ -214,7 +214,8 @@ def backspace(command, times, other):
 
 @concat(vx.center)
 def center(command, times, other):
-    y, x = vx.get_linecol_window(vx.window.focused)
+    y, _ = vx.get_linecol_window(vx.window.focused)
+    _, x = vx.get_linecol_start_window(vx.window.focused)
     new_top = max(y - times, 1)
     vx.window.focused.set_start_linecol(new_top, x)
 
