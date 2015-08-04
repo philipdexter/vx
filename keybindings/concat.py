@@ -9,21 +9,21 @@ _stack = []
 
 def concat_bind(command):
     def h():
-        fi = getattr(vx.window.focused_window, 'force_insert', False)
+        fi = getattr(vx.window.focused, 'force_insert', False)
         if fi:
             return vx.keybinding_table.MATCH_STATE.reject
         else:
             command()
         if not _stack:
-            if vx.window.focused_window.status_bar:
-                vx.window.focused_window.status_bar.reset_default_text()
+            if vx.window.focused.status_bar:
+                vx.window.focused.status_bar.reset_default_text()
         else:
-            if vx.window.focused_window.status_bar:
-                vx.window.focused_window.status_bar.set_status_text(' '.join(list(map(str, _stack))))
+            if vx.window.focused.status_bar:
+                vx.window.focused.status_bar.set_status_text(' '.join(list(map(str, _stack))))
     return h
 
 def save_typing(b):
-    vx.window.focused_window.force_insert = b
+    vx.window.focused.force_insert = b
 
 def cb(key, command):
     bind(key, concat_bind(command))
@@ -31,11 +31,11 @@ def cb(key, command):
 def entire_line():
     with vx.cursor_wander():
         vx.move_bol()
-        ra, ca = vx.get_linecol_window(vx.window.focused_window)
+        ra, ca = vx.get_linecol_window(vx.window.focused)
         vx.move_eol()
         vx.move_right()
-        rb, cb = vx.get_linecol_window(vx.window.focused_window)
-        removed = vx.get_str_linecol_to_linecol_window(vx.window.focused_window, ra, ca, rb, cb)
+        rb, cb = vx.get_linecol_window(vx.window.focused)
+        removed = vx.get_str_linecol_to_linecol_window(vx.window.focused, ra, ca, rb, cb)
         undo.register_removal(removed, ra, ca, hold=True)
         vx.remove_text_linecol_to_linecol(ra, ca, rb, cb)
     return (ra, ca, rb, cb)
@@ -44,24 +44,24 @@ def entire_line():
 def line_finder(direction=None):
     with vx.cursor_wander():
         vx.move_bol()
-        ra, ca = vx.get_linecol_window(vx.window.focused_window)
+        ra, ca = vx.get_linecol_window(vx.window.focused)
         vx.move_eol()
         vx.move_right()
-        rb, cb = vx.get_linecol_window(vx.window.focused_window)
+        rb, cb = vx.get_linecol_window(vx.window.focused)
     return (ra, ca, rb, cb)
 
 def word_finder(forward=True):
     with vx.cursor_wander():
-        ra, ca = vx.get_linecol_window(vx.window.focused_window)
+        ra, ca = vx.get_linecol_window(vx.window.focused)
         breaks = ('_', ' ', '\n')
         offsets = list(map(lambda x: x[1], vx.get_offsets_of(breaks, int(forward))))
         if len(offsets) == 0:
             vx.move_end() if forward else vx.move_beg()
-            rb, cb = vx.get_linecol_window(vx.window.focused_window)
+            rb, cb = vx.get_linecol_window(vx.window.focused)
             return (ra, ca, rb, cb)
         o = min(offsets)
         vx.repeat(vx.move_right if forward else vx.move_left, times=o)
-        rb, cb = vx.get_linecol_window(vx.window.focused_window)
+        rb, cb = vx.get_linecol_window(vx.window.focused)
     return (ra, ca, rb, cb)
 
 cb(keys.y, entire_line)
@@ -189,8 +189,8 @@ def delete(command, times, other):
 
 @concat(vx.move_beg)
 def absolute_line(command, times, other):
-    _, c = vx.get_linecol_window(vx.window.focused_window)
-    vx.set_linecol_window(vx.window.focused_window, times, c)
+    _, c = vx.get_linecol_window(vx.window.focused)
+    vx.set_linecol_window(vx.window.focused, times, c)
 
 
 @concat(vx.backspace)
@@ -202,10 +202,10 @@ def backspace(command, times, other):
         if i == Place.word:
             def _command():
                 ra, ca, rb, cb = finders[Place.word](False)
-                removed = vx.get_str_linecol_to_linecol_window(vx.window.focused_window, rb, cb, ra, ca)
+                removed = vx.get_str_linecol_to_linecol_window(vx.window.focused, rb, cb, ra, ca)
                 undo.register_removal(removed, rb, cb, hold=False)
                 vx.remove_text_linecol_to_linecol(rb, cb, ra, ca)
-                vx.set_linecol_window(vx.window.focused_window, rb, cb)
+                vx.set_linecol_window(vx.window.focused, rb, cb)
             command = _command
     # if isinstance(i, PlaceModifier):
     #     if i == PlaceModifier.beginning:
@@ -214,9 +214,9 @@ def backspace(command, times, other):
 
 @concat(vx.center)
 def center(command, times, other):
-    y, x = vx.get_linecol_window(vx.window.focused_window)
+    y, x = vx.get_linecol_window(vx.window.focused)
     new_top = max(y - times, 1)
-    vx.window.focused_window.set_start_linecol(new_top, x)
+    vx.window.focused.set_start_linecol(new_top, x)
 
 def kill():
     if not _stack:
@@ -234,14 +234,14 @@ def kill():
             if i == Place.line:
                 def _command():
                     ra, ca, rb, cb = finders[Place.line]()
-                    removed = vx.get_str_linecol_to_linecol_window(vx.window.focused_window, ra, ca, rb, cb)
+                    removed = vx.get_str_linecol_to_linecol_window(vx.window.focused, ra, ca, rb, cb)
                     undo.register_removal(removed, ra, ca, hold=True)
                     vx.remove_text_linecol_to_linecol(ra, ca, rb, cb)
                 command = _command
             elif i == Place.word:
                 def _command():
                     ra, ca, rb, cb = finders[Place.word]()
-                    removed = vx.get_str_linecol_to_linecol_window(vx.window.focused_window, ra, ca, rb, cb)
+                    removed = vx.get_str_linecol_to_linecol_window(vx.window.focused, ra, ca, rb, cb)
                     undo.register_removal(removed, ra, ca, hold=True)
                     vx.remove_text_linecol_to_linecol(ra, ca, rb, cb)
                 command = _command
@@ -330,7 +330,7 @@ cb(keys.A, beginning_pm)
 
 cb(keys.q, vx.quit)
 
-cb(keys.s, lambda: vx.window.focused_window.save())
+cb(keys.s, lambda: vx.window.focused.save())
 
 cb(keys.u, times_default)
 

@@ -36,7 +36,7 @@ class VigorBinding(object):
         return decorator
 
     def __call__(self, *args, **kwargs):
-        mode = getattr(vx.window.focused_window, 'mode', Mode.normal)
+        mode = getattr(vx.window.focused, 'mode', Mode.normal)
 
         if mode in self.callbacks:
             self.callbacks[mode](*args, **kwargs)
@@ -57,7 +57,7 @@ def vbind(key, command=None, mode=Mode.normal):
 @vbind(vx.keys.i)
 def insert():
     '''Enter insert mode'''
-    vx.window.focused_window.mode = Mode.insert
+    vx.window.focused.mode = Mode.insert
     vx.print_printable = True
 
 @vbind(vx.keys.I)
@@ -92,7 +92,7 @@ vbind('$', vx.move_eol)
 @vx.bind(vx.keys.escape)
 def escape():
     '''Return to normal mode'''
-    vx.window.focused_window.mode = Mode.normal
+    vx.window.focused.mode = Mode.normal
     vx.print_printable = False
 
 # quit

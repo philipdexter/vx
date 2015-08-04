@@ -28,7 +28,7 @@ def _repeat(c, times=4):
 @contextmanager
 def _cursor_wander(command=None, window=None):
     if window is None:
-        window = vx.window.focused_window
+        window = vx.window.focused
     y, x = vx.get_linecol_window(window)
     if command is not None:
         command()

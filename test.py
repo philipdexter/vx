@@ -9,7 +9,7 @@ def check(a, b):
 @vx.expose
 def _run_tests():
     try:
-        w = vx.window.focused_window
+        w = vx.window.focused
         w.blank()
 
         vx.add_string(

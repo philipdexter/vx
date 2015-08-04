@@ -58,4 +58,4 @@ bind(ctrl + keys.underscore, vx.undo)
 
 # save
 
-bind(ctrl + keys.x - ctrl + keys.s, lambda: vx.window.focused_window.save())
+bind(ctrl + keys.x - ctrl + keys.s, lambda: vx.window.focused.save())
