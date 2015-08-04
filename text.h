@@ -27,6 +27,7 @@ size_t get_cursor_pos(Text *text);
 int get_rowcoloffset_of_char(Text*, char*, int*, int*, int*, int);
 char *get_ch_rowcol(Text *text, int row, int col);
 char *get_chars_rowcol(Text *text, int row, int col, int, int);
+char *get_chars_rowcol_to_rowcol(Text *text, int, int, int, int);
 void get_cursor_rowcol(Text *text, int *row, int *col);
 void set_cursor_rowcol(Text *text, int row, int col);
 void backspace(Text *text, int);

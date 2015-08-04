@@ -29,6 +29,21 @@ size_t text_offset(Text *text, size_t start, int offset)
 	return start + offset;
 }
 
+void text_memcpy_from_offsets(char *dest, size_t dest_start, Text *src, size_t src_start, size_t src_end)
+{
+	size_t copied;
+
+	// Trying to copy across gap
+	if (src_start <= src->gap_start && src_end >= src->text_start) {
+		copied = src->gap_start - src_start;
+		memcpy(dest + dest_start, src->buf + src_start, copied);
+		memcpy(dest + dest_start + copied, src->buf + src->text_start, src_end - src->text_start);
+	}
+	else {
+		memcpy(dest + dest_start, src->buf + src_start, src_end - src_start);
+	}
+}
+
 void text_memcpy_from(char *dest, size_t dest_start, Text *src, size_t src_start, size_t n)
 {
 	size_t copied;
@@ -377,6 +392,58 @@ char *get_ch_rowcol(Text *text, int row, int col)
 	ret = calloc(1, bytes + 2);
 	memcpy(ret, text->buf + i, bytes+1);
 	return ret;
+}
+
+char *get_chars_rowcol_to_rowcol(Text *text, int rowa, int cola, int rowb, int colb)
+{
+	int r = 0, c = 0;
+	size_t i, bytes;
+	char *ret;
+	size_t start, end;
+
+	for (i = 0; i < text->size; ++i) {
+		if (i == text->gap_start) {
+			i += GAPSIZE(text) - 1;
+			continue;
+		}
+		if (r >= rowa && c == cola) break;
+		if (text->buf[i] == '\n') {
+			if (r == rowa && c == cola - 1) break;
+			++r; c = 0;
+		} else if (text->buf[i] == '\t') {
+			c += 8;
+		} else {
+			bytes = more_bytes_utf8[(unsigned int)(unsigned char)text->buf[i]];
+			i += bytes;
+			++c;
+		}
+	}
+	start = i;
+
+	for (; i < text->size; ++i) {
+		if (i == text->gap_start) {
+			i += GAPSIZE(text) - 1;
+			continue;
+		}
+		if (r >= rowb && c == colb) break;
+		if (text->buf[i] == '\n') {
+			if (r == rowb && c == colb - 1) break;
+			++r; c = 0;
+		} else if (text->buf[i] == '\t') {
+			c += 8;
+		} else {
+			bytes = more_bytes_utf8[(unsigned int)(unsigned char)text->buf[i]];
+			i += bytes;
+			++c;
+		}
+	}
+	end = i;
+
+	ret = calloc(1, end - start + 1);
+	text_memcpy_from_offsets(ret, 0, text, start, end);
+	return ret;
+
+	// TODO handle unicode
 }
 
 char *get_chars_rowcol(Text *text, int row, int col, int length, int forwards)

@@ -447,6 +447,25 @@ static PyObject *vx_get_chars_linecol_window(PyObject *self, PyObject *args)
 	return ret;
 }
 
+static PyObject *vx_get_chars_linecol_to_linecol_window(PyObject *self, PyObject *args)
+{
+	PyObject *capsule;
+	Window *window;
+	PyObject *ret;
+	int rowa, cola;
+	int rowb, colb;
+	char *ch;
+
+	if (!PyArg_ParseTuple(args, "Oiiii:get_chars_linecol_to_linecol_window", &capsule, &rowa, &cola, &rowb, &colb))
+		return NULL;
+	WINDOW_FROM_CAPSULE;
+	--rowa, --cola;
+	--rowb, --colb;
+	ch = get_chars_rowcol_to_rowcol(window->buffer->text, rowa, cola, rowb, colb);
+	ret = Py_BuildValue("s", ch);
+	return ret;
+}
+
 static PyObject *vx_get_linecol_window(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
@@ -667,6 +686,8 @@ static PyMethodDef VxMethods[] = {
 	 "Get the character at a linecol"},
 	{"get_str_linecol_window", vx_get_chars_linecol_window, METH_VARARGS,
 	 "Get a string at a linecol with a length"},
+	{"get_str_linecol_to_linecol_window", vx_get_chars_linecol_to_linecol_window, METH_VARARGS,
+	 "Get a string at a linecol to a linecol"},
 	{"get_linecol_window", vx_get_linecol_window, METH_VARARGS,
 	 "Get the line and column the cursor is on of a window"},
 	{"get_linecol_start_window", vx_get_linecol_start_window, METH_VARARGS,
