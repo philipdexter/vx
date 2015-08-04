@@ -225,13 +225,13 @@ def kill():
     else:
         def _command():
             with vx.cursor_wander():
-                ra, ca = vx.get_linecol_window(vx.window.focused_window)
+                ra, ca = vx.get_linecol_window(vx.window.focused)
                 vx.move_eol()
-                rb, cb = vx.get_linecol_window(vx.window.focused_window)
+                rb, cb = vx.get_linecol_window(vx.window.focused)
                 if ca == cb:
                     vx.move_right()
-                    rb, cb = vx.get_linecol_window(vx.window.focused_window)
-                removed = vx.get_str_linecol_to_linecol_window(vx.window.focused_window, ra, ca, rb, cb)
+                    rb, cb = vx.get_linecol_window(vx.window.focused)
+                removed = vx.get_str_linecol_to_linecol_window(vx.window.focused, ra, ca, rb, cb)
                 vx.remove_text_linecol_to_linecol(ra, ca, rb, cb)
                 return removed
         command = _command
@@ -259,10 +259,10 @@ def kill():
                 command = _command
             if _stack:
                 i = _stack.pop(0)
-        r, c = vx.get_linecol_window(vx.window.focused_window)
+        r, c = vx.get_linecol_window(vx.window.focused)
         removed = vx.repeat(command, times=x)
         undo.register_removal(''.join(removed), r, c, hold=True)
-        vx.window.focused_window.dirty = True
+        vx.window.focused.dirty = True
 
 def line():
     _stack.append(Place.line)
