@@ -496,6 +496,16 @@ def execute_window():
         else:
             vx.add_string(tb)
 
+@vx.expose
+def _remove_text_linecol_to_linecol(rowa, cola, rowb, colb):
+    # TODO inneficient, maybe implement this in C
+    with vx.cursor_wander():
+        vx.set_linecol_window(vx.window.focused_window, rowb, colb)
+        row, col = vx.get_linecol_window(vx.window.focused_window)
+        while row != rowa or col != cola:
+            vx.backspace(track=False)
+            row, col = vx.get_linecol_window(vx.window.focused_window)
+
 def _resize_handler():
     for w in _windows:
         w.resize(w.rows, vx.cols)
