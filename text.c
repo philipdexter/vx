@@ -503,7 +503,7 @@ void get_cursor_rowcol(Text *text, int *row, int *col)
 void set_cursor_rowcol(Text *text, int row, int col)
 {
 	int r, c;
-	size_t i;
+	int i;
 	int diff;
 
 	get_cursor_rowcol(text, &r, &c);
