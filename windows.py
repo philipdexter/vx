@@ -86,6 +86,12 @@ class _window(metaclass=_window_meta):
         else:
             self.status_bar = None
 
+    def __get_cursor(self):
+        return vx.get_linecol_window(self)
+    def __set_cursor(self, line, col):
+        return vx.set_linecol_window(self, line, col)
+    cursor = property(__get_cursor, __set_cursor)
+
     def save(self):
         vx.save_window(self)
         self.dirty = False
