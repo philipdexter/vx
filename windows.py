@@ -10,7 +10,7 @@ def _seek_setting(f):
     @wraps(f)
     def g(*args, **kwargs):
         ret = f(*args, **kwargs)
-        _, _window.focused.last_seeked_column = vx.get_linecol_window(_window.focused)
+        #_, _window.focused.last_seeked_column = vx.get_linecol_window(_window.focused)
         return ret
     return g
 def _seek_preserving(f):
@@ -19,7 +19,7 @@ def _seek_preserving(f):
         ret = f(*args, **kwargs)
         r, c = vx.get_linecol_window(_window.focused)
         if c < _window.focused.last_seeked_column:
-            vx.set_linecol_window(_window.focused, r, _window.focused.last_seeked_column)
+            pass#vx.set_linecol_window(_window.focused, r, _window.focused.last_seeked_column)
             # vx.move_eol_window(_window.focused)
             # _, c = vx.get_linecol_window(_window.focused)
             # if _window.focused.last_seeked_column < c:
@@ -85,6 +85,12 @@ class _window(metaclass=_window_meta):
             self.status_bar = vx.status_bar(self)
         else:
             self.status_bar = None
+
+    def __get_cursor(self):
+        return vx.get_linecol_window(self)
+    def __set_cursor(self, line, col):
+        return vx.set_linecol_window(self, line, col)
+    cursor = property(__get_cursor, __set_cursor)
 
     def save(self):
         vx.save_window(self)
