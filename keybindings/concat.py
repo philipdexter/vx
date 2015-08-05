@@ -28,29 +28,6 @@ def save_typing(b):
 def cb(key, command):
     bind(key, concat_bind(command))
 
-def line_finder(direction=None):
-    with vx.cursor_wander():
-        vx.move_bol()
-        ra, ca = vx.get_linecol_window(vx.window.focused)
-        vx.move_eol()
-        vx.move_right()
-        rb, cb = vx.get_linecol_window(vx.window.focused)
-    return (ra, ca, rb, cb)
-
-def word_finder(forward=True):
-    with vx.cursor_wander():
-        ra, ca = vx.get_linecol_window(vx.window.focused)
-        breaks = ('_', ' ', '\n')
-        offsets = list(map(lambda x: x[1], vx.get_offsets_of(breaks, int(forward))))
-        if len(offsets) == 0:
-            vx.move_end() if forward else vx.move_beg()
-            rb, cb = vx.get_linecol_window(vx.window.focused)
-            return (ra, ca, rb, cb)
-        o = min(offsets)
-        vx.repeat(vx.move_right if forward else vx.move_left, times=o)
-        rb, cb = vx.get_linecol_window(vx.window.focused)
-    return (ra, ca, rb, cb)
-
 def beginning():
     beginning_pm()
     line()
@@ -117,7 +94,6 @@ def delete_me(what=None):
         undo.register_removal(removed, ra, ca, hold=bool(direction))
 def delete():
     analyze(delete_me, character_grabber)
-
 
 def move_me(what=None):
     global _set_column
@@ -295,16 +271,10 @@ def clear():
     _stack = []
 
 class Place(Enum):
-    # TODO look up advanced enums which I can describe how to get a line, window, word, paragraph
     line = 0
     window = 1
     word = 2
     paragraph = 3
-
-finders = {
-    Place.line: line_finder,
-    Place.word: word_finder,
-}
 
 class PlaceModifier(Enum):
     whole = 0
