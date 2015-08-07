@@ -95,6 +95,10 @@ class _window(metaclass=_window_meta):
         return vx.set_linecol_window(self, line, col)
     cursor = property(__get_cursor, __set_cursor)
 
+    def __get_contents(self):
+        return vx.get_contents_window(self)
+    contents = property(__get_contents)
+
     def save(self):
         vx.save_window(self)
         self.dirty = False
