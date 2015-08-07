@@ -238,7 +238,6 @@ def analyze(command, default_grabber=None):
             elif i == Place.window:
                 grabber = window_grabber
     command(partial(grabber, x, part) if grabber else None)
-cb(keys.y, partial(analyze, delete_me))
 
 def absolute_line():
     absolute_pm()
