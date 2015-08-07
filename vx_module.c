@@ -377,7 +377,7 @@ static PyObject *vx_clear_window(PyObject *self, PyObject *args)
 	Py_RETURN_NONE;
 }
 
-static PyObject *vx_get_linecoloffset_of_ch(PyObject *self, PyObject *args)
+static PyObject *vx_get_linecoloffset_of_chs(PyObject *self, PyObject *args)
 {
 	PyObject *capsule;
 	Window *window;
@@ -386,10 +386,10 @@ static PyObject *vx_get_linecoloffset_of_ch(PyObject *self, PyObject *args)
 	int r, l, c, o;
 	int forwards = 1;
 
-	if (!PyArg_ParseTuple(args, "Os|i:get_linecoloffset_of_ch", &capsule, &ch, &forwards))
+	if (!PyArg_ParseTuple(args, "Os|i:get_linecoloffset_of_str", &capsule, &ch, &forwards))
 		return NULL;
 	WINDOW_FROM_CAPSULE;
-	r = get_rowcoloffset_of_char(window->buffer->text, ch, &l, &c, &o, forwards);
+	r = get_rowcoloffset_of_chars(window->buffer->text, ch, &l, &c, &o, forwards);
 	if (r == -1)
 		o = -1;
 	ret = Py_BuildValue("(iii)", ++l, ++c, o);
@@ -678,7 +678,7 @@ static PyMethodDef VxMethods[] = {
 	 "Redraw the entire window"},
 	{"clear_window", vx_clear_window, METH_VARARGS,
 	 "Clear a window"},
-	{"get_linecoloffset_of_str", vx_get_linecoloffset_of_ch, METH_VARARGS,
+	{"get_linecoloffset_of_str", vx_get_linecoloffset_of_chs, METH_VARARGS,
 	 "Get the line, column, and offset of a string"},
 	{"get_window_size", vx_get_window_size, METH_VARARGS,
 	 "Get the size of a window"},

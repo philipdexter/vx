@@ -24,7 +24,7 @@ char *get_str(Text*);
 char *get_str_from_line(Text*, size_t);
 char *get_str_from_line_to_line(Text*, size_t, size_t);
 size_t get_cursor_pos(Text *text);
-int get_rowcoloffset_of_char(Text*, char*, int*, int*, int*, int);
+int get_rowcoloffset_of_chars(Text*, char*, int*, int*, int*, int);
 char *get_ch_rowcol(Text *text, int row, int col);
 char *get_chars_rowcol(Text *text, int row, int col, int, int);
 char *get_chars_rowcol_to_rowcol(Text *text, int, int, int, int);

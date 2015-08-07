@@ -298,21 +298,19 @@ size_t get_cursor_pos(Text *text)
 	return text->gap_start;
 }
 
-
-int get_rowcoloffset_of_char(Text *text, char *ch, int *row, int *col, int *offset, int forwards)
+int get_rowcoloffset_of_chars(Text *text, char *ch, int *row, int *col, int *offset, int forwards)
 {
 	int r, c;
 	int i, j, bytes, matched;
 
 	get_cursor_rowcol(text, &r, &c);
 	*offset = 0;
+	bytes = strlen(ch);
 
-	// TODO can optimize this a little to only use these instead of r and c
 	if (forwards) {
 		for (i = text->text_start; i < text->size; ++i) {
-			bytes = more_bytes_utf8[(unsigned int)(unsigned char)ch[0]];
 			matched = 1;
-			for (j = 0; j < bytes + 1; ++j) {
+			for (j = 0; j < bytes; ++j) {
 				if (text->buf[i + j] != ch[j]) {
 					matched = 0;
 					break;
@@ -324,15 +322,13 @@ int get_rowcoloffset_of_char(Text *text, char *ch, int *row, int *col, int *offs
 			if (text->buf[i] == '\n') {
 				++r;
 				c = 0;
-			}
-			else {
+			} else {
 				++c;
 			}
 			++(*offset);
 		}
 	} else {
 		for (i = ((int)text->gap_start)-1; i >= 0; --i) {
-			bytes = more_bytes_utf8[(unsigned int)(unsigned char)ch[0]];
 			matched = 1;
 			for (j = 0; j < bytes + 1; ++j) {
 				if (text->buf[i + j] != ch[j]) {
@@ -358,6 +354,7 @@ done:
 	*col = c;
 	return 0;
 }
+
 
 char *get_ch_rowcol(Text *text, int row, int col)
 {
