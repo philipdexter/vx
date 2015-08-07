@@ -29,12 +29,12 @@ def _repeat(c, times=4):
 def _cursor_wander(command=None, window=None):
     if window is None:
         window = vx.window.focused
-    y, x = vx.get_linecol_window(window)
+    y, x = window.cursor
     if command is not None:
         command()
-    yp, xp = vx.get_linecol_window(window)
+    yp, xp = window.cursor
     yield (yp, xp)
-    vx.set_linecol_window(window, y, x)
+    window.cursor = (y, x)
 
 @contextmanager
 def stdoutIO(stdout=None):

@@ -87,7 +87,7 @@ def delete_me(what=None):
         if (ra == rb and ca > cb) or rb < ra:
             rb, cb, ra, ca = ra, ca, rb, cb
             direction = 0
-            vx.set_linecol_window(vx.window.focused, ra, ca)
+            vx.window.focused.cursor = (ra, ca)
         removed = vx.get_str_linecol_to_linecol_window(vx.window.focused, ra, ca, rb, cb)
         vx.remove_text_linecol_to_linecol(ra, ca, rb, cb)
         vx.window.focused.dirty = True
@@ -101,7 +101,7 @@ def move_me(what=None):
         vx.move_right()
     else:
         _, _, rb, cb = what()
-        vx.set_linecol_window(vx.window.focused, rb, cb)
+        vx.window.focused.cursor = (rb, cb)
         if _set_column:
             vx.window.focused.last_seeked_column = cb
         _set_column = True
@@ -129,10 +129,10 @@ def character_grabber(x, part):
     else:
         direction = True
     with vx.cursor_wander():
-        ra, ca = vx.get_linecol_window(vx.window.focused)
+        ra, ca = vx.window.focused.cursor
         for _ in range(x):
             vx.move_right() if direction else vx.move_left()
-            rb, cb = vx.get_linecol_window(vx.window.focused)
+            rb, cb = vx.window.focused.cursor
         return ra, ca, rb, cb
 
 def window_grabber(x, part):
@@ -141,9 +141,9 @@ def window_grabber(x, part):
     else:
         direction = True
     with vx.cursor_wander():
-        ra, ca = vx.get_linecol_window(vx.window.focused)
+        ra, ca = vx.window.focused.cursor
         vx.move_end() if direction else vx.move_beg()
-        rb, cb = vx.get_linecol_window(vx.window.focused)
+        rb, cb = vx.window.focused.cursor
         return ra, ca, rb, cb
 
 _set_column = True
@@ -158,41 +158,39 @@ def line_grabber(x, part, restore_column=False):
     with vx.cursor_wander():
         # Can only move to the beginning of a line once
         if part == PlaceModifier.beginning:
-            ra, ca = vx.get_linecol_window(vx.window.focused)
+            ra, ca = vx.window.focused.cursor
             vx.move_bol()
-            rb, cb = vx.get_linecol_window(vx.window.focused)
+            rb, cb = vx.window.focused.cursor
             return ra, ca, rb, cb
         # Same with moving to the end
         if part == PlaceModifier.end:
-            ra, ca = vx.get_linecol_window(vx.window.focused)
+            ra, ca = vx.window.focused.cursor
             vx.move_eol()
-            rb, cb = vx.get_linecol_window(vx.window.focused)
+            rb, cb = vx.window.focused.cursor
             return ra, ca, rb, cb
         # Same with findint the absolute line
         if part == PlaceModifier.absolute:
-            ra, ca = vx.get_linecol_window(vx.window.focused)
-            vx.set_linecol_window(vx.window.focused, x, ca)
-            rb, cb = vx.get_linecol_window(vx.window.focused)
+            ra, ca = vx.window.focused.cursor
+            vx.window.focused.cursor = (x, ca)
+            rb, cb = vx.window.focused.cursor
             return ra, ca, rb, cb
         # Handle a whole line, forwards or backwards
         if restore_column:
-            _, column = vx.get_linecol_window(vx.window.focused)
+            _, column = vx.window.focused.cursor
         vx.move_bol() if direction else vx.move_eol()
-        ra, ca = vx.get_linecol_window(vx.window.focused)
+        ra, ca = vx.window.focused.cursor
         for _ in range(x):
             if direction:
                 vx.move_down()
             else:
                 vx.move_up()
             if restore_column:
-                r, c = vx.get_linecol_window(vx.window.focused)
-                vx.set_linecol_window(vx.window.focused, r, column)
-                _, c = vx.get_linecol_window(vx.window.focused)
+                r, c = vx.window.focused.cursor
+                vx.window.focused.cursor = (r, column)
+                _, c = vx.window.focused.cursor
                 if c < vx.window.focused.last_seeked_column:
-                    vx.set_linecol_window(vx.window.focused,
-                                          r,
-                                          vx.window.focused.last_seeked_column)
-            rb, cb = vx.get_linecol_window(vx.window.focused)
+                    vx.window.focused.cursor = (r, vx.window.focused.last_seeked_column)
+            rb, cb = vx.window.focused.cursor
         return ra, ca, rb, cb
 
 def word_grabber(x, part):
@@ -201,17 +199,17 @@ def word_grabber(x, part):
     else:
         direction = True
     with vx.cursor_wander():
-        ra, ca = vx.get_linecol_window(vx.window.focused)
+        ra, ca = vx.window.focused.cursor
         breaks = ('_', ' ', '\n')
         for _ in range(x):
             offsets = list(map(lambda x: x[1], vx.get_offsets_of(breaks, direction)))
             if len(offsets) == 0:
                 vx.move_end() if direction else vx.move_beg()
-                rb, cb = vx.get_linecol_window(vx.window.focused)
+                rb, cb = vx.window.focused.cursor
             else:
                 o = min(offsets)
                 vx.repeat(vx.move_right if direction else vx.move_left, times=o)
-                rb, cb = vx.get_linecol_window(vx.window.focused)
+                rb, cb = vx.window.focused.cursor
         return ra, ca, rb, cb
 
 def analyze(command, default_grabber=None):
