@@ -171,3 +171,61 @@ class _time_prompt(_prompt):
         self.attached_to.grow(bottom=y)
         vx.focus_window(self.attached_to)
         self.remove(force=True)
+
+@vx.expose
+class _search_prompt(_prompt):
+    def __init__(self, forwards=True, *args, **kwargs):
+        super(_search_prompt, self).__init__(*args, **kwargs)
+
+        self.forwards = forwards
+
+        self.keybinding_table.bind(vx.keys.enter, self.getout)
+        self.keybinding_table.bind(vx.ctrl + vx.keys.f, self.next)
+
+        vx.register_key_listener(self.isearch)
+
+        self.original_cursor = self.attached_to.cursor
+
+        self.maching = False
+
+    def next(self):
+        if self.matching:
+            c = vx.get_contents_window(self)
+            if self.forwards:
+                vx.repeat(partial(vx.move_right_window, self.attached_to), times=len(c))
+            else:
+                vx.repeat(partial(vx.move_left_window, self.attached_to), times=len(c))
+                vx.move_left_window(self.attached_to)
+
+    def isearch(self):
+        self.search()
+
+    def search(self):
+        self.set_color(-1, -1)
+        search_for = vx.get_contents_window(self)
+        if not search_for: self.attached_to.color_tags.clear(); return
+        l, c, o = vx.get_linecoloffset_of_str(self.attached_to, search_for, int(self.forwards))
+        if o == -1:
+            self.attached_to.cursor = (self.original_cursor[0], self.original_cursor[1])
+            self.attached_to.color_tags.clear()
+            self.set_color(-1, 11)
+            self.matching = False
+            return
+        self.matching = True
+        self.attached_to.cursor = (l, c)
+        self.attached_to.color_tags.clear()
+        self.attached_to.add_color_tag(l, c, len(search_for), 1, 10)
+        if not self.forwards:
+            vx.repeat(partial(vx.move_right_window, self.attached_to), times=len(search_for))
+
+    def getout(self):
+        c = vx.get_contents_window(self)
+        if self.matching:
+            if self.forwards:
+                vx.repeat(partial(vx.move_right_window, self.attached_to), times=len(c))
+        y, x = vx.get_window_size(self)
+        self.attached_to.grow(bottom=y)
+        vx.focus_window(self.attached_to)
+        self.remove(force=True)
+        vx.unregister_key_listener(self.isearch)
+        self.attached_to.color_tags.clear()

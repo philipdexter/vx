@@ -361,3 +361,9 @@ bind(ctrl + keys.x - keys['3'], vx.split_v)
 bind(ctrl + keys.x - keys['0'], vx.close_window)
 
 cb(keys.z, vx.suspend)
+
+def _open_search(forwards=True):
+    prompt = vx.search_prompt(forwards)
+    prompt.force_insert = True
+cb(keys.f, _open_search)
+cb(keys.F, partial(_open_search, forwards=False))

@@ -86,6 +86,8 @@ class _window(metaclass=_window_meta):
         else:
             self.status_bar = None
 
+        self.color_tags = []
+
     def __get_cursor(self):
         return vx.get_linecol_window(self)
     def __set_cursor(self, linecol):
@@ -223,14 +225,28 @@ class _window(metaclass=_window_meta):
 
             lines = contents.split('\n')[r-1:r+y-1]
 
+            cline = r
+            ccol = 1
             for i, line in enumerate(lines):
                 line = line.replace('\t', '        ')[c-1:c-1+x-2]
                 if len(line) == x - 2:
                     line += '$'
                 if c-1 > 0:
                     line = '$' + line[1:]
-                vx.print_string_window(self, line)
+
+                colored = False
+                for ctl, ctc, ctlen, ctfg, ctbg in self.color_tags:
+                    if cline == ctl:
+                        colored = True
+                        vx.print_string_window(self, line[:ctc-1])
+                        self.set_color(ctfg, ctbg)
+                        vx.print_string_window(self, line[ctc-1:ctc-1+ctlen])
+                        self.set_color(-1, -1)
+                        vx.print_string_window(self, line[ctc-1+ctlen:])
+                if not colored:
+                    vx.print_string_window(self, line)
                 vx.print_string_window(self, '\n')
+                cline += 1
         for m in self.graffitis:
             m.render(self)
 
@@ -244,6 +260,9 @@ class _window(metaclass=_window_meta):
 
     def set_color(self, fg, bg):
         vx.set_color_window(self, fg, bg)
+
+    def add_color_tag(self, l, c, length, fg, bg):
+        self.color_tags.append((l, c, length, fg, bg))
 
     def attach_file(self, filename):
         self.filename = filename

@@ -301,14 +301,15 @@ size_t get_cursor_pos(Text *text)
 int get_rowcoloffset_of_chars(Text *text, char *ch, int *row, int *col, int *offset, int forwards)
 {
 	int r, c;
-	int i, j, bytes, matched;
+	int i, j, mo,bytes, matched;
 
+	r = 0, c = 0;
 	get_cursor_rowcol(text, &r, &c);
 	*offset = 0;
 	bytes = strlen(ch);
 
 	if (forwards) {
-		for (i = text->text_start; i < text->size; ++i) {
+		for (i = text->text_start; i + bytes < text->size; ++i) {
 			matched = 1;
 			for (j = 0; j < bytes; ++j) {
 				if (text->buf[i + j] != ch[j]) {
@@ -322,28 +323,44 @@ int get_rowcoloffset_of_chars(Text *text, char *ch, int *row, int *col, int *off
 			if (text->buf[i] == '\n') {
 				++r;
 				c = 0;
+			} else if (text->buf[i] == '\t') {
+				c += 8;
 			} else {
 				++c;
 			}
 			++(*offset);
 		}
 	} else {
-		for (i = ((int)text->gap_start)-1; i >= 0; --i) {
+		for (i = text->text_start; i >= 0; --i) {
+			if (i == text->text_start-1) {
+				i = text->gap_start;
+				continue;
+			}
 			matched = 1;
-			for (j = 0; j < bytes + 1; ++j) {
-				if (text->buf[i + j] != ch[j]) {
+			mo = 0;
+			for (j = 0; j < bytes; ++j) {
+				if (i + j == text->gap_start)
+					mo = GAPSIZE(text);
+				if (text->buf[i + j + mo] != ch[j]) {
 					matched = 0;
 					break;
 				}
 			}
 			if (matched) {
+				c = -1;
+				for (; i >= 0; --i) {
+					if (text->buf[i] == '\n') {
+						break;
+					} else if (text->buf[i] == '\t') {
+						c += 8;
+					} else {
+						++c;
+					}
+				}
 				goto done;
 			}
-			if (text->buf[i] == '\n') {
+			if (text->buf[i] == '\n' && i != text->text_start) {
 				--r;
-				c = 0;
-			} else {
-				--c;
 			}
 			++(*offset);
 		}

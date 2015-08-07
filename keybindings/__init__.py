@@ -220,6 +220,14 @@ _keybinding_queue = []
 
 vx.last_pressed = ''
 
+_key_listeners = []
+@vx.expose
+def _register_key_listener(f):
+    _key_listeners.append(f)
+@vx.expose
+def _unregister_key_listener(f):
+    _key_listeners.remove(f)
+
 @vx.expose
 def _register_key(key):
     global _keybinding_queue
@@ -241,6 +249,9 @@ def _register_key(key):
         _keybinding_queue = []
     elif match == _keybinding_table.MATCH_STATE.accept:
         _keybinding_queue = []
+
+    for kl in _key_listeners:
+        kl()
 
 ## Exports and defaults
 
