@@ -153,6 +153,7 @@ class _keybinding_table:
 
     def __init__(self):
         self._keybindings = {}
+        self.catch_all = None
 
     def bind(self, keys, command):
         """Bind a key to a command."""
@@ -194,9 +195,19 @@ class _keybinding_table:
         for key in key_sequence:
             cur = cur.get(key)
             if cur is None:
+                if self.catch_all:
+                    return self.catch_all(key)
                 return _keybinding_table.MATCH_STATE.reject
             elif callable(cur):
-                if cur() == _keybinding_table.MATCH_STATE.reject:
+                import inspect
+                argspec = inspect.getargspec(cur)
+                if 'key' in argspec.args:
+                    res = cur(key=key)
+                else:
+                    res = cur()
+                if res == _keybinding_table.MATCH_STATE.reject:
+                    if self.catch_all:
+                        return self.catch_all(key)
                     return _keybinding_table.MATCH_STATE.reject
                 return _keybinding_table.MATCH_STATE.accept
         return _keybinding_table.MATCH_STATE.keep_going
