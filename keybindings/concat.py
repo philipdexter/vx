@@ -37,7 +37,7 @@ class concat_keybindings(vx.keybinding_table):
     def __init__(self, window):
         super(concat_keybindings, self).__init__()
 
-        self.force_insert = True
+        self.force_insert = False
 
         self._stack = []
         self._quoting = False
@@ -45,7 +45,7 @@ class concat_keybindings(vx.keybinding_table):
 
         def _catch_all(key):
             from keybindings import utils
-            if getattr(vx.window.focused, 'force_insert', False):
+            if self.force_insert:
                 return vx.keybinding_table.MATCH_STATE.reject
             if utils.is_printable(key):
                 def g():
@@ -133,7 +133,7 @@ class concat_keybindings(vx.keybinding_table):
                         s = s.s + key.decode('utf8')
                         self._stack.append(String(s))
             else:
-                fi = getattr(vx.window.focused, 'force_insert', False)
+                fi = self.force_insert
                 if fi:
                     return vx.keybinding_table.MATCH_STATE.reject
                 else:
@@ -149,10 +149,9 @@ class concat_keybindings(vx.keybinding_table):
     def toggle_quoting(self):
             self._quoting = not self._quoting
 
-
     def save_typing(self, b):
         if not self._stack:
-            vx.window.focused.force_insert = b
+            self.force_insert = b
         else:
             s = self._stack.pop(0)
             s = s.s
