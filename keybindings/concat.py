@@ -301,7 +301,7 @@ class concat_keybindings(vx.keybinding_table):
                     rb, cb = vx.window.focused.cursor
                 else:
                     o = min(offsets)
-                    vx.repeat(vx.move_right if direction else vx.move_left, times=o)
+                    vx.repeat(vx.move_right if direction else vx.move_left, times=o if direction else o-1)
                     rb, cb = vx.window.focused.cursor
             return ra, ca, rb, cb
 
