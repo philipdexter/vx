@@ -5,300 +5,8 @@ import undo
 from enum import Enum
 from functools import partial, wraps
 
-_stack = []
-
-_quoting = False
-def toggle_quoting():
-    global _quoting
-    _quoting = not _quoting
-
-def concat_bind(command):
-    def h(key):
-        if _quoting and command is not toggle_quoting:
-            from keybindings import utils
-            if utils.is_printable(key):
-                if not _stack:
-                    _stack.append(String(key.decode('utf8')))
-                else:
-                    s = _stack.pop()
-                    s = s.s + key.decode('utf8')
-                    _stack.append(String(s))
-        else:
-            fi = getattr(vx.window.focused, 'force_insert', False)
-            if fi:
-                return vx.keybinding_table.MATCH_STATE.reject
-            else:
-                command()
-        if not _stack:
-            if vx.window.focused.status_bar:
-                vx.window.focused.status_bar.reset_default_text()
-        else:
-            if vx.window.focused.status_bar:
-                vx.window.focused.status_bar.set_status_text(' '.join(list(map(str, _stack))))
-    return h
-
-def save_typing(b):
-    if not _stack:
-        vx.window.focused.force_insert = b
-    else:
-        s = _stack.pop(0)
-        s = s.s
-        vx.add_string(s)
-
-def cb(key, command):
-    bind(key, concat_bind(command))
-cb(keys.quote, toggle_quoting)
-
-def catch_all(key):
-    from keybindings import utils
-    if getattr(vx.window.focused, 'force_insert', False):
-        return vx.keybinding_table.MATCH_STATE.reject
-    if utils.is_printable(key):
-        def g():
-            vx.add_string('X')
-        concat_bind(g)(key)
-        return vx.keybinding_table.MATCH_STATE.accept
-    return vx.keybinding_table.MATCH_STATE.reject
-vx.global_keybinding_table.catch_all = catch_all
-
-def beginning():
-    beginning_pm()
-    line()
-    analyze(move_me)
-
-def times_default():
-    _stack.append(Times(4))
-
-def end():
-    end_pm()
-    line()
-    analyze(move_me)
-
-def previous():
-    if not _stack:
-        vx.move_up()
-    else:
-        command = vx.move_up
-        x = 1
-
-        i = _stack.pop(0)
-        if isinstance(i, Times):
-            x = i.i
-            if _stack:
-                i = _stack.pop(0)
-        if isinstance(i, Place):
-            if i == Place.word:
-                command = vx.backward_word
-        vx.repeat(command, times=x)
-
-def next():
-    if not _stack:
-        vx.move_down()
-    else:
-        command = vx.move_down
-        x = 1
-
-        i = _stack.pop(0)
-        if isinstance(i, Times):
-            x = i.i
-            if _stack:
-                i = _stack.pop(0)
-        if isinstance(i, Place):
-            if i == Place.word:
-                command = vx.forward_word
-        vx.repeat(command, times=x)
-
-def next():
-    analyze(move_me, partial(line_grabber, restore_column=True))
-
-def delete_me(what=None):
-    if what is None:
-        vx.delete()
-    else:
-        direction = 1
-        ra, ca, rb, cb = what()
-        if (ra == rb and ca > cb) or rb < ra:
-            rb, cb, ra, ca = ra, ca, rb, cb
-            direction = 0
-            vx.window.focused.cursor = (ra, ca)
-        removed = vx.get_str_linecol_to_linecol_window(vx.window.focused, ra, ca, rb, cb)
-        vx.remove_text_linecol_to_linecol(ra, ca, rb, cb)
-        vx.window.focused.dirty = True
-        undo.register_removal(removed, ra, ca, hold=bool(direction))
-def delete():
-    analyze(delete_me, character_grabber)
-
-def move_me(what=None):
-    global _set_column
-    if what is None:
-        vx.move_right()
-    else:
-        _, _, rb, cb = what()
-        vx.window.focused.cursor = (rb, cb)
-        if _set_column:
-            vx.window.focused.last_seeked_column = cb
-        _set_column = True
-def move():
-    analyze(move_me, character_grabber)
-def backward():
-    backward_pm()
-    analyze(move_me, character_grabber)
-
-def center_me(what=None):
-    if what is None:
-        vx.center()
-    else:
-        _, _, rb, cb = what()
-        r, _ = vx.get_window_size(vx.window.focused)
-        _, x = vx.get_linecol_start_window(vx.window.focused)
-        new_top = max(rb - r // 2, 1)
-        vx.window.focused.set_start_linecol(new_top, x)
-def center():
-    analyze(center_me)
-
-def character_grabber(x, part):
-    if part == PlaceModifier.backward:
-        direction = False
-    else:
-        direction = True
-    with vx.cursor_wander():
-        ra, ca = vx.window.focused.cursor
-        for _ in range(x):
-            vx.move_right() if direction else vx.move_left()
-            rb, cb = vx.window.focused.cursor
-        return ra, ca, rb, cb
-
-def window_grabber(x, part):
-    if part == PlaceModifier.backward or part == PlaceModifier.beginning:
-        direction = False
-    else:
-        direction = True
-    with vx.cursor_wander():
-        ra, ca = vx.window.focused.cursor
-        vx.move_end() if direction else vx.move_beg()
-        rb, cb = vx.window.focused.cursor
-        return ra, ca, rb, cb
-
-_set_column = True
-
-def line_grabber(x, part, restore_column=False):
-    global _set_column
-    _set_column = not restore_column
-    if part == PlaceModifier.backward:
-        direction = False
-    else:
-        direction = True
-    with vx.cursor_wander():
-        # Can only move to the beginning of a line once
-        if part == PlaceModifier.beginning:
-            ra, ca = vx.window.focused.cursor
-            vx.move_bol()
-            rb, cb = vx.window.focused.cursor
-            return ra, ca, rb, cb
-        # Same with moving to the end
-        if part == PlaceModifier.end:
-            ra, ca = vx.window.focused.cursor
-            vx.move_eol()
-            rb, cb = vx.window.focused.cursor
-            return ra, ca, rb, cb
-        # Same with findint the absolute line
-        if part == PlaceModifier.absolute:
-            ra, ca = vx.window.focused.cursor
-            vx.window.focused.cursor = (x, ca)
-            rb, cb = vx.window.focused.cursor
-            return ra, ca, rb, cb
-        # Handle a whole line, forwards or backwards
-        if restore_column:
-            _, column = vx.window.focused.cursor
-        vx.move_bol() if direction else vx.move_eol()
-        ra, ca = vx.window.focused.cursor
-        for _ in range(x):
-            if direction:
-                vx.move_down()
-            else:
-                vx.move_up()
-            if restore_column:
-                r, c = vx.window.focused.cursor
-                vx.window.focused.cursor = (r, column)
-                _, c = vx.window.focused.cursor
-                if c < vx.window.focused.last_seeked_column:
-                    vx.window.focused.cursor = (r, vx.window.focused.last_seeked_column)
-            rb, cb = vx.window.focused.cursor
-        return ra, ca, rb, cb
-
-def word_grabber(x, part):
-    if part == PlaceModifier.backward:
-        direction = False
-    else:
-        direction = True
-    with vx.cursor_wander():
-        ra, ca = vx.window.focused.cursor
-        breaks = ('_', ' ', '\n')
-        for _ in range(x):
-            offsets = list(map(lambda x: x[1], vx.get_offsets_of(breaks, direction)))
-            if len(offsets) == 0:
-                vx.move_end() if direction else vx.move_beg()
-                rb, cb = vx.window.focused.cursor
-            else:
-                o = min(offsets)
-                vx.repeat(vx.move_right if direction else vx.move_left, times=o)
-                rb, cb = vx.window.focused.cursor
-        return ra, ca, rb, cb
-
-def analyze(command, default_grabber=None):
-    previous = []
-    grabber = default_grabber
-    x = 1
-    part = PlaceModifier.whole
-    while _stack:
-        i = _stack.pop(0)
-        # How many objects do we get?
-        if isinstance(i, Times):
-            previous.append(i)
-            x = i.i
-            continue
-        # What part of the object do we get?
-        if isinstance(i, PlaceModifier):
-            previous.append(i)
-            part = i
-            continue
-        # What object do we get?
-        if isinstance(i, Place):
-            if i == Place.line:
-                grabber = line_grabber
-            elif i == Place.word:
-                grabber = word_grabber
-            elif i == Place.window:
-                grabber = window_grabber
-    command(partial(grabber, x, part) if grabber else None)
-
-def absolute_line():
-    absolute_pm()
-    line()
-    analyze(move_me)
-
-def backspace():
-    backward_pm()
-    analyze(delete_me, character_grabber)
-
-def line():
-    _stack.append(Place.line)
-def window():
-    _stack.append(Place.window)
-def word():
-    _stack.append(Place.word)
-def beginning_pm():
-    _stack.append(PlaceModifier.beginning)
-def end_pm():
-    _stack.append(PlaceModifier.end)
-def backward_pm():
-    _stack.append(PlaceModifier.backward)
-def absolute_pm():
-    _stack.append(PlaceModifier.absolute)
-
-def clear():
-    global _stack
-    _stack = []
+def load(window):
+    return concat_keybindings(window)
 
 class Place(Enum):
     line = 0
@@ -325,77 +33,379 @@ class Times:
     def __str__(self):
         return '{}-times'.format(self.i)
 
-def times(i):
-    if not _stack:
-        _stack.append(Times(i))
-    else:
-        n = _stack.pop().i
-        n *= 10
-        n += i
-        _stack.append(Times(n))
+class concat_keybindings(vx.keybinding_table):
+    def __init__(self, window):
+        super(concat_keybindings, self).__init__()
 
-cb(keys['0'], partial(times, 0))
-cb(keys['1'], partial(times, 1))
-cb(keys['2'], partial(times, 2))
-cb(keys['3'], partial(times, 3))
-cb(keys['4'], partial(times, 4))
-cb(keys['5'], partial(times, 5))
-cb(keys['6'], partial(times, 6))
-cb(keys['7'], partial(times, 7))
-cb(keys['8'], partial(times, 8))
-cb(keys['9'], partial(times, 9))
+        self.force_insert = True
 
-cb(keys.i, partial(save_typing, True))
-bind(ctrl + keys.i, partial(save_typing, False))
+        self._stack = []
+        self._quoting = False
+        self._set_column = True
 
-cb(keys.l, line)
-cb(keys.r, window)
-cb(keys.w, word)
+        def _catch_all(key):
+            from keybindings import utils
+            if getattr(vx.window.focused, 'force_insert', False):
+                return vx.keybinding_table.MATCH_STATE.reject
+            if utils.is_printable(key):
+                def g():
+                    vx.add_string('X')
+                self.concat_bind(g)(key)
+                return vx.keybinding_table.MATCH_STATE.accept
+            return vx.keybinding_table.MATCH_STATE.reject
+        self.catch_all = _catch_all
 
-cb(keys.g, clear)
+        self.cb(keys.quote, self.toggle_quoting)
 
-cb(keys.n, next)
-cb(keys.p, previous)
-cb(keys.m, move)
-cb(keys.b, backward)
-cb(keys.a, beginning)
-cb(keys.e, end)
+        self.cb(keys['0'], partial(self.times, 0))
+        self.cb(keys['1'], partial(self.times, 1))
+        self.cb(keys['2'], partial(self.times, 2))
+        self.cb(keys['3'], partial(self.times, 3))
+        self.cb(keys['4'], partial(self.times, 4))
+        self.cb(keys['5'], partial(self.times, 5))
+        self.cb(keys['6'], partial(self.times, 6))
+        self.cb(keys['7'], partial(self.times, 7))
+        self.cb(keys['8'], partial(self.times, 8))
+        self.cb(keys['9'], partial(self.times, 9))
 
-cb(keys.A, beginning_pm)
-cb(keys.E, end_pm)
-cb(keys.B, backward_pm)
-cb(keys.N, absolute_pm)
+        self.cb(keys.i, partial(self.save_typing, True))
+        super(concat_keybindings, self).bind(ctrl + keys.i, partial(self.save_typing, False))
 
-cb(keys.q, vx.quit)
+        self.cb(keys.l, self.line)
+        self.cb(keys.r, self.window)
+        self.cb(keys.w, self.word)
 
-cb(keys.s, lambda: vx.window.focused.save())
+        self.cb(keys.g, self.clear)
 
-cb(keys.u, times_default)
+        self.cb(keys.n, self.next)
+        self.cb(keys.p, self.previous)
+        self.cb(keys.m, self.move)
+        self.cb(keys.b, self.backward)
+        self.cb(keys.a, self.beginning)
+        self.cb(keys.e, self.end)
 
-def raise_stack():
-    raise Exception(_stack)
-cb(keys.o, raise_stack)
+        self.cb(keys.A, self.beginning_pm)
+        self.cb(keys.E, self.end_pm)
+        self.cb(keys.B, self.backward_pm)
+        self.cb(keys.N, self.absolute_pm)
 
-cb(keys.L, absolute_line)
+        self.cb(keys.q, vx.quit)
 
-bind(keys.backspace, backspace)
-cb(keys.d, delete)
+        self.cb(keys.s, lambda: vx.window.focused.save())
 
-cb(keys.forwardslash, vx.undo)
-bind(ctrl + keys.underscore, vx.undo)
+        self.cb(keys.u, self.times_default)
 
-bind(alt + keys.x, vx.exec_prompt)
+        self.cb(keys.o, self.raise_stack)
 
-cb(keys.c, center)
+        self.cb(keys.L, self.absolute_line)
 
-bind(ctrl + keys.x - keys['2'], vx.split_h)
-bind(ctrl + keys.x - keys['3'], vx.split_v)
-bind(ctrl + keys.x - keys['0'], vx.close_window)
+        super(concat_keybindings, self).bind(keys.backspace, self.backspace)
+        self.cb(keys.d, self.delete)
 
-cb(keys.z, vx.suspend)
+        self.cb(keys.forwardslash, vx.undo)
+        super(concat_keybindings, self).bind(ctrl + keys.underscore, vx.undo)
 
-def _open_search(forwards=True):
-    prompt = vx.search_prompt(forwards)
-    prompt.force_insert = True
-cb(keys.f, _open_search)
-cb(keys.F, partial(_open_search, forwards=False))
+        super(concat_keybindings, self).bind(alt + keys.x, vx.exec_prompt)
+
+        self.cb(keys.c, self.center)
+
+        super(concat_keybindings, self).bind(ctrl + keys.x - keys['2'], vx.split_h)
+        super(concat_keybindings, self).bind(ctrl + keys.x - keys['3'], vx.split_v)
+        super(concat_keybindings, self).bind(ctrl + keys.x - keys['0'], vx.close_window)
+
+        self.cb(keys.z, vx.suspend)
+
+        self.cb(keys.f, self._open_search)
+        self.cb(keys.F, partial(self._open_search, forwards=False))
+
+    def cb(self, key, command):
+        super(concat_keybindings, self).bind(key, self.concat_bind(command))
+
+    def concat_bind(self, command):
+        def h(key):
+            if self._quoting and key != b'"':
+                from keybindings import utils
+                if utils.is_printable(key):
+                    if not self._stack:
+                        self._stack.append(String(key.decode('utf8')))
+                    else:
+                        s = self._stack.pop()
+                        s = s.s + key.decode('utf8')
+                        self._stack.append(String(s))
+            else:
+                fi = getattr(vx.window.focused, 'force_insert', False)
+                if fi:
+                    return vx.keybinding_table.MATCH_STATE.reject
+                else:
+                    command()
+            if not self._stack:
+                if vx.window.focused.status_bar:
+                    vx.window.focused.status_bar.reset_default_text()
+            else:
+                if vx.window.focused.status_bar:
+                    vx.window.focused.status_bar.set_status_text(' '.join(list(map(str, self._stack))))
+        return h
+
+    def toggle_quoting(self):
+            self._quoting = not self._quoting
+
+
+    def save_typing(self, b):
+        if not self._stack:
+            vx.window.focused.force_insert = b
+        else:
+            s = self._stack.pop(0)
+            s = s.s
+            vx.add_string(s)
+
+    def beginning(self):
+        self.beginning_pm()
+        self.line()
+        self.analyze(self.move_me)
+
+    def times_default(self):
+        self._stack.append(Times(4))
+
+    def end(self):
+        self.end_pm()
+        self.line()
+        self.analyze(self.move_me)
+
+    def previous(self):
+        if not self._stack:
+            vx.move_up()
+        else:
+            command = vx.move_up
+            x = 1
+
+            i = self._stack.pop(0)
+            if isinstance(i, Times):
+                x = i.i
+                if self._stack:
+                    i = self._stack.pop(0)
+            if isinstance(i, Place):
+                if i == Place.word:
+                    command = vx.backward_word
+            vx.repeat(command, times=x)
+
+    def next(self):
+        if not self._stack:
+            vx.move_down()
+        else:
+            command = vx.move_down
+            x = 1
+
+            i = self._stack.pop(0)
+            if isinstance(i, Times):
+                x = i.i
+                if self._stack:
+                    i = self._stack.pop(0)
+            if isinstance(i, Place):
+                if i == Place.word:
+                    command = vx.forward_word
+            vx.repeat(command, times=x)
+
+    def next(self):
+        self.analyze(self.move_me, partial(self.line_grabber, restore_column=True))
+
+    def delete_me(self, what=None):
+        if what is None:
+            vx.delete()
+        else:
+            direction = 1
+            ra, ca, rb, cb = what()
+            if (ra == rb and ca > cb) or rb < ra:
+                rb, cb, ra, ca = ra, ca, rb, cb
+                direction = 0
+                vx.window.focused.cursor = (ra, ca)
+            removed = vx.get_str_linecol_to_linecol_window(vx.window.focused, ra, ca, rb, cb)
+            vx.remove_text_linecol_to_linecol(ra, ca, rb, cb)
+            vx.window.focused.dirty = True
+            undo.register_removal(removed, ra, ca, hold=bool(direction))
+    def delete(self):
+        self.analyze(self.delete_me, self.character_grabber)
+
+    def move_me(self, what=None):
+        if what is None:
+            vx.move_right()
+        else:
+            _, _, rb, cb = what()
+            vx.window.focused.cursor = (rb, cb)
+            if self._set_column:
+                vx.window.focused.last_seeked_column = cb
+            self._set_column = True
+    def move(self):
+        self.analyze(self.move_me, self.character_grabber)
+    def backward(self):
+        self.backward_pm()
+        self.analyze(self.move_me, self.character_grabber)
+
+    def center_me(self, what=None):
+        if what is None:
+            vx.center()
+        else:
+            _, _, rb, cb = what()
+            r, _ = vx.get_window_size(vx.window.focused)
+            _, x = vx.get_linecol_start_window(vx.window.focused)
+            new_top = max(rb - r // 2, 1)
+            vx.window.focused.set_start_linecol(new_top, x)
+    def center(self):
+        self.analyze(center_me)
+
+    def character_grabber(self, x, part):
+        if part == PlaceModifier.backward:
+            direction = False
+        else:
+            direction = True
+        with vx.cursor_wander():
+            ra, ca = vx.window.focused.cursor
+            for _ in range(x):
+                vx.move_right() if direction else vx.move_left()
+                rb, cb = vx.window.focused.cursor
+            return ra, ca, rb, cb
+
+    def window_grabber(self, x, part):
+        if part == PlaceModifier.backward or part == PlaceModifier.beginning:
+            direction = False
+        else:
+            direction = True
+        with vx.cursor_wander():
+            ra, ca = vx.window.focused.cursor
+            vx.move_end() if direction else vx.move_beg()
+            rb, cb = vx.window.focused.cursor
+            return ra, ca, rb, cb
+
+    def line_grabber(self, x, part, restore_column=False):
+        self._set_column = not restore_column
+        if part == PlaceModifier.backward:
+            direction = False
+        else:
+            direction = True
+        with vx.cursor_wander():
+            # Can only move to the beginning of a line once
+            if part == PlaceModifier.beginning:
+                ra, ca = vx.window.focused.cursor
+                vx.move_bol()
+                rb, cb = vx.window.focused.cursor
+                return ra, ca, rb, cb
+            # Same with moving to the end
+            if part == PlaceModifier.end:
+                ra, ca = vx.window.focused.cursor
+                vx.move_eol()
+                rb, cb = vx.window.focused.cursor
+                return ra, ca, rb, cb
+            # Same with findint the absolute line
+            if part == PlaceModifier.absolute:
+                ra, ca = vx.window.focused.cursor
+                vx.window.focused.cursor = (x, ca)
+                rb, cb = vx.window.focused.cursor
+                return ra, ca, rb, cb
+            # Handle a whole line, forwards or backwards
+            if restore_column:
+                _, column = vx.window.focused.cursor
+            vx.move_bol() if direction else vx.move_eol()
+            ra, ca = vx.window.focused.cursor
+            for _ in range(x):
+                if direction:
+                    vx.move_down()
+                else:
+                    vx.move_up()
+                if restore_column:
+                    r, c = vx.window.focused.cursor
+                    vx.window.focused.cursor = (r, column)
+                    _, c = vx.window.focused.cursor
+                    if c < vx.window.focused.last_seeked_column:
+                        vx.window.focused.cursor = (r, vx.window.focused.last_seeked_column)
+                rb, cb = vx.window.focused.cursor
+            return ra, ca, rb, cb
+
+    def word_grabber(self, x, part):
+        if part == PlaceModifier.backward:
+            direction = False
+        else:
+            direction = True
+        with vx.cursor_wander():
+            ra, ca = vx.window.focused.cursor
+            breaks = ('_', ' ', '\n')
+            for _ in range(x):
+                offsets = list(map(lambda x: x[1], vx.get_offsets_of(breaks, direction)))
+                if len(offsets) == 0:
+                    vx.move_end() if direction else vx.move_beg()
+                    rb, cb = vx.window.focused.cursor
+                else:
+                    o = min(offsets)
+                    vx.repeat(vx.move_right if direction else vx.move_left, times=o)
+                    rb, cb = vx.window.focused.cursor
+            return ra, ca, rb, cb
+
+    def analyze(self, command, default_grabber=None):
+        previous = []
+        grabber = default_grabber
+        x = 1
+        part = PlaceModifier.whole
+        while self._stack:
+            i = self._stack.pop(0)
+            # How many objects do we get?
+            if isinstance(i, Times):
+                previous.append(i)
+                x = i.i
+                continue
+            # What part of the object do we get?
+            if isinstance(i, PlaceModifier):
+                previous.append(i)
+                part = i
+                continue
+            # What object do we get?
+            if isinstance(i, Place):
+                if i == Place.line:
+                    grabber = self.line_grabber
+                elif i == Place.word:
+                    grabber = self.word_grabber
+                elif i == Place.window:
+                    grabber = window_grabber
+        command(partial(grabber, x, part) if grabber else None)
+
+    def absolute_line(self):
+        self.absolute_pm()
+        self.line()
+        self.analyze(self.move_me)
+
+    def backspace(self):
+        self.backward_pm()
+        self.analyze(self.delete_me, self.character_grabber)
+
+    def line(self):
+        self._stack.append(Place.line)
+    def window(self):
+        self._stack.append(Place.window)
+    def word(self):
+        self._stack.append(Place.word)
+    def beginning_pm(self):
+        self._stack.append(PlaceModifier.beginning)
+    def end_pm(self):
+        self._stack.append(PlaceModifier.end)
+    def backward_pm(self):
+        self._stack.append(PlaceModifier.backward)
+    def absolute_pm(self):
+        self._stack.append(PlaceModifier.absolute)
+
+    def clear(self):
+        self._stack = []
+
+    def times(self, i):
+        if not self._stack:
+            self._stack.append(Times(i))
+        else:
+            n = self._stack.pop().i
+            n *= 10
+            n += i
+            self._stack.append(Times(n))
+
+
+
+    def raise_stack(self):
+        raise Exception(self._stack)
+
+    def _open_search(self, forwards=True):
+        prompt = vx.search_prompt(forwards)
+        prompt.force_insert = True

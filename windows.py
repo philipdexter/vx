@@ -69,7 +69,10 @@ class _window(metaclass=_window_meta):
         self.has_contents = False
         self.dirty = False
 
-        self.keybinding_table = vx.keybinding_table()
+        if vx.default_keybindings is not None:
+            self.keybinding_table = vx.default_keybindings(self)
+        else:
+            self.keybinding_table = vx.keybinding_table()
         _windows.append(self)
         _windows.sort(key=lambda w: w.y)
 
