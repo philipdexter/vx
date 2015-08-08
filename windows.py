@@ -223,7 +223,7 @@ class _window(metaclass=_window_meta):
 
     def render(self):
         if self.has_contents:
-            contents = vx.get_contents_window(self)
+            contents = self.contents
             r, c = vx.get_linecol_start_window(self)
             y, x = vx.get_window_size(self)
 
@@ -510,7 +510,7 @@ def _kill_to_backward():
 
 @vx.expose
 def execute_window():
-    contents = vx.get_contents_window(vx.window.focused)
+    contents = vx.window.focused.contents
     with utils.stdoutIO() as s:
         try:
             exec(contents)

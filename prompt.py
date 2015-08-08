@@ -41,7 +41,7 @@ class _exec_prompt(_prompt):
         y, x = vx.get_window_size(self)
         self.attached_to.grow(bottom=y)
         vx.focus_window(self.attached_to)
-        contents = vx.get_contents_window(self)
+        contents = self.contents
         _exec_prompt._history.append(contents)
         with utils.stdoutIO() as s:
             try:
@@ -87,7 +87,7 @@ class _file_prompt(_prompt):
         import glob
         if not self.completing:
             self.completing = True
-            contents = vx.get_contents_window(self)
+            contents = self.contents
             self.old_contents = contents
             vx.clear_contents_window(self)
             self.files = glob.glob('{}*'.format(contents))
@@ -113,7 +113,7 @@ class _file_prompt(_prompt):
         self.attached_to.grow(bottom=y)
         vx.focus_window(self.attached_to)
         if not cancel_open:
-            contents = vx.get_contents_window(self)
+            contents = self.contents
             if isfile(contents):
                 self.attached_to.attach_file(contents)
                 self.attached_to.dirty = False
@@ -136,7 +136,7 @@ class _yn_prompt(_prompt):
         vx.add_string('{} (y/n): '.format(message))
 
     def getout(self):
-        contents = vx.get_contents_window(self)
+        contents = self.contents
         ret = False
         try:
             answer = contents.split(':')[1].strip()
@@ -190,7 +190,7 @@ class _search_prompt(_prompt):
 
     def next(self):
         if self.matching:
-            c = vx.get_contents_window(self)
+            c = self.contents
             if self.forwards:
                 vx.repeat(partial(vx.move_right_window, self.attached_to), times=len(c))
             else:
@@ -202,7 +202,7 @@ class _search_prompt(_prompt):
 
     def search(self):
         self.set_color(-1, -1)
-        search_for = vx.get_contents_window(self)
+        search_for = self.contents
         if not search_for: self.attached_to.color_tags.clear(); return
         l, c, o = vx.get_linecoloffset_of_str(self.attached_to, search_for, int(self.forwards))
         if o == -1:
@@ -219,7 +219,7 @@ class _search_prompt(_prompt):
             vx.repeat(partial(vx.move_right_window, self.attached_to), times=len(search_for))
 
     def getout(self):
-        c = vx.get_contents_window(self)
+        c = self.contents
         if self.matching:
             if self.forwards:
                 vx.repeat(partial(vx.move_right_window, self.attached_to), times=len(c))
