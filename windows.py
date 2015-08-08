@@ -108,9 +108,17 @@ class _window(metaclass=_window_meta):
         sy, sx = vx.get_linecol_start_window(self)
         # Check line
         if y < sy:
-            vx.set_linecol_start_window(self, y - 6, sx)
+            sy = y - 6
         elif y > sy + r:
-            vx.set_linecol_start_window(self, y + 6 - r, sx)
+            sy = y + 6 - r
+        # Check col
+        if x < sx:
+            sx = max(1, x - 6)
+        elif x > sx + c:
+            sx = x + 6 - c
+
+        vx.set_linecol_start_window(self, sy, sx)
+
 
     def save(self):
         vx.save_window(self)
@@ -243,7 +251,7 @@ class _window(metaclass=_window_meta):
             lines = contents.split('\n')[r-1:r+y-1]
 
             cline = r
-            ccol = 1
+            ccol = c
             for i, line in enumerate(lines):
                 line = line.replace('\t', '        ')[c-1:c-1+x-2]
                 if len(line) == x - 2:
@@ -254,6 +262,7 @@ class _window(metaclass=_window_meta):
                 colored = False
                 for ctl, ctc, ctlen, ctfg, ctbg in self.color_tags:
                     if cline == ctl:
+                        ctc -= ccol - 1
                         colored = True
                         vx.print_string_window(self, line[:ctc-1])
                         self.set_color(ctfg, ctbg)
