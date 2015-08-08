@@ -274,13 +274,18 @@ class concat_keybindings(vx.keybinding_table):
                 return ra, ca, rb, cb
             # Handle a whole line, forwards or backwards
             if restore_column:
-                _, column = vx.window.focused.cursor
-            ra, ca = vx.window.focused.cursor
-            for _ in range(x):
+                _, column = self.for_window.cursor
+            vx.move_bol() if direction else vx.move_eol()
+            ra, ca = self.for_window.cursor
+            if not direction:
+                vx.move_bol()
+                rb, cb = self.for_window.cursor
+            for _ in range(x if direction else x):
                 if direction:
                     vx.move_down()
                 else:
                     vx.move_up()
+                    vx.move_eol()
                 if restore_column:
                     r, c = self.for_window.cursor
                     self.for_window.cursor = (r, column)
