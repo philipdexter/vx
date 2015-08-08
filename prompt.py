@@ -174,7 +174,7 @@ class _time_prompt(_prompt):
 
 @vx.expose
 class _search_prompt(_prompt):
-    def __init__(self, forwards=True, *args, **kwargs):
+    def __init__(self, start='', forwards=True, *args, **kwargs):
         super(_search_prompt, self).__init__(*args, **kwargs)
 
         self.forwards = forwards
@@ -186,7 +186,9 @@ class _search_prompt(_prompt):
 
         self.original_cursor = self.attached_to.cursor
 
-        self.maching = False
+        self.matching = False
+
+        self.add_string(start)
 
     def next(self):
         if self.matching:

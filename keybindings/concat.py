@@ -407,5 +407,9 @@ class concat_keybindings(vx.keybinding_table):
         raise Exception(self._stack)
 
     def _open_search(self, forwards=True):
-        prompt = vx.search_prompt(forwards)
+        start = ''
+        if self._stack:
+            s = self._stack.pop()
+            start = s.s
+        prompt = vx.search_prompt(forwards=forwards, start=start)
         prompt.force_insert = True
