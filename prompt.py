@@ -224,6 +224,7 @@ class _search_prompt(_prompt):
             self.set_color(-1, 11)
             self.matching = False
             return
+        self.attached_to.ensure_visible(l, c)
         self.matching = True
         self.attached_to.cursor = (l, c)
         self.attached_to.color_tags.clear()

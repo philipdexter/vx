@@ -102,6 +102,16 @@ class _window(metaclass=_window_meta):
         return vx.get_contents_window(self)
     contents = property(__get_contents)
 
+    def ensure_visible(self, line, col):
+        r, c = vx.get_window_size(self)
+        y, x = line, col
+        sy, sx = vx.get_linecol_start_window(self)
+        # Check line
+        if y < sy:
+            vx.set_linecol_start_window(self, y - 6, sx)
+        elif y > sy + r:
+            vx.set_linecol_start_window(self, y + 6 - r, sx)
+
     def save(self):
         vx.save_window(self)
         self.dirty = False
