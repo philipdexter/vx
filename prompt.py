@@ -181,14 +181,25 @@ class _search_prompt(_prompt):
 
         self.keybinding_table.bind(vx.keys.enter, self.getout)
         self.keybinding_table.bind(vx.ctrl + vx.keys.f, self.next)
+        self.keybinding_table.bind(vx.ctrl + vx.keys.r, self.reverse)
 
         vx.register_key_listener(self.isearch)
 
         self.original_cursor = self.attached_to.cursor
+        self.original_start = vx.get_linecol_start_window(self.attached_to)
 
         self.matching = False
 
         self.add_string(start)
+
+    def cancel(self):
+        self.attached_to.cursor = (self.original_cursor[0], self.original_cursor[1])
+        vx.set_linecol_start_window(self.attached_to, self.original_start[0], self.original_start[1])
+        super(_search_prompt, self).cancel()
+
+    def reverse(self):
+        self.forwards = not self.forwards
+        self.next()
 
     def next(self):
         if self.matching:
