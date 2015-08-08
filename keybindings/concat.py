@@ -7,13 +7,28 @@ from functools import partial, wraps
 
 _stack = []
 
+_quoting = False
+def toggle_quoting():
+    global _quoting
+    _quoting = not _quoting
+
 def concat_bind(command):
-    def h():
-        fi = getattr(vx.window.focused, 'force_insert', False)
-        if fi:
-            return vx.keybinding_table.MATCH_STATE.reject
+    def h(key):
+        if _quoting and command is not toggle_quoting:
+            from keybindings import utils
+            if utils.is_printable(key):
+                if not _stack:
+                    _stack.append(String(key.decode('utf8')))
+                else:
+                    s = _stack.pop()
+                    s = s.s + key.decode('utf8')
+                    _stack.append(String(s))
         else:
-            command()
+            fi = getattr(vx.window.focused, 'force_insert', False)
+            if fi:
+                return vx.keybinding_table.MATCH_STATE.reject
+            else:
+                command()
         if not _stack:
             if vx.window.focused.status_bar:
                 vx.window.focused.status_bar.reset_default_text()
@@ -23,10 +38,28 @@ def concat_bind(command):
     return h
 
 def save_typing(b):
-    vx.window.focused.force_insert = b
+    if not _stack:
+        vx.window.focused.force_insert = b
+    else:
+        s = _stack.pop(0)
+        s = s.s
+        vx.add_string(s)
 
 def cb(key, command):
     bind(key, concat_bind(command))
+cb(keys.quote, toggle_quoting)
+
+def catch_all(key):
+    from keybindings import utils
+    if getattr(vx.window.focused, 'force_insert', False):
+        return vx.keybinding_table.MATCH_STATE.reject
+    if utils.is_printable(key):
+        def g():
+            vx.add_string('X')
+        concat_bind(g)(key)
+        return vx.keybinding_table.MATCH_STATE.accept
+    return vx.keybinding_table.MATCH_STATE.reject
+vx.global_keybinding_table.catch_all = catch_all
 
 def beginning():
     beginning_pm()
