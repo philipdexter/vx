@@ -69,7 +69,7 @@ class concat_keybindings(vx.keybinding_table):
         self.cb(keys['9'], partial(self.times, 9))
 
         self.cb(keys.i, partial(self.save_typing, True))
-        super(concat_keybindings, self).bind(ctrl + keys.i, partial(self.save_typing, False))
+        super(concat_keybindings, self).bind(ctrl + keys.k, partial(self.save_typing, False))
 
         self.cb(keys.l, self.line)
         self.cb(keys.r, self.window)
@@ -105,8 +105,6 @@ class concat_keybindings(vx.keybinding_table):
         self.cb(keys.forwardslash, vx.undo)
         super(concat_keybindings, self).bind(ctrl + keys.underscore, vx.undo)
 
-        super(concat_keybindings, self).bind(alt + keys.x, vx.exec_prompt)
-
         self.cb(keys.c, self.center)
 
         super(concat_keybindings, self).bind(ctrl + keys.x - keys['2'], vx.split_h)
@@ -117,6 +115,8 @@ class concat_keybindings(vx.keybinding_table):
 
         self.cb(keys.f, self._open_search)
         self.cb(keys.F, partial(self._open_search, forwards=False))
+        self.cb(keys.O, self._open_file)
+        super(concat_keybindings, self).bind(alt + keys.x, self._open_exec)
 
     def cb(self, key, command):
         super(concat_keybindings, self).bind(key, self.concat_bind(command))
@@ -361,7 +361,7 @@ class concat_keybindings(vx.keybinding_table):
                 elif i == Place.word:
                     grabber = self.word_grabber
                 elif i == Place.window:
-                    grabber = window_grabber
+                    grabber = self.window_grabber
         command(partial(grabber, x, part) if grabber else None)
 
     def absolute_line(self):
@@ -400,8 +400,6 @@ class concat_keybindings(vx.keybinding_table):
             n += i
             self._stack.append(Times(n))
 
-
-
     def raise_stack(self):
         raise Exception(self._stack)
 
@@ -411,4 +409,12 @@ class concat_keybindings(vx.keybinding_table):
             s = self._stack.pop()
             start = s.s
         prompt = vx.search_prompt(forwards=forwards, start=start)
-        prompt.force_insert = True
+        prompt.keybinding_table.force_insert = True
+
+    def _open_file(self):
+        prompt = vx.file_prompt()
+        prompt.keybinding_table.force_insert = True
+
+    def _open_exec(self):
+        prompt = vx.exec_prompt()
+        prompt.keybinding_table.force_insert = True
