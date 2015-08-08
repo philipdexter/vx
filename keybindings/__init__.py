@@ -1,5 +1,6 @@
 import vx
 import windows
+from . import utils
 
 from unicodedata import category
 from functools import partial
@@ -240,12 +241,8 @@ def _register_key(key):
             break
 
     if match == _keybinding_table.MATCH_STATE.reject:
-        try:
-            if vx.print_printable and len(_keybinding_queue) == 1 and category(key.decode('utf8')[0])[0] != 'C':
-                vx.add_string(key.decode('utf8'))
-        except UnicodeDecodeError:
-            # Invalid unicode, don't print
-            pass
+        if vx.print_printable and len(_keybinding_queue) == 1 and utils.is_printable(key.decode('utf8')[0]):
+            vx.add_string(key.decode('utf8'))
         _keybinding_queue = []
     elif match == _keybinding_table.MATCH_STATE.accept:
         _keybinding_queue = []
