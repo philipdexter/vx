@@ -1,10 +1,13 @@
-.. vx documentation master file, created by
-   sphinx-quickstart on Sat Aug  8 12:52:40 2015.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+vx
+===
 
-Welcome to vx's documentation!
-==============================
+*/veks/*
+
+An editor.
+
+* **Minimal.** Zero defaults
+* **Extensible.** Python
+* **Powerful.** API
 
 Contents:
 
@@ -20,3 +23,12 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
+API Reference
+-------------
+
+Information on specific functions, classes, and methods are found here
+
+.. toctree::
+   :maxdepth: 2
+
+   api
