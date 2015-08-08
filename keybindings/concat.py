@@ -13,6 +13,7 @@ class Place(Enum):
     window = 1
     word = 2
     paragraph = 3
+    whitespace = 4
 
 class PlaceModifier(Enum):
     whole = 0
@@ -74,6 +75,7 @@ class concat_keybindings(vx.keybinding_table):
         self.cb(keys.l, self.line)
         self.cb(keys.r, self.window)
         self.cb(keys.w, self.word)
+        self.cb(keys.W, self.whitespace)
 
         self.cb(keys.g, self.clear)
 
@@ -286,6 +288,25 @@ class concat_keybindings(vx.keybinding_table):
                 rb, cb = vx.window.focused.cursor
             return ra, ca, rb, cb
 
+    def whitespace_grabber(self, x, part):
+        if part == PlaceModifier.backward:
+            direction = False
+        else:
+            direction = True
+        with vx.cursor_wander():
+            ra, ca = vx.window.focused.cursor
+            breaks = (' ', '\n')
+            for _ in range(x):
+                offsets = list(map(lambda x: x[1], vx.get_offsets_of(breaks, direction)))
+                if len(offsets) == 0:
+                    vx.move_end() if direction else vx.move_beg()
+                    rb, cb = vx.window.focused.cursor
+                else:
+                    o = min(offsets)
+                    vx.repeat(vx.move_right if direction else vx.move_left, times=o if direction else o-1)
+                    rb, cb = vx.window.focused.cursor
+            return ra, ca, rb, cb
+
     def word_grabber(self, x, part):
         if part == PlaceModifier.backward:
             direction = False
@@ -328,6 +349,8 @@ class concat_keybindings(vx.keybinding_table):
                     grabber = self.line_grabber
                 elif i == Place.word:
                     grabber = self.word_grabber
+                elif i == Place.whitespace:
+                    grabber = self.whitespace_grabber
                 elif i == Place.window:
                     grabber = self.window_grabber
         command(partial(grabber, x, part) if grabber else None)
@@ -347,6 +370,8 @@ class concat_keybindings(vx.keybinding_table):
         self._stack.append(Place.window)
     def word(self):
         self._stack.append(Place.word)
+    def whitespace(self):
+        self._stack.append(Place.whitespace)
     def beginning_pm(self):
         self._stack.append(PlaceModifier.beginning)
     def end_pm(self):
