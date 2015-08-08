@@ -24,7 +24,8 @@ def _undo():
         if change['type'] == 'removal' and change['hold']:
             r, c = vx.window.focused.cursor
         if change['type'] == 'addition':
-            vx.backspace(track=False)
+            for _ in range(len(change['string'])):
+                vx.backspace(track=False)
         elif change['type'] == 'removal':
             vx.add_string(change['string'], track=False)
             if change['hold']:
