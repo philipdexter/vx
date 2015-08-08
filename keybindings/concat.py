@@ -170,41 +170,10 @@ class concat_keybindings(vx.keybinding_table):
         self.line()
         self.analyze(self.move_me)
 
+    def next(self):
+        self.analyze(self.move_me, partial(self.line_grabber, restore_column=True))
     def previous(self):
-        if not self._stack:
-            vx.move_up()
-        else:
-            command = vx.move_up
-            x = 1
-
-            i = self._stack.pop(0)
-            if isinstance(i, Times):
-                x = i.i
-                if self._stack:
-                    i = self._stack.pop(0)
-            if isinstance(i, Place):
-                if i == Place.word:
-                    command = vx.backward_word
-            vx.repeat(command, times=x)
-
-    def next(self):
-        if not self._stack:
-            vx.move_down()
-        else:
-            command = vx.move_down
-            x = 1
-
-            i = self._stack.pop(0)
-            if isinstance(i, Times):
-                x = i.i
-                if self._stack:
-                    i = self._stack.pop(0)
-            if isinstance(i, Place):
-                if i == Place.word:
-                    command = vx.forward_word
-            vx.repeat(command, times=x)
-
-    def next(self):
+        self.backward_pm()
         self.analyze(self.move_me, partial(self.line_grabber, restore_column=True))
 
     def delete_me(self, what=None):
