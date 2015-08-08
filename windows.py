@@ -1,6 +1,7 @@
 import vx
 import undo
 import utils
+import mode
 
 import math
 import traceback
@@ -53,7 +54,7 @@ class _window_meta(type):
 
 @vx.expose
 class _window(metaclass=_window_meta):
-    def __init__(self, rows, columns, y, x, traversable=True, status_bar=True):
+    def __init__(self, rows, columns, y, x, starting_mode=None, traversable=True, status_bar=True):
         self._c_window = vx.new_window(rows-1, columns, y, x)
         self.graffitis = []
         self.line = 1
@@ -90,6 +91,8 @@ class _window(metaclass=_window_meta):
             self.status_bar = None
 
         self.color_tags = []
+
+        self.mode = starting_mode(self) if starting_mode else mode.mode(self)
 
     def __get_cursor(self):
         return vx.get_linecol_window(self)
@@ -294,6 +297,9 @@ class _window(metaclass=_window_meta):
         self.filename = filename
         vx.attach_window(self, filename)
         self.has_contents = True
+        m = mode.mode_from_filename(filename)
+        if m:
+            self.mode = m(self)
 
     def split_h(self):
         split_height = math.floor(self.rows / 2)

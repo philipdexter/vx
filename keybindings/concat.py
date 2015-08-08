@@ -293,7 +293,7 @@ class concat_keybindings(vx.keybinding_table):
             direction = True
         with vx.cursor_wander():
             ra, ca = vx.window.focused.cursor
-            breaks = ('_', ' ', '\n')
+            breaks = vx.window.focused.mode.breaks
             for _ in range(x):
                 offsets = list(map(lambda x: x[1], vx.get_offsets_of(breaks, direction)))
                 if len(offsets) == 0:
