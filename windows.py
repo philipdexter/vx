@@ -473,10 +473,10 @@ def _kill_to_forward():
 
 @vx.expose
 def _get_offsets_of(breaks, forward=True, ignore_pos=True, ignore_failed=True):
-    if ignore_pos: vx.move_right() if forward else vx.move_left()
+    if ignore_pos: vx.move_right() if forward else vx.repeat(vx.move_left, times=2)
     offsets = map(lambda s: (s, vx.get_linecoloffset_of_str(vx.window.focused, s, int(forward))[2]), breaks)
-    offsets = list(map(lambda x: (x[0], x[1] + 1 if x[1] != -1 else x[1]), offsets)) if ignore_pos else offsets
-    if ignore_pos: vx.move_left() if forward else vx.move_right()
+    offsets = list(map(lambda x: (x[0], (x[1] + (1 if forward else 2)) if x[1] != -1 else x[1]), offsets)) if ignore_pos else offsets
+    if ignore_pos: vx.move_left() if forward else vx.repeat(vx.move_right, times=2)
     return list(filter(lambda x: x[1] != -1, offsets) if ignore_failed else offsets)
 
 @vx.expose
