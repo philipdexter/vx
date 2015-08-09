@@ -13,10 +13,12 @@ def remove_text_linecol_to_linecol(rowa, cola, rowb, colb):
             row, col = window.cursor
 
 def get_offsets_of(breaks, forward=True, ignore_pos=True, ignore_failed=True):
-    if ignore_pos: move.right() if forward else vx.repeat(move.left, times=2)
+    if ignore_pos and forward:
+        move.right()
     offsets = map(lambda s: (s, vx.get_linecoloffset_of_str(vx_mod.window.windows.focused, s, int(forward))[2]), breaks)
     offsets = list(map(lambda x: (x[0], x[1] + 1 if x[1] != -1 else x[1]), offsets)) if ignore_pos else offsets
-    if ignore_pos: move.left() if forward else move.right()
+    if ignore_pos and forward:
+        move.left()
     return list(filter(lambda x: x[1] != -1, offsets) if ignore_failed else offsets)
 
 def delete(track=True):
