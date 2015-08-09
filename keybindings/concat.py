@@ -1,6 +1,9 @@
 import vx
 from vx import bind, alt, ctrl, keys
 import undo
+import vx_mod.movement as move
+import vx_mod.text as text
+import vx_mod.window as window
 
 from enum import Enum
 from functools import partial, wraps
@@ -35,10 +38,10 @@ class Times:
         return '{}-times'.format(self.i)
 
 class concat_keybindings(vx.keybinding_table):
-    def __init__(self, window):
+    def __init__(self, for_window):
         super(concat_keybindings, self).__init__()
 
-        self.for_window = window
+        self.for_window = for_window
 
         self.force_insert = False
 
@@ -52,7 +55,7 @@ class concat_keybindings(vx.keybinding_table):
                 return vx.keybinding_table.MATCH_STATE.reject
             if utils.is_printable(key):
                 def g():
-                    vx.add_string('X')
+                    text.add_string('X')
                 self.concat_bind(g)(key)
                 return vx.keybinding_table.MATCH_STATE.accept
             return vx.keybinding_table.MATCH_STATE.reject
@@ -106,14 +109,14 @@ class concat_keybindings(vx.keybinding_table):
         super(concat_keybindings, self).bind(keys.backspace, self.backspace)
         self.cb(keys.d, self.delete)
 
-        self.cb(keys.forwardslash, vx.undo)
-        super(concat_keybindings, self).bind(ctrl + keys.underscore, vx.undo)
+        self.cb(keys.forwardslash, undo.undo)
+        super(concat_keybindings, self).bind(ctrl + keys.underscore, undo.undo)
 
         self.cb(keys.c, self.center)
 
-        super(concat_keybindings, self).bind(ctrl + keys.x - keys['2'], vx.split_h)
-        super(concat_keybindings, self).bind(ctrl + keys.x - keys['3'], vx.split_v)
-        super(concat_keybindings, self).bind(ctrl + keys.x - keys['0'], vx.close_window)
+        super(concat_keybindings, self).bind(ctrl + keys.x - keys['2'], lambda: vx.window.focused.split_h)
+        super(concat_keybindings, self).bind(ctrl + keys.x - keys['3'], lambda: vx.window.focused.split_v)
+        super(concat_keybindings, self).bind(ctrl + keys.x - keys['0'], window.close_window)
 
         self.cb(keys.z, vx.suspend)
 
@@ -121,6 +124,8 @@ class concat_keybindings(vx.keybinding_table):
         self.cb(keys.F, partial(self._open_search, forwards=False))
         self.cb(keys.O, self._open_file)
         super(concat_keybindings, self).bind(alt + keys.x, self._open_exec)
+
+        self.cb(ctrl + keys.t, vx.run_tests)
 
     def cb(self, key, command):
         super(concat_keybindings, self).bind(key, self.concat_bind(command))
@@ -159,7 +164,7 @@ class concat_keybindings(vx.keybinding_table):
         else:
             s = self._stack.pop(0)
             s = s.s
-            vx.add_string(s)
+            text.add_string(s)
 
     def beginning(self):
         self.beginning_pm()
@@ -191,7 +196,7 @@ class concat_keybindings(vx.keybinding_table):
                 direction = 0
                 self.for_window.cursor = (ra, ca)
             removed = vx.get_str_linecol_to_linecol_window(self.for_window, ra, ca, rb, cb)
-            vx.remove_text_linecol_to_linecol(ra, ca, rb, cb)
+            text.remove_text_linecol_to_linecol(ra, ca, rb, cb)
             self.for_window.dirty = True
             undo.register_removal(removed, ra, ca, hold=bool(direction))
     def delete(self):
@@ -199,7 +204,7 @@ class concat_keybindings(vx.keybinding_table):
 
     def move_me(self, what=None):
         if what is None:
-            vx.move_right()
+            move.right()
         else:
             _, _, rb, cb = what()
             self.for_window.cursor = (rb, cb)
@@ -214,13 +219,13 @@ class concat_keybindings(vx.keybinding_table):
 
     def center_me(self, what=None):
         if what is None:
-            vx.center()
+            windows.center()
         else:
             _, _, rb, cb = what()
             r, _ = vx.get_window_size(self.for_window)
             _, x = vx.get_linecol_start_window(self.for_window)
             new_top = max(rb - r // 2, 1)
-            self.for_window.set_start_linecol(new_top, x)
+            self.for_window.topleft = (new_top, x)
     def center(self):
         self.analyze(self.center_me)
 
@@ -232,7 +237,7 @@ class concat_keybindings(vx.keybinding_table):
         with vx.cursor_wander():
             ra, ca = self.for_window.cursor
             for _ in range(x):
-                vx.move_right() if direction else vx.move_left()
+                move.right() if direction else move.left()
                 rb, cb = self.for_window.cursor
             return ra, ca, rb, cb
 
@@ -243,7 +248,7 @@ class concat_keybindings(vx.keybinding_table):
             direction = True
         with vx.cursor_wander():
             ra, ca = self.for_window.cursor
-            vx.move_end() if direction else vx.move_beg()
+            move.end() if direction else move.beg()
             rb, cb = self.for_window.cursor
             return ra, ca, rb, cb
 
@@ -257,13 +262,13 @@ class concat_keybindings(vx.keybinding_table):
             # Can only move to the beginning of a line once
             if part == PlaceModifier.beginning:
                 ra, ca = self.for_window.cursor
-                vx.move_bol()
+                move.bol()
                 rb, cb = self.for_window.cursor
                 return ra, ca, rb, cb
             # Same with moving to the end
             if part == PlaceModifier.end:
                 ra, ca = self.for_window.cursor
-                vx.move_eol()
+                move.eol()
                 rb, cb = self.for_window.cursor
                 return ra, ca, rb, cb
             # Same with findint the absolute line
@@ -275,17 +280,17 @@ class concat_keybindings(vx.keybinding_table):
             # Handle a whole line, forwards or backwards
             if restore_column:
                 _, column = self.for_window.cursor
-            vx.move_bol() if direction else vx.move_eol()
+            move.bol() if direction else move.eol()
             ra, ca = self.for_window.cursor
             if not direction:
-                vx.move_bol()
+                move.bol()
                 rb, cb = self.for_window.cursor
             for _ in range(x if direction else x):
                 if direction:
-                    vx.move_down()
+                    move.down()
                 else:
-                    vx.move_up()
-                    vx.move_eol()
+                    move.up()
+                    move.eol()
                 if restore_column:
                     r, c = self.for_window.cursor
                     self.for_window.cursor = (r, column)
@@ -304,13 +309,13 @@ class concat_keybindings(vx.keybinding_table):
             ra, ca = self.for_window.cursor
             breaks = (' ', '\n')
             for _ in range(x):
-                offsets = list(map(lambda x: x[1], vx.get_offsets_of(breaks, direction)))
+                offsets = list(map(lambda x: x[1], text.get_offsets_of(breaks, direction)))
                 if len(offsets) == 0:
-                    vx.move_end() if direction else vx.move_beg()
+                    move.end() if direction else move.beg()
                     rb, cb = self.for_window.cursor
                 else:
                     o = min(offsets)
-                    vx.repeat(vx.move_right if direction else vx.move_left, times=o if direction else o-1)
+                    vx.repeat(move.right if direction else move.left, times=o if direction else o-1)
                     rb, cb = self.for_window.cursor
             return ra, ca, rb, cb
 
@@ -323,13 +328,13 @@ class concat_keybindings(vx.keybinding_table):
             ra, ca = self.for_window.cursor
             breaks = self.for_window.mode.breaks
             for _ in range(x):
-                offsets = list(map(lambda x: x[1], vx.get_offsets_of(breaks, direction)))
+                offsets = list(map(lambda x: x[1], text.get_offsets_of(breaks, direction)))
                 if len(offsets) == 0:
-                    vx.move_end() if direction else vx.move_beg()
+                    move.end() if direction else move.beg()
                     rb, cb = self.for_window.cursor
                 else:
                     o = min(offsets)
-                    vx.repeat(vx.move_right if direction else vx.move_left, times=o if direction else o-1)
+                    vx.repeat(move.right if direction else move.left, times=o if direction else o-1)
                     rb, cb = self.for_window.cursor
             return ra, ca, rb, cb
 

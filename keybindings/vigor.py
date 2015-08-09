@@ -4,6 +4,9 @@ import prompt
 import math
 import sys
 
+import vx_mod.movement as move
+import vx_mod.text as text
+
 from functools import partial
 
 from enum import Enum
@@ -25,7 +28,7 @@ class VigorBinding(object):
         else:
           string = key
 
-        self.callbacks[Mode.insert] = partial(vx.add_string, string)
+        self.callbacks[Mode.insert] = partial(text.add_string, string)
 
         vx.bind(self.key, self)
 
@@ -64,30 +67,30 @@ def insert():
 def bol_insert():
     '''Move to beginning of line and enter insert mode'''
     # FIXME should move to first non-whitespace character
-    vx.move_bol()
+    move.bol()
     insert()
 
 @vbind(vx.keys.a)
 def append():
     '''Enter insert mode to the right'''
-    vx.move_right()
+    move.right()
     insert()
 
 @vbind(vx.keys.A)
 def eol_append():
     '''Move to end of line and enter insert mode'''
-    vx.move_eol()
+    move.eol()
     insert()
 
 # hjkl
-vbind(vx.keys.h, vx.move_left)
-vbind(vx.keys.j, vx.move_down)
-vbind(vx.keys.k, vx.move_up)
-vbind(vx.keys.l, vx.move_right)
+vbind(vx.keys.h, move.left)
+vbind(vx.keys.j, move.down)
+vbind(vx.keys.k, move.up)
+vbind(vx.keys.l, move.right)
 
-vbind('0', vx.move_bol)
-vbind('^', vx.move_bol) # FIXME should move to first non-ws char
-vbind('$', vx.move_eol)
+vbind('0', move.bol)
+vbind('^', move.bol) # FIXME should move to first non-ws char
+vbind('$', move.eol)
 
 @vx.bind(vx.keys.escape)
 def escape():

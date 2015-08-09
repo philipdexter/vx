@@ -1,7 +1,8 @@
 import vx
+from vx_mod.window import window
 
 @vx.expose
-class _status_bar(vx.window):
+class _status_bar(window):
     def __init__(self, attached_to):
         super(_status_bar, self).__init__(1, attached_to.columns,
                                           attached_to.y + attached_to.rows - 1, attached_to.x,
