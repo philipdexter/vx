@@ -373,7 +373,7 @@ def execute_window():
             vx.add_string(tb)
 
 def _resize_handler():
-    for w in _windows:
+    for w in windows:
         w.resize(w.rows, vx.cols)
 
 vx.resize_handler = _resize_handler
