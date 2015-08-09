@@ -25,10 +25,14 @@ def get_offsets_of(breaks, forward=True, ignore_pos=True, ignore_failed=True):
     """
     if ignore_pos and forward:
         move.right()
+    else:
+        move.left()
     offsets = map(lambda s: (s, vx.get_linecoloffset_of_str(vx_mod.window.windows.focused, s, int(forward))[2]), breaks)
     offsets = list(map(lambda x: (x[0], x[1] + 1 if x[1] != -1 else x[1]), offsets)) if ignore_pos else offsets
     if ignore_pos and forward:
         move.left()
+    else:
+        move.right()
     return list(filter(lambda x: x[1] != -1, offsets) if ignore_failed else offsets)
 
 def delete(track=True):
