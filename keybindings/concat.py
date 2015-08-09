@@ -114,8 +114,8 @@ class concat_keybindings(vx.keybinding_table):
 
         self.cb(keys.c, self.center)
 
-        super(concat_keybindings, self).bind(ctrl + keys.x - keys['2'], lambda: vx.window.focused.split_h)
-        super(concat_keybindings, self).bind(ctrl + keys.x - keys['3'], lambda: vx.window.focused.split_v)
+        super(concat_keybindings, self).bind(ctrl + keys.x - keys['2'], lambda: window.windows.focused.split_h)
+        super(concat_keybindings, self).bind(ctrl + keys.x - keys['3'], lambda: window.windows.focused.split_v)
         super(concat_keybindings, self).bind(ctrl + keys.x - keys['0'], window.close_window)
 
         self.cb(keys.z, vx.suspend)

@@ -5,7 +5,7 @@ import vx_mod.movement as move
 def remove_text_linecol_to_linecol(rowa, cola, rowb, colb):
     # TODO inneficient, maybe implement this in C
     with vx.cursor_wander():
-        window = vx_mod.window.window.focused
+        window = vx_mod.window.windows.focused
         window.cursor = (rowb, colb)
         row, col = window.cursor
         while row != rowa or col != cola:
@@ -14,13 +14,13 @@ def remove_text_linecol_to_linecol(rowa, cola, rowb, colb):
 
 def get_offsets_of(breaks, forward=True, ignore_pos=True, ignore_failed=True):
     if ignore_pos: move.right() if forward else vx.repeat(move.left, times=2)
-    offsets = map(lambda s: (s, vx.get_linecoloffset_of_str(vx_mod.window.window.focused, s, int(forward))[2]), breaks)
+    offsets = map(lambda s: (s, vx.get_linecoloffset_of_str(vx_mod.window.windows.focused, s, int(forward))[2]), breaks)
     offsets = list(map(lambda x: (x[0], (x[1] + (1 if forward else 2)) if x[1] != -1 else x[1]), offsets)) if ignore_pos else offsets
     if ignore_pos: move.left() if forward else vx.repeat(move.right, times=2)
     return list(filter(lambda x: x[1] != -1, offsets) if ignore_failed else offsets)
 
 def delete(track=True):
-    window = vx_mod.window.window.focused
+    window = vx_mod.window.windows.focused
     if track:
         window.dirty = True
         r, c = window.cursor
@@ -29,7 +29,7 @@ def delete(track=True):
     vx.backspace_delete_window(window)
 
 def backspace(track=True):
-    window = vx_mod.window.window.focused
+    window = vx_mod.window.windows.focused
     if track:
         window.dirty = True
         r, c = window.cursor
@@ -49,4 +49,4 @@ def backspace(track=True):
     vx.backspace_window(window)
 
 def add_string(s, **kwargs):
-    vx_mod.window.window.focused.add_string(s, **kwargs)
+    vx_mod.window.windows.focused.add_string(s, **kwargs)

@@ -7,9 +7,6 @@ import math
 import traceback
 from functools import partial, wraps
 
-_windows = []
-_windows_traversable = []
-
 class _graffiti:
     def __init__(self, y, x, text):
         self.y = y
@@ -22,6 +19,8 @@ class _graffiti:
 
 class _window_meta(type):
     _focused = None
+    _windows = []
+    _traversable = []
 
     def __get_focused(self):
         return _window_meta._focused
@@ -29,9 +28,33 @@ class _window_meta(type):
     def __set_focused(self, w):
         _window_meta._focused = w
 
-    focused = property(__get_focused, __set_focused)
+    def __get_windows(self):
+        return _window_meta._windows
 
-class window(metaclass=_window_meta):
+    def __get_traversable(self):
+        return _window_meta._traversable
+
+    def __iter__(self):
+        return iter(self.windows)
+
+    focused = property(__get_focused, __set_focused)
+    windows = property(__get_windows)
+    traversable = property(__get_traversable)
+
+class windows(metaclass=_window_meta):
+    @staticmethod
+    def append(item):
+        windows.windows.append(item)
+
+    @staticmethod
+    def sort(*args, **kwargs):
+        windows.windows.sort(*args, **kwargs)
+
+    @staticmethod
+    def remove(*args, **kwargs):
+        windows.windows.remove(*args, **kwargs)
+
+class window:
     def __init__(self, rows, columns, y, x, starting_mode=None, traversable=True, status_bar=True):
         self._c_window = vx.new_window(rows-1, columns, y, x)
         self.graffitis = []
@@ -52,16 +75,16 @@ class window(metaclass=_window_meta):
             self.keybinding_table = vx.default_keybindings(self)
         else:
             self.keybinding_table = vx.keybinding_table()
-        _windows.append(self)
-        _windows.sort(key=lambda w: w.y)
+        windows.append(self)
+        windows.sort(key=lambda w: w.y)
 
         self.parent = None
         self.children = []
 
         self.traversable = traversable
         if traversable:
-            _windows_traversable.append(self)
-            _windows_traversable.sort(key=lambda w: w.y)
+            windows.traversable.append(self)
+            windows.traversable.sort(key=lambda w: w.y)
 
         if status_bar:
             self.status_bar = vx.status_bar(self)
@@ -145,17 +168,17 @@ class window(metaclass=_window_meta):
                     self.children[0].grow(left=x)
             self.parent.children.remove(self)
             self.parent.focus()
-        _windows.remove(self)
+        windows.remove(self)
         if self.traversable:
-            _windows_traversable.remove(self)
+            windows.traversable.remove(self)
         vx.delete_window(self)
         if self.status_bar is not None:
             self.status_bar.remove()
         # quit editor if there are no more windows
-        if len(_windows_traversable) == 0:
+        if len(windows.traversable) == 0:
             # create new blank window so we don't crash
             # TODO fix c code so we don't need this
-            new = _window(1, 1, 1, 1)
+            new = window(1, 1, 1, 1)
             new.blank()
             new.focus()
             vx.quit()
@@ -203,9 +226,9 @@ class window(metaclass=_window_meta):
         vx.attach_window_blank(self)
 
     def focus(self):
-        if window.focused:
-            window.focused.unfocus()
-        window.focused = self
+        if windows.focused:
+            windows.focused.unfocus()
+        windows.focused = self
         vx.keybinding_tables.insert(0, self.keybinding_table)
         vx.focus_internal_window(self)
 
@@ -282,7 +305,7 @@ class window(metaclass=_window_meta):
         split_height = math.floor(self.rows / 2)
         split_width = self.columns
         self.resize(split_height, split_width)
-        new = _window(split_height, split_width, self.y + split_height, self.x)
+        new = window(split_height, split_width, self.y + split_height, self.x)
         new.parent = self
         self.children.append(new)
         new.blank()
@@ -293,7 +316,7 @@ class window(metaclass=_window_meta):
         split_height = self.rows
         split_width = math.floor(self.columns / 2)
         self.resize(split_height, split_width)
-        new = _window(split_height, split_width, self.y, self.x + split_width)
+        new = window(split_height, split_width, self.y, self.x + split_width)
         new.parent = self
         self.children.append(new)
         new.blank()
@@ -301,33 +324,33 @@ class window(metaclass=_window_meta):
         return new
 
 def _next_window():
-    if vx.window.focused is None:
+    if windows.focused is None:
         return
-    current = _windows_traversable.index(vx.window.focused)
+    current = windows.traversable.index(windows.focused)
     after = current + 1
-    if after == len(_windows_traversable):
+    if after == len(windows.traversable):
         after = 0
-    _windows_traversable[after].focus()
+    windows.traversable[after].focus()
 
 def _tick():
-    for w in _windows:
+    for w in windows:
         w.update()
 vx.register_tick_function(_tick)#, front=True)
 
 def close_window():
-    w = vx.window.focused
+    w = windows.focused
     _next_window()
     w.remove()
 
 def center():
-    r, c = vx.get_window_size(vx.window.focused)
-    y, _ = vx.window.focused.cursor
-    _, x = vx.get_linecol_start_window(vx.window.focused)
+    r, c = vx.get_window_size(windows.focused)
+    y, _ = windows.focused.cursor
+    _, x = vx.get_linecol_start_window(windows.focused)
     new_top = max(y - r // 2, 1)
-    vx.window.focused.topleft = (new_top, x)
+    windows.focused.topleft = (new_top, x)
 
 def execute_window():
-    contents = vx.window.focused.contents
+    contents = vx.windows.focused.contents
     with utils.stdoutIO() as s:
         try:
             exec(contents)
@@ -337,7 +360,7 @@ def execute_window():
             tb = None
     s = s.getvalue()
     if len(s) > 0 or tb:
-        split = vx.window.focused.split_h()
+        split = vx.windows.focused.split_h()
         split.focus()
         if not tb:
             vx.add_string(s)

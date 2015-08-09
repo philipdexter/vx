@@ -2,7 +2,7 @@ import vx
 import utils
 import vx_mod.text as text
 import vx_mod.movement as move
-from vx_mod.window import window
+from vx_mod.window import window, windows
 
 import traceback
 from os.path import isfile
@@ -11,7 +11,7 @@ from functools import partial
 class _prompt(window):
     def __init__(self, attached_to=None):
         if attached_to is None:
-            attached_to = vx.window.focused
+            attached_to = windows.focused
         super(_prompt, self).__init__(2, attached_to.columns,
                                       attached_to.y + attached_to.rows-1,
                                       attached_to.x,
