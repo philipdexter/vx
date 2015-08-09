@@ -2,9 +2,17 @@ import vx
 
 import traceback
 
+_tests = []
+def register_test(test):
+    _tests.append(test)
+
 def check(a, b):
     if a != b:
         raise AssertionError('{} is not {}\n'.format(a, b))
+
+def check_items(a, b):
+    for x, y in zip(a, b):
+        check(x, y)
 
 @vx.expose
 def _run_tests():
@@ -12,16 +20,48 @@ def _run_tests():
         w = vx.window.focused
         w.blank()
 
+
+        def check_at(s, a, forwards=True):
+            check_items(vx.get_linecoloffset_of_str(w, s, int(forwards)), a)
+
         vx.add_string(
-'''Hello
-this is a test
+'''
+Tests are being run
 ''')
         vx.move_beg()
 
         vx.add_string('öäå')
         vx.move_beg()
-        _, _, o = vx.get_linecoloffset_of_str(w, 'ä')
-        check(o, 2)
+
+        check_at('ä', (1, 2, 1))
+        check_at('ä', (1, 2, 1))
+        check_at('öäå', (1, 1, 0))
+        check_at('öäå\n', (1, 1, 0))
+
+        vx.move_down()
+
+        check_at('ö', (1, 1, 4), False)
+
+        vx.move_eol()
+
+        check_at('ö', (1, 1, 23), False)
+        check_at('ä', (1, 2, 22), False)
+
+        vx.set_linecol_window(w, 1, 2)
+
+        check_at('ä', (1, 2, 0))
+        check_at('å', (1, 3, 1))
+        check_at('öäå', (1, 1, 1), False)
+        check_at('öäå\n', (1, 1, 1), False)
+        check_at('å\n', (1, 3, 1))
+
+        for t in _tests:
+            t()
+
+        vx.move_end()
+        vx.add_string('''
+All tests have passed
+''')
     except AssertionError as e:
         vx.move_end()
         vx.add_string('\n\n')
