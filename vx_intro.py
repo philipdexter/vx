@@ -22,13 +22,13 @@ def _resize():
     pass
 vx.resize_handler = _resize
 
-import utils
-import scheduler
+import vx_mod.utils
+import vx_mod.scheduler
 import keybindings
 from vx_mod.window import window
-import status_bar
-import prompt
-import test
+import vx_mod.status_bar
+import vx_mod.prompt
+import vx_mod.test
 
 def _default_start():
     if len(vx.files) == 0:

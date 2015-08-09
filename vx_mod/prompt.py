@@ -1,5 +1,5 @@
 import vx
-import utils
+import vx_mod.utils as utils
 import vx_mod.text as text
 import vx_mod.movement as move
 from vx_mod.window import window, windows

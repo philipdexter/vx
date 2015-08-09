@@ -1,4 +1,7 @@
 import vx
+import vx_mod.text as text
+import vx_mod.movement as move
+from vx_mod.window import windows
 
 import traceback
 
@@ -17,32 +20,32 @@ def check_items(a, b):
 @vx.expose
 def _run_tests():
     try:
-        w = vx.window.focused
+        w = windows.focused
         w.blank()
 
 
         def check_at(s, a, forwards=True):
             check_items(vx.get_linecoloffset_of_str(w, s, int(forwards)), a)
 
-        vx.add_string(
+        text.add_string(
 '''
 Tests are being run
 ''')
-        vx.move_beg()
+        move.beg()
 
-        vx.add_string('öäå')
-        vx.move_beg()
+        text.add_string('öäå')
+        move.beg()
 
         check_at('ä', (1, 2, 1))
         check_at('ä', (1, 2, 1))
         check_at('öäå', (1, 1, 0))
         check_at('öäå\n', (1, 1, 0))
 
-        vx.move_down()
+        move.down()
 
         check_at('ö', (1, 1, 4), False)
 
-        vx.move_eol()
+        move.eol()
 
         check_at('ö', (1, 1, 23), False)
         check_at('ä', (1, 2, 22), False)
@@ -58,11 +61,11 @@ Tests are being run
         for t in _tests:
             t()
 
-        vx.move_end()
-        vx.add_string('''
+        move.end()
+        text.add_string('''
 All tests have passed
 ''')
     except AssertionError as e:
-        vx.move_end()
-        vx.add_string('\n\n')
-        vx.add_string(traceback.format_exc())
+        move.end()
+        text.add_string('\n\n')
+        text.add_string(traceback.format_exc())

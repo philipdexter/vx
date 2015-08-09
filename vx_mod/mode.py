@@ -14,6 +14,14 @@ class mode:
     def __init__(self, window):
         self.breaks = ('_', ' ', '\n')
 
+class python_mode(mode):
+    def __init__(self, window):
+        super(python_mode, self).__init__(window)
+
+        self.breaks = ('_', ' ', '\n', '(', ')', '{', '}', '.', ',', '#')
+
+        self.keywords = ('return', 'for', 'while', 'break', 'continue', 'def')
+
 class c_mode(mode):
     def __init__(self, window):
         super(c_mode, self).__init__(window)

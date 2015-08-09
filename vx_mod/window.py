@@ -1,7 +1,7 @@
 import vx
-import utils
-import undo
-import mode
+import vx_mod.utils
+import vx_mod.undo as undo
+import vx_mod.mode as mode
 
 import math
 import traceback
@@ -351,7 +351,7 @@ def center():
 
 def execute_window():
     contents = vx.windows.focused.contents
-    with utils.stdoutIO() as s:
+    with vx_mod.utils.stdoutIO() as s:
         try:
             exec(contents)
         except Exception as e:
