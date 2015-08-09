@@ -192,6 +192,7 @@ class _search_prompt(_prompt):
         self.original_start = self.attached_to.topleft
 
         self.matching = False
+        self.match_length = 0
 
         self.add_string(start)
 
@@ -205,13 +206,11 @@ class _search_prompt(_prompt):
         self.next()
 
     def next(self):
-        # TODO fix this when working with regex
         if self.matching:
-            c = self.contents
             if self.forwards:
-                vx.repeat(partial(vx.move_right_window, self.attached_to), times=len(c))
+                vx.repeat(partial(vx.move_right_window, self.attached_to), times=self.match_length)
             else:
-                vx.repeat(partial(vx.move_left_window, self.attached_to), times=len(c))
+                vx.repeat(partial(vx.move_left_window, self.attached_to), times=self.match_length)
                 vx.move_left_window(self.attached_to)
 
     def isearch(self):
@@ -234,6 +233,7 @@ class _search_prompt(_prompt):
             return
         self.attached_to.ensure_visible(l, c + length)
         self.matching = True
+        self.match_length = length
         self.attached_to.cursor = (l, c)
         self.attached_to.color_tags.clear()
         self.attached_to.add_color_tag(l, c, length, 1, 10)
@@ -241,10 +241,9 @@ class _search_prompt(_prompt):
             vx.repeat(partial(vx.move_right_window, self.attached_to), times=length)
 
     def getout(self):
-        c = self.contents
         if self.matching:
             if self.forwards:
-                vx.repeat(partial(vx.move_right_window, self.attached_to), times=len(c))
+                vx.repeat(partial(vx.move_right_window, self.attached_to), times=self.match_length)
         y, x = vx.get_window_size(self)
         self.attached_to.grow(bottom=y)
         self.attached_to.focus()
