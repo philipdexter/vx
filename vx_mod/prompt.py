@@ -205,6 +205,7 @@ class _search_prompt(_prompt):
         self.next()
 
     def next(self):
+        # TODO fix this when working with regex
         if self.matching:
             c = self.contents
             if self.forwards:
@@ -216,24 +217,28 @@ class _search_prompt(_prompt):
     def isearch(self):
         self.search()
 
+    def dosearch(self, window, search_for, forwards):
+        l, c, o = vx.get_linecoloffset_of_str(window, search_for, forwards)
+        return l, c, o, len(search_for)
+
     def search(self):
         self.set_color(-1, -1)
         search_for = self.contents
         if not search_for: self.attached_to.color_tags.clear(); return
-        l, c, o = vx.get_linecoloffset_of_str(self.attached_to, search_for, int(self.forwards))
+        l, c, o, length = self.dosearch(self.attached_to, search_for, int(self.forwards))
         if o == -1:
             self.attached_to.cursor = (self.original_cursor[0], self.original_cursor[1])
             self.attached_to.color_tags.clear()
             self.set_color(-1, 11)
             self.matching = False
             return
-        self.attached_to.ensure_visible(l, c + len(search_for))
+        self.attached_to.ensure_visible(l, c + length)
         self.matching = True
         self.attached_to.cursor = (l, c)
         self.attached_to.color_tags.clear()
-        self.attached_to.add_color_tag(l, c, len(search_for), 1, 10)
+        self.attached_to.add_color_tag(l, c, length, 1, 10)
         if not self.forwards:
-            vx.repeat(partial(vx.move_right_window, self.attached_to), times=len(search_for))
+            vx.repeat(partial(vx.move_right_window, self.attached_to), times=length)
 
     def getout(self):
         c = self.contents
@@ -246,3 +251,8 @@ class _search_prompt(_prompt):
         self.remove(force=True)
         vx.unregister_key_listener(self.isearch)
         self.attached_to.color_tags.clear()
+
+@vx.expose
+class _regex_prompt(_search_prompt):
+    def dosearch(self, window, search_for, forwards):
+        return text.find_regex(search_for, window)

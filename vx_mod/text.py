@@ -2,6 +2,9 @@ import vx
 import vx_mod.window
 import vx_mod.movement as move
 
+import re
+from functools import partial
+
 def remove_text_linecol_to_linecol(rowa, cola, rowb, colb):
     """Removes all text between two points each specified as a row and column
 
@@ -75,3 +78,24 @@ def backspace(track=True):
 def add_string(s, **kwargs):
     """Add a string to the current window"""
     vx_mod.window.windows.focused.add_string(s, **kwargs)
+
+def find_regex(regex, window=None):
+    if window is None:
+        window = vx_mod.window.windows.focused
+    y, x = window.cursor
+    contents = window.contents.split('\n')[y-1:]
+    contents[0] = contents[0][x-1:]
+    contents = '\n'.join(contents)
+    try:
+        rgx = re.compile(regex)
+    except:
+        return (0, 0, -1, 0)
+    m = rgx.search(contents)
+    if m:
+        with vx.cursor_wander():
+            offset = m.start()
+            vx.repeat(partial(vx.move_right_window, window), times=offset)
+            l, c = window.cursor
+        return (l, c, offset, m.end() - m.start())
+    else:
+        return (0, 0, -1, 0)
