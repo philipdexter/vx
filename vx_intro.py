@@ -24,7 +24,7 @@ vx.resize_handler = _resize
 
 import vx_mod.utils
 import vx_mod.scheduler
-import keybindings
+import vx_mod.keybindings
 from vx_mod.window import window
 import vx_mod.status_bar
 import vx_mod.prompt
