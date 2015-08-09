@@ -2,12 +2,9 @@ try:
     import rc
 except ImportError:
     import vx
-    from vx import bind, alt, ctrl, keys, window
-
-    import sys
-    from functools import partial
 
     # which keybinding do we want
-    from keybindings import hopscotch
+    from vx_mod.keybindings import concat
+    vx.default_keybindings = concat.load
 
     vx.default_start()

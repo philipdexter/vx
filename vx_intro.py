@@ -22,24 +22,24 @@ def _resize():
     pass
 vx.resize_handler = _resize
 
-import utils
-import scheduler
-import keybindings
-import windows
-import status_bar
-import prompt
-import test
+import vx_mod.utils
+import vx_mod.scheduler
+import vx_mod.keybindings
+from vx_mod.window import window
+import vx_mod.status_bar
+import vx_mod.prompt
+import vx_mod.test
 
 def _default_start():
     if len(vx.files) == 0:
-        win = vx.window(vx.rows, vx.cols, 0, 0)
+        win = window(vx.rows, vx.cols, 0, 0)
         win.blank()
         win.focus()
     else:
         d = math.floor(vx.rows / (len(vx.files)))
         y = 0
         for f in vx.files:
-            win = vx.window(d, vx.cols, y, 0)
+            win = window(d, vx.cols, y, 0)
             win.attach_file(f)
             y += d
             win.focus()

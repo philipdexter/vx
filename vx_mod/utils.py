@@ -1,4 +1,5 @@
 import vx
+import vx_mod.window
 
 from contextlib import contextmanager
 from functools import partial
@@ -28,7 +29,7 @@ def _repeat(c, times=4):
 @contextmanager
 def _cursor_wander(command=None, window=None):
     if window is None:
-        window = vx.window.focused
+        window = vx_mod.window.windows.focused
     y, x = window.cursor
     if command is not None:
         command()

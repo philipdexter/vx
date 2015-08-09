@@ -1,14 +1,17 @@
 import vx
-import utils
+import vx_mod.utils as utils
+import vx_mod.text as text
+import vx_mod.movement as move
+from vx_mod.window import window, windows
 
 import traceback
 from os.path import isfile
 from functools import partial
 
-class _prompt(vx.window):
+class _prompt(window):
     def __init__(self, attached_to=None):
         if attached_to is None:
-            attached_to = vx.window.focused
+            attached_to = windows.focused
         super(_prompt, self).__init__(2, attached_to.columns,
                                       attached_to.y + attached_to.rows-1,
                                       attached_to.x,
@@ -23,7 +26,7 @@ class _prompt(vx.window):
     def cancel(self):
         y, x = vx.get_window_size(self)
         self.attached_to.grow(bottom=y)
-        vx.focus_window(self.attached_to)
+        self.attached_to.focus()
         self.remove(force=True)
 
 @vx.expose
@@ -40,7 +43,7 @@ class _exec_prompt(_prompt):
     def getout(self):
         y, x = vx.get_window_size(self)
         self.attached_to.grow(bottom=y)
-        vx.focus_window(self.attached_to)
+        self.attached_to.focus()
         contents = self.contents
         _exec_prompt._history.append(contents)
         with utils.stdoutIO() as s:
@@ -55,14 +58,14 @@ class _exec_prompt(_prompt):
             split = self.attached_to.split_h()
             split.focus()
             if not tb:
-                vx.add_string(s)
+                text.add_string(s)
             else:
-                vx.add_string(tb)
+                text.add_string(tb)
         self.remove(force=True)
 
     def _enter_and_expand(self):
         self.expand()
-        vx.add_string('\n')
+        text.add_string('\n')
 
     def expand(self):
         self.attached_to.pad(bottom=1)
@@ -71,7 +74,7 @@ class _exec_prompt(_prompt):
     def _history_pullback(self):
         if len(_exec_prompt._history) > 0:
             vx.clear_contents_window(self)
-            vx.add_string(_exec_prompt._history[-1])
+            text.add_string(_exec_prompt._history[-1])
 
 @vx.expose
 class _file_prompt(_prompt):
@@ -96,11 +99,11 @@ class _file_prompt(_prompt):
         if len(self.files) == 0:
             self.completing = False
             vx.clear_contents_window(self)
-            vx.add_string(self.old_contents)
+            text.add_string(self.old_contents)
         else:
             completion = self.files.pop()
             vx.clear_contents_window(self)
-            vx.add_string(completion)
+            text.add_string(completion)
 
     def getout(self, force=False, cancel_open=False):
         if not force and self.attached_to.dirty:
@@ -111,7 +114,7 @@ class _file_prompt(_prompt):
             return
         y, x = vx.get_window_size(self)
         self.attached_to.grow(bottom=y)
-        vx.focus_window(self.attached_to)
+        self.attached_to.focus()
         if not cancel_open:
             contents = self.contents
             if isfile(contents):
@@ -120,7 +123,7 @@ class _file_prompt(_prompt):
             else:
                 split = self.attached_to.split_h()
                 split.focus()
-                vx.add_string('file "{}" does not exist'.format(contents))
+                text.add_string('file "{}" does not exist'.format(contents))
         self.remove(force=True)
 
 @vx.expose
@@ -133,7 +136,7 @@ class _yn_prompt(_prompt):
 
         self.keybinding_table.bind(vx.keys.enter, self.getout)
 
-        vx.add_string('{} (y/n): '.format(message))
+        text.add_string('{} (y/n): '.format(message))
 
     def getout(self):
         contents = self.contents
@@ -146,7 +149,7 @@ class _yn_prompt(_prompt):
             return
         y, x = vx.get_window_size(self)
         self.attached_to.grow(bottom=y)
-        vx.focus_window(self.attached_to)
+        self.attached_to.focus()
         self.remove(force=True)
         if ret and self.yes:
             self.yes()
@@ -160,7 +163,7 @@ class _time_prompt(_prompt):
 
         self.message = message
 
-        vx.add_string(message)
+        text.add_string(message)
 
         vx.schedule(seconds, self.getout)
 
@@ -169,7 +172,7 @@ class _time_prompt(_prompt):
     def getout(self):
         y, x = vx.get_window_size(self)
         self.attached_to.grow(bottom=y)
-        vx.focus_window(self.attached_to)
+        self.attached_to.focus()
         self.remove(force=True)
 
 @vx.expose
@@ -186,7 +189,7 @@ class _search_prompt(_prompt):
         vx.register_key_listener(self.isearch)
 
         self.original_cursor = self.attached_to.cursor
-        self.original_start = vx.get_linecol_start_window(self.attached_to)
+        self.original_start = self.attached_to.topleft
 
         self.matching = False
 
@@ -194,7 +197,7 @@ class _search_prompt(_prompt):
 
     def cancel(self):
         self.attached_to.cursor = (self.original_cursor[0], self.original_cursor[1])
-        vx.set_linecol_start_window(self.attached_to, self.original_start[0], self.original_start[1])
+        self.attached_to.topleft = (self.original_start[0], self.original_start[1])
         super(_search_prompt, self).cancel()
 
     def reverse(self):
@@ -239,7 +242,7 @@ class _search_prompt(_prompt):
                 vx.repeat(partial(vx.move_right_window, self.attached_to), times=len(c))
         y, x = vx.get_window_size(self)
         self.attached_to.grow(bottom=y)
-        vx.focus_window(self.attached_to)
+        self.attached_to.focus()
         self.remove(force=True)
         vx.unregister_key_listener(self.isearch)
         self.attached_to.color_tags.clear()

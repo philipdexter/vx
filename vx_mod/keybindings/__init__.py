@@ -1,6 +1,6 @@
 import vx
-import windows
 from . import utils
+import vx_mod.text as text
 
 from unicodedata import category
 from functools import partial
@@ -253,7 +253,7 @@ def _register_key(key):
 
     if match == _keybinding_table.MATCH_STATE.reject:
         if vx.print_printable and len(_keybinding_queue) == 1 and utils.is_printable(key.decode('utf8')[0]):
-            vx.add_string(key.decode('utf8'))
+            text.add_string(key.decode('utf8'))
         _keybinding_queue = []
     elif match == _keybinding_table.MATCH_STATE.accept:
         _keybinding_queue = []
@@ -271,7 +271,7 @@ vx.expose(Keys, 'keys')
 vx.expose(_print_printable, 'print_printable')
 
 # bind return and backspace
-vx.bind(Keys.enter, partial(vx.add_string, '\n'))
-vx.bind(Keys.backspace, vx.backspace)
+vx.bind(Keys.enter, partial(text.add_string, '\n'))
+vx.bind(Keys.backspace, text.backspace)
 
-vx.bind(Keys.tab, partial(vx.add_string, '\t'))
+vx.bind(Keys.tab, partial(text.add_string, '\t'))
