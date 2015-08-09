@@ -1,6 +1,6 @@
 import vx
 from vx import bind, alt, ctrl, keys
-import undo
+import vx_mod.undo as undo
 import vx_mod.movement as move
 import vx_mod.text as text
 import vx_mod.window as window
@@ -315,7 +315,7 @@ class concat_keybindings(vx.keybinding_table):
                     rb, cb = self.for_window.cursor
                 else:
                     o = min(offsets)
-                    vx.repeat(move.right if direction else move.left, times=o if direction else o-1)
+                    vx.repeat(move.right if direction else move.left, times=o)
                     rb, cb = self.for_window.cursor
             return ra, ca, rb, cb
 
@@ -334,7 +334,7 @@ class concat_keybindings(vx.keybinding_table):
                     rb, cb = self.for_window.cursor
                 else:
                     o = min(offsets)
-                    vx.repeat(move.right if direction else move.left, times=o if direction else o-1)
+                    vx.repeat(move.right if direction else move.left, times=o)
                     rb, cb = self.for_window.cursor
             return ra, ca, rb, cb
 
