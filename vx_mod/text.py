@@ -3,6 +3,10 @@ import vx_mod.window
 import vx_mod.movement as move
 
 def remove_text_linecol_to_linecol(rowa, cola, rowb, colb):
+    """Removes all text between two points each specified as a row and column
+
+    The removed text is not saved in the undo system.
+    """
     # TODO inneficient, maybe implement this in C
     with vx.cursor_wander():
         window = vx_mod.window.windows.focused
@@ -13,6 +17,12 @@ def remove_text_linecol_to_linecol(rowa, cola, rowb, colb):
             row, col = window.cursor
 
 def get_offsets_of(breaks, forward=True, ignore_pos=True, ignore_failed=True):
+    """Returns a list of the offsets of each of the characters inside `breaks`
+
+    :param forward: if False, search backwards
+    :param ignore_pos: flag for ignoring the cursors current location
+    :param ignore_failed: flag to prune characters that weren't found
+    """
     if ignore_pos and forward:
         move.right()
     offsets = map(lambda s: (s, vx.get_linecoloffset_of_str(vx_mod.window.windows.focused, s, int(forward))[2]), breaks)
@@ -22,6 +32,10 @@ def get_offsets_of(breaks, forward=True, ignore_pos=True, ignore_failed=True):
     return list(filter(lambda x: x[1] != -1, offsets) if ignore_failed else offsets)
 
 def delete(track=True):
+    """Delete (the opposite direction of backspace) one character in the current window
+
+    :param track: whether to track the action in the undo system
+    """
     window = vx_mod.window.windows.focused
     if track:
         window.dirty = True
@@ -31,6 +45,10 @@ def delete(track=True):
     vx.backspace_delete_window(window)
 
 def backspace(track=True):
+    """Backspace one character in the current window
+
+    :param track: whether to track the action in the undo system
+    """
     window = vx_mod.window.windows.focused
     if track:
         window.dirty = True
@@ -51,4 +69,5 @@ def backspace(track=True):
     vx.backspace_window(window)
 
 def add_string(s, **kwargs):
+    """Add a string to the current window"""
     vx_mod.window.windows.focused.add_string(s, **kwargs)

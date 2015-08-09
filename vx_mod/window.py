@@ -100,7 +100,8 @@ class window:
     def __set_cursor(self, linecol):
         line, col = linecol
         return vx.set_linecol_window(self, line, col)
-    cursor = property(__get_cursor, __set_cursor)
+    cursor = property(__get_cursor, __set_cursor, doc="""A tuple (line, col) of the cursor position.
+    This is a python property. You can set it and get it.""")
 
     def __get_window_start(self):
         return vx.get_linecol_start_window(self)
@@ -114,6 +115,7 @@ class window:
     contents = property(__get_contents)
 
     def ensure_visible(self, line, col):
+        """Ensures that ``line`` and ``col`` are visible on the screen"""
         r, c = vx.get_window_size(self)
         y, x = line, col
         sy, sx = vx.get_linecol_start_window(self)
@@ -131,17 +133,20 @@ class window:
         self.topleft = (sy, sx)
 
     def save(self):
+        """Saves the contents of the window to ``self.filename``"""
         vx.save_window(self)
         self.dirty = False
         vx.time_prompt('saved {}'.format(self.filename))
 
     def add_string(self, s, track=True):
+        """Adds a string to this window"""
         vx.add_string_window(self, s)
         if track:
             self.dirty = True
             undo.register_change(s)
 
     def remove(self, force=False):
+        """Removes this window from the screen; prompting when the window is dirty."""
         if not force and self.dirty:
             vx.yn_prompt('Window is dirty, really close?', partial(self.remove, force=True), None)
             return
