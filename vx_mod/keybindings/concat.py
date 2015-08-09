@@ -219,13 +219,16 @@ class concat_keybindings(vx.keybinding_table):
 
     def center_me(self, what=None):
         if what is None:
-            windows.center()
+            window.center()
         else:
             _, _, rb, cb = what()
             r, _ = vx.get_window_size(self.for_window)
-            _, x = vx.get_linecol_start_window(self.for_window)
+            _, x = self.for_window.topleft
             new_top = max(rb - r // 2, 1)
             self.for_window.topleft = (new_top, x)
+            y, x = self.for_window.cursor
+            if y < new_top: self.for_window.cursor = (new_top, x)
+            elif y > new_top + r: self.for_window.cursor = (new_top + r, x)
     def center(self):
         self.analyze(self.center_me)
 
