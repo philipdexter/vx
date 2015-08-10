@@ -1,4 +1,2 @@
-*.o
-*.m
-vx
 __pycache__
+bin/
