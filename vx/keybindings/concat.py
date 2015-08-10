@@ -21,6 +21,7 @@ class Place(Enum):
     word = 2
     paragraph = 3
     whitespace = 4
+    content = 5
 
 class PlaceModifier(Enum):
     whole = 0
@@ -84,6 +85,7 @@ class concat_keybindings(keybinding_table):
         self.cb(keys.r, self.window)
         self.cb(keys.w, self.word)
         self.cb(keys.W, self.whitespace)
+        self.cb(keys.C, self.content)
 
         self.cb(keys.g, self.clear)
 
@@ -129,8 +131,6 @@ class concat_keybindings(keybinding_table):
         super(concat_keybindings, self).bind(alt + keys.x, self._open_exec)
 
         self.cb(ctrl + keys.t, test.run_tests)
-
-        self.cb(keys.y, text.find_regex)
 
     def cb(self, key, command):
         super(concat_keybindings, self).bind(key, self.concat_bind(command))
@@ -341,6 +341,18 @@ class concat_keybindings(keybinding_table):
                 rb, cb = self.for_window.cursor
             return ra, ca, rb, cb
 
+    def content_grabber(self, x, part):
+        with utils.cursor_wander():
+            ra, ca = self.for_window.cursor
+            move.bol()
+            offset = text.get_offset_regex(self.for_window, r'[^\s]', ignore_pos=False)
+            if offset is None:
+                move.bol()
+            else:
+                utils.repeat(move.right, times=offset)
+            rb, cb = self.for_window.cursor
+            return ra, ca, rb, cb
+
     def analyze(self, command, default_grabber=None):
         previous = []
         grabber = default_grabber
@@ -368,6 +380,8 @@ class concat_keybindings(keybinding_table):
                     grabber = self.whitespace_grabber
                 elif i == Place.window:
                     grabber = self.window_grabber
+                elif i == Place.content:
+                    grabber = self.content_grabber
         command(partial(grabber, x, part) if grabber else None)
 
     def absolute_line(self):
@@ -387,6 +401,8 @@ class concat_keybindings(keybinding_table):
         self._stack.append(Place.word)
     def whitespace(self):
         self._stack.append(Place.whitespace)
+    def content(self):
+        self._stack.append(Place.content)
     def beginning_pm(self):
         self._stack.append(PlaceModifier.beginning)
     def end_pm(self):
