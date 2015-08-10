@@ -115,6 +115,23 @@ class window:
         return vx.get_contents_window(self)
     contents = property(__get_contents)
 
+    def get_contents_from_cursor(self):
+        y, x = self.cursor
+        contents = self.contents.split('\n')[y-1:]
+        contents[0] = contents[0][x-1:]
+        contents = '\n'.join(contents)
+        return contents
+
+    def get_contents_before_cursor(self):
+        y, x = self.cursor
+        contents = self.contents.split('\n')[:y]
+        try:
+            contents[-1] = contents[-1][:x-1]
+        except:
+            return ''
+        contents = '\n'.join(contents)
+        return contents
+
     def ensure_visible(self, line, col):
         """Ensures that ``line`` and ``col`` are visible on the screen"""
         r, c = vx.get_window_size(self)

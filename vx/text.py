@@ -20,6 +20,38 @@ def remove_text_linecol_to_linecol(rowa, cola, rowb, colb):
             backspace(track=False)
             row, col = window.cursor
 
+def regex_forward(window, regex):
+    contents = window.get_contents_from_cursor()
+    try:
+        rgx = re.compile(regex)
+    except:
+        return None
+    return rgx.search(contents)
+
+def regex_backward(window, regex):
+    contents = window.get_contents_before_cursor()
+    try:
+        rgx = re.compile(regex)
+    except:
+        return None
+    results = list(rgx.finditer(contents))
+    return results[-1] if results else None
+
+def get_offset_regex(window, regex, forwards=True, ignore_pos=True):
+    if ignore_pos:
+        vx.move_right_window(window) if forwards else vx.move_left_window(window)
+    m = regex_forward(window, regex) if forwards else regex_backward(window, regex)
+    if m is None: return None
+    if ignore_pos:
+        vx.move_left_window(window) if forwards else vx.move_right_window(window)
+    offset = m.start()
+    if ignore_pos:
+        offset += 1
+    if not forwards:
+        contents = window.get_contents_before_cursor()
+        offset = len(contents) - offset
+    return offset
+
 def get_offsets_of(breaks, forward=True, ignore_pos=True, ignore_failed=True):
     """Returns a list of the offsets of each of the characters inside `breaks`
 

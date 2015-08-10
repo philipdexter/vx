@@ -315,16 +315,13 @@ class concat_keybindings(keybinding_table):
             direction = True
         with utils.cursor_wander():
             ra, ca = self.for_window.cursor
-            breaks = (' ', '\n')
             for _ in range(x):
-                offsets = list(map(lambda x: x[1], text.get_offsets_of(breaks, direction)))
-                if len(offsets) == 0:
-                    move.end() if direction else move.beg()
-                    rb, cb = self.for_window.cursor
+                offset = text.get_offset_regex(self.for_window, r'\s', forwards=direction)
+                if offset is  None:
+                    move.eol() if direction else move.bol()
                 else:
-                    o = min(offsets)
-                    utils.repeat(move.right if direction else move.left, times=o)
-                    rb, cb = self.for_window.cursor
+                    utils.repeat(move.right if direction else move.left, times=offset)
+                rb, cb = self.for_window.cursor
             return ra, ca, rb, cb
 
     def word_grabber(self, x, part):
@@ -336,14 +333,12 @@ class concat_keybindings(keybinding_table):
             ra, ca = self.for_window.cursor
             breaks = self.for_window.mode.breaks
             for _ in range(x):
-                offsets = list(map(lambda x: x[1], text.get_offsets_of(breaks, direction)))
-                if len(offsets) == 0:
-                    move.end() if direction else move.beg()
-                    rb, cb = self.for_window.cursor
+                offset = text.get_offset_regex(self.for_window, '[{}]'.format(''.join(breaks)), forwards=direction)
+                if offset is None:
+                    move.eol() if direction else move.bol()
                 else:
-                    o = min(offsets)
-                    utils.repeat(move.right if direction else move.left, times=o)
-                    rb, cb = self.for_window.cursor
+                    utils.repeat(move.right if direction else move.left, times=offset)
+                rb, cb = self.for_window.cursor
             return ra, ca, rb, cb
 
     def analyze(self, command, default_grabber=None):
