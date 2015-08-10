@@ -4,7 +4,7 @@ API
 Window management
 -----------------
 
-.. module:: vx_mod.window
+.. module:: vx.window
 
 .. autoclass:: window
    :members:
@@ -15,7 +15,7 @@ Window management
 Text management
 ---------------
 
-.. module:: vx_mod.text
+.. module:: vx.text
 
 .. autofunction:: remove_text_linecol_to_linecol
 

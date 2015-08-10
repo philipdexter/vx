@@ -1,8 +1,9 @@
 import vx
-import vx_mod.utils as utils
-import vx_mod.text as text
-import vx_mod.movement as move
-from vx_mod.window import window, windows
+import vx.utils as utils
+import vx.text as text
+import vx.movement as move
+from vx.window import window, windows
+from vx.keybindings import ctrl, alt, keys, register_key_listener, unregister_key_listener
 
 import traceback
 from os.path import isfile
@@ -21,7 +22,7 @@ class _prompt(window):
         self.focus()
         self.attached_to = attached_to
 
-        self.keybinding_table.bind(vx.ctrl + vx.keys.g, self.cancel)
+        self.keybinding_table.bind(ctrl + keys.g, self.cancel)
 
     def cancel(self):
         y, x = vx.get_window_size(self)
@@ -29,23 +30,22 @@ class _prompt(window):
         self.attached_to.focus()
         self.remove(force=True)
 
-@vx.expose
-class _exec_prompt(_prompt):
+class exec_prompt(_prompt):
     _history = []
 
     def __init__(self, *args, **kwargs):
-        super(_exec_prompt, self).__init__(*args, **kwargs)
+        super(exec_prompt, self).__init__(*args, **kwargs)
 
-        self.keybinding_table.bind(vx.alt + vx.keys.p, self._history_pullback)
-        self.keybinding_table.bind(vx.keys.enter, self.getout)
-        self.keybinding_table.bind(vx.ctrl + vx.keys.j, self._enter_and_expand)
+        self.keybinding_table.bind(alt + keys.p, self._history_pullback)
+        self.keybinding_table.bind(keys.enter, self.getout)
+        self.keybinding_table.bind(ctrl + keys.j, self._enter_and_expand)
 
     def getout(self):
         y, x = vx.get_window_size(self)
         self.attached_to.grow(bottom=y)
         self.attached_to.focus()
         contents = self.contents
-        _exec_prompt._history.append(contents)
+        exec_prompt._history.append(contents)
         with utils.stdoutIO() as s:
             try:
                 exec(contents)
@@ -76,15 +76,14 @@ class _exec_prompt(_prompt):
             vx.clear_contents_window(self)
             text.add_string(_exec_prompt._history[-1])
 
-@vx.expose
-class _file_prompt(_prompt):
+class file_prompt(_prompt):
     def __init__(self, *args, **kwargs):
-        super(_file_prompt, self).__init__(*args, **kwargs)
+        super(file_prompt, self).__init__(*args, **kwargs)
 
         self.completing = False
 
-        self.keybinding_table.bind(vx.keys.enter, self.getout)
-        self.keybinding_table.bind(vx.keys.tab, self.complete)
+        self.keybinding_table.bind(keys.enter, self.getout)
+        self.keybinding_table.bind(keys.tab, self.complete)
 
     def complete(self):
         import glob
@@ -126,15 +125,14 @@ class _file_prompt(_prompt):
                 text.add_string('file "{}" does not exist'.format(contents))
         self.remove(force=True)
 
-@vx.expose
-class _yn_prompt(_prompt):
+class yn_prompt(_prompt):
     def __init__(self, message, yes, no, *args, **kwargs):
-        super(_yn_prompt, self).__init__(*args, **kwargs)
+        super(yn_prompt, self).__init__(*args, **kwargs)
 
         self.yes = yes
         self.no = no
 
-        self.keybinding_table.bind(vx.keys.enter, self.getout)
+        self.keybinding_table.bind(keys.enter, self.getout)
 
         text.add_string('{} (y/n): '.format(message))
 
@@ -156,10 +154,9 @@ class _yn_prompt(_prompt):
         elif self.no:
             self.no()
 
-@vx.expose
-class _time_prompt(_prompt):
+class time_prompt(_prompt):
     def __init__(self, message, seconds=2, *args, **kwargs):
-        super(_time_prompt, self).__init__(*args, **kwargs)
+        super(time_prompt, self).__init__(*args, **kwargs)
 
         self.message = message
 
@@ -175,18 +172,17 @@ class _time_prompt(_prompt):
         self.attached_to.focus()
         self.remove(force=True)
 
-@vx.expose
-class _search_prompt(_prompt):
+class search_prompt(_prompt):
     def __init__(self, start='', forwards=True, *args, **kwargs):
-        super(_search_prompt, self).__init__(*args, **kwargs)
+        super(search_prompt, self).__init__(*args, **kwargs)
 
         self.forwards = forwards
 
-        self.keybinding_table.bind(vx.keys.enter, self.getout)
-        self.keybinding_table.bind(vx.ctrl + vx.keys.f, self.next)
-        self.keybinding_table.bind(vx.ctrl + vx.keys.r, self.reverse)
+        self.keybinding_table.bind(keys.enter, self.getout)
+        self.keybinding_table.bind(ctrl + keys.f, self.next)
+        self.keybinding_table.bind(ctrl + keys.r, self.reverse)
 
-        vx.register_key_listener(self.isearch)
+        register_key_listener(self.isearch)
 
         self.original_cursor = self.attached_to.cursor
         self.original_start = self.attached_to.topleft
@@ -199,7 +195,7 @@ class _search_prompt(_prompt):
     def cancel(self):
         self.attached_to.cursor = (self.original_cursor[0], self.original_cursor[1])
         self.attached_to.topleft = (self.original_start[0], self.original_start[1])
-        super(_search_prompt, self).cancel()
+        super(search_prompt, self).cancel()
 
     def reverse(self):
         self.forwards = not self.forwards
@@ -208,9 +204,9 @@ class _search_prompt(_prompt):
     def next(self):
         if self.matching:
             if self.forwards:
-                vx.repeat(partial(vx.move_right_window, self.attached_to), times=self.match_length)
+                utils.repeat(partial(vx.move_right_window, self.attached_to), times=self.match_length)
             else:
-                vx.repeat(partial(vx.move_left_window, self.attached_to), times=self.match_length)
+                utils.repeat(partial(vx.move_left_window, self.attached_to), times=self.match_length)
                 vx.move_left_window(self.attached_to)
 
     def isearch(self):
@@ -238,20 +234,19 @@ class _search_prompt(_prompt):
         self.attached_to.color_tags.clear()
         self.attached_to.add_color_tag(l, c, length, 1, 10)
         if not self.forwards:
-            vx.repeat(partial(vx.move_right_window, self.attached_to), times=length)
+            utils.repeat(partial(vx.move_right_window, self.attached_to), times=length)
 
     def getout(self):
         if self.matching:
             if self.forwards:
-                vx.repeat(partial(vx.move_right_window, self.attached_to), times=self.match_length)
+                utils.repeat(partial(vx.move_right_window, self.attached_to), times=self.match_length)
         y, x = vx.get_window_size(self)
         self.attached_to.grow(bottom=y)
         self.attached_to.focus()
         self.remove(force=True)
-        vx.unregister_key_listener(self.isearch)
+        unregister_key_listener(self.isearch)
         self.attached_to.color_tags.clear()
 
-@vx.expose
-class _regex_prompt(_search_prompt):
+class regex_prompt(search_prompt):
     def dosearch(self, window, search_for, forwards):
         return text.find_regex(search_for, window)

@@ -1,10 +1,13 @@
 import vx
-from vx_mod.keybindings import utils
-from vx import bind, alt, ctrl, keys
-import vx_mod.undo as undo
-import vx_mod.movement as move
-import vx_mod.text as text
-import vx_mod.window as window
+from vx.keybindings import bind, alt, ctrl, keys, keybinding_table
+from vx.keybindings.utils import is_printable
+import vx.undo as undo
+import vx.movement as move
+import vx.text as text
+import vx.window as window
+import vx.test as test
+import vx.utils as utils
+import vx.prompt as prompt
 
 from enum import Enum
 from functools import partial, wraps
@@ -38,7 +41,7 @@ class Times:
     def __str__(self):
         return '{}-times'.format(self.i)
 
-class concat_keybindings(vx.keybinding_table):
+class concat_keybindings(keybinding_table):
     def __init__(self, for_window):
         super(concat_keybindings, self).__init__()
 
@@ -52,13 +55,13 @@ class concat_keybindings(vx.keybinding_table):
 
         def _catch_all(key):
             if self.force_insert:
-                return vx.keybinding_table.MATCH_STATE.reject
-            if utils.is_printable(key):
+                return keybinding_table.MATCH_STATE.reject
+            if is_printable(key):
                 def g():
                     text.add_string('X')
                 self.concat_bind(g)(key)
-                return vx.keybinding_table.MATCH_STATE.accept
-            return vx.keybinding_table.MATCH_STATE.reject
+                return keybinding_table.MATCH_STATE.accept
+            return keybinding_table.MATCH_STATE.reject
         self.catch_all = _catch_all
 
         self.cb(keys.quote, self.toggle_quoting)
@@ -125,7 +128,9 @@ class concat_keybindings(vx.keybinding_table):
         self.cb(keys.O, self._open_file)
         super(concat_keybindings, self).bind(alt + keys.x, self._open_exec)
 
-        self.cb(ctrl + keys.t, vx.run_tests)
+        self.cb(ctrl + keys.t, test.run_tests)
+
+        self.cb(keys.y, text.find_regex)
 
     def cb(self, key, command):
         super(concat_keybindings, self).bind(key, self.concat_bind(command))
@@ -144,7 +149,7 @@ class concat_keybindings(vx.keybinding_table):
             else:
                 fi = self.force_insert
                 if fi:
-                    return vx.keybinding_table.MATCH_STATE.reject
+                    return keybinding_table.MATCH_STATE.reject
                 else:
                     command()
             if not self._stack:
@@ -237,7 +242,7 @@ class concat_keybindings(vx.keybinding_table):
             direction = False
         else:
             direction = True
-        with vx.cursor_wander():
+        with utils.cursor_wander():
             ra, ca = self.for_window.cursor
             for _ in range(x):
                 move.right() if direction else move.left()
@@ -249,7 +254,7 @@ class concat_keybindings(vx.keybinding_table):
             direction = False
         else:
             direction = True
-        with vx.cursor_wander():
+        with utils.cursor_wander():
             ra, ca = self.for_window.cursor
             move.end() if direction else move.beg()
             rb, cb = self.for_window.cursor
@@ -261,7 +266,7 @@ class concat_keybindings(vx.keybinding_table):
             direction = False
         else:
             direction = True
-        with vx.cursor_wander():
+        with utils.cursor_wander():
             # Can only move to the beginning of a line once
             if part == PlaceModifier.beginning:
                 ra, ca = self.for_window.cursor
@@ -308,7 +313,7 @@ class concat_keybindings(vx.keybinding_table):
             direction = False
         else:
             direction = True
-        with vx.cursor_wander():
+        with utils.cursor_wander():
             ra, ca = self.for_window.cursor
             breaks = (' ', '\n')
             for _ in range(x):
@@ -318,7 +323,7 @@ class concat_keybindings(vx.keybinding_table):
                     rb, cb = self.for_window.cursor
                 else:
                     o = min(offsets)
-                    vx.repeat(move.right if direction else move.left, times=o)
+                    utils.repeat(move.right if direction else move.left, times=o)
                     rb, cb = self.for_window.cursor
             return ra, ca, rb, cb
 
@@ -327,7 +332,7 @@ class concat_keybindings(vx.keybinding_table):
             direction = False
         else:
             direction = True
-        with vx.cursor_wander():
+        with utils.cursor_wander():
             ra, ca = self.for_window.cursor
             breaks = self.for_window.mode.breaks
             for _ in range(x):
@@ -337,7 +342,7 @@ class concat_keybindings(vx.keybinding_table):
                     rb, cb = self.for_window.cursor
                 else:
                     o = min(offsets)
-                    vx.repeat(move.right if direction else move.left, times=o)
+                    utils.repeat(move.right if direction else move.left, times=o)
                     rb, cb = self.for_window.cursor
             return ra, ca, rb, cb
 
@@ -416,13 +421,13 @@ class concat_keybindings(vx.keybinding_table):
         if self._stack:
             s = self._stack.pop()
             start = s.s
-        prompt = vx.search_prompt(forwards=forwards, start=start)
-        prompt.keybinding_table.force_insert = True
+        p = prompt.regex_prompt(forwards=forwards, start=start)
+        p.keybinding_table.force_insert = True
 
     def _open_file(self):
-        prompt = vx.file_prompt()
-        prompt.keybinding_table.force_insert = True
+        p = prompt.file_prompt()
+        p.keybinding_table.force_insert = True
 
     def _open_exec(self):
-        prompt = vx.exec_prompt()
-        prompt.keybinding_table.force_insert = True
+        p = prompt.exec_prompt()
+        p.keybinding_table.force_insert = True

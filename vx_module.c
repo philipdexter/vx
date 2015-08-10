@@ -3,6 +3,7 @@
 #include <locale.h>
 #include <wchar.h>
 
+static PyObject *vx_builtins_mod;
 static PyObject *vx_mod;
 static PyObject *vx_intro_mod;
 static PyObject *start_mod;
@@ -45,7 +46,7 @@ int vx_py_init_python(int num_files, int argc, char **argv)
 	}
 
 	Py_SetProgramName(wargv[0]);
-	if (-1 == PyImport_AppendInittab("vx", &PyInit_vx)) {
+	if (-1 == PyImport_AppendInittab("vx_builtins", &PyInit_vx)) {
 		goto cleanup;
 	}
 	Py_Initialize();
@@ -63,6 +64,7 @@ cleanup:
 void vx_py_deinit_python(void)
 {
 	Py_DECREF(start_mod);
+	Py_DECREF(vx_builtins_mod);
 	Py_DECREF(vx_mod);
 	Py_DECREF(vx_intro_mod);
 	Py_Finalize();
@@ -70,10 +72,23 @@ void vx_py_deinit_python(void)
 
 void vx_py_load_start(void)
 {
-	PyRun_SimpleString("import sys;" "import os;" "sys.path.append(os.path.expanduser('~/.vx'));");
+	PyRun_SimpleString("import sys;"
+			   "import os;"
+			   "sys.path.append(os.path.expanduser('~/.vx'));"
+			   "sys.path.append(os.path.expanduser('~/projects/editor'));"
+		);
 	PyObject *pName = PyUnicode_FromString("start");
 	start_mod = PyImport_Import(pName);
 	if (!start_mod) {
+		endwin();
+		PyErr_Print();
+		exit(0);
+	}
+	Py_DECREF(pName);
+
+	pName = PyUnicode_FromString("vx");
+	vx_mod = PyImport_Import(pName);
+	if (!vx_mod) {
 		endwin();
 		PyErr_Print();
 		exit(0);
@@ -83,20 +98,22 @@ void vx_py_load_start(void)
 
 int vx_py_update_vars(void)
 {
+	PyObject *mod = vx_mod ? vx_mod : vx_builtins_mod;
+
 	PyObject *v = PyLong_FromLong(row);
-	if (-1 == PyObject_SetAttrString(vx_mod, "rows", v))
+	if (-1 == PyObject_SetAttrString(mod, "rows", v))
 		goto err;
 	Py_DECREF(v);
 	v = PyLong_FromLong(col);
-	if (-1 == PyObject_SetAttrString(vx_mod, "cols", v))
+	if (-1 == PyObject_SetAttrString(mod, "cols", v))
 		goto err;
 	Py_DECREF(v);
 	v = PyLong_FromLong(screen_rows + 1);
-	if (-1 == PyObject_SetAttrString(vx_mod, "line", v))
+	if (-1 == PyObject_SetAttrString(mod, "line", v))
 		goto err;
 	Py_DECREF(v);
 	v = PyLong_FromLong(screen_cols + 1);
-	if (-1 == PyObject_SetAttrString(vx_mod, "col", v))
+	if (-1 == PyObject_SetAttrString(mod, "col", v))
 		goto err;
 	Py_DECREF(v);
 
@@ -716,7 +733,7 @@ static PyMethodDef VxMethods[] = {
 };
 
 static PyModuleDef VxModule = {
-	PyModuleDef_HEAD_INIT, "vx", NULL, -1, VxMethods,
+	PyModuleDef_HEAD_INIT, "vx_builtins", NULL, -1, VxMethods,
 	NULL, NULL, NULL, NULL
 };
 
@@ -724,12 +741,17 @@ static PyObject *PyInit_vx(void)
 {
 	PyObject *v;
 
-	vx_mod = PyModule_Create(&VxModule);
+	vx_builtins_mod = PyModule_Create(&VxModule);
 	vx_py_update_vars();
 	v = Py_BuildValue("s", "*");
 	vx_intro_mod = PyImport_ImportModuleEx("vx_intro", NULL, NULL, v);
+	if (PyErr_Occurred()) {
+		endwin();
+		PyErr_Print();
+		exit(0);
+	}
 	Py_DECREF(v);
-	return vx_mod;
+	return vx_builtins_mod;
 }
 
 void vx_py_handle_key(int c)

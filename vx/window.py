@@ -1,7 +1,8 @@
 import vx
-import vx_mod.utils
-import vx_mod.undo as undo
-import vx_mod.mode as mode
+import vx.undo as undo
+import vx.mode as mode
+import vx.utils
+from vx.keybindings import keybinding_table, keybinding_tables
 
 import math
 import traceback
@@ -74,7 +75,7 @@ class window:
         if vx.default_keybindings is not None:
             self.keybinding_table = vx.default_keybindings(self)
         else:
-            self.keybinding_table = vx.keybinding_table()
+            self.keybinding_table = keybinding_table()
         windows.append(self)
         windows.sort(key=lambda w: w.y)
 
@@ -87,7 +88,7 @@ class window:
             windows.traversable.sort(key=lambda w: w.y)
 
         if status_bar:
-            self.status_bar = vx.status_bar(self)
+            self.status_bar = vx.status_bar.status_bar(self)
         else:
             self.status_bar = None
 
@@ -234,11 +235,11 @@ class window:
         if windows.focused:
             windows.focused.unfocus()
         windows.focused = self
-        vx.keybinding_tables.insert(0, self.keybinding_table)
+        keybinding_tables.insert(0, self.keybinding_table)
         vx.focus_internal_window(self)
 
     def unfocus(self):
-        vx.keybinding_tables.remove(self.keybinding_table)
+        keybinding_tables.remove(self.keybinding_table)
 
     def prepare(self):
         vx.clear_window(self)
@@ -356,7 +357,7 @@ def center():
 
 def execute_window():
     contents = vx.windows.focused.contents
-    with vx_mod.utils.stdoutIO() as s:
+    with vx.utils.stdoutIO() as s:
         try:
             exec(contents)
         except Exception as e:

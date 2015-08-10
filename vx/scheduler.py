@@ -4,8 +4,7 @@ import sched
 
 _sched = sched.scheduler()
 
-@vx.expose
-def _schedule(seconds, command, priority=1):
+def schedule(seconds, command, priority=1):
     _sched.enter(seconds, priority, command)
 
 def _tick():

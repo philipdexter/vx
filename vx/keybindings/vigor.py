@@ -4,8 +4,8 @@ import prompt
 import math
 import sys
 
-import vx_mod.movement as move
-import vx_mod.text as text
+import vx.movement as move
+import vx.text as text
 
 from functools import partial
 

@@ -1,7 +1,7 @@
 import vx
-import vx_mod.text as text
-import vx_mod.movement as move
-from vx_mod.window import windows
+import vx.text as text
+import vx.movement as move
+from vx.window import windows
 
 import traceback
 
@@ -17,8 +17,7 @@ def check_items(a, b):
     for x, y in zip(a, b):
         check(x, y)
 
-@vx.expose
-def _run_tests():
+def run_tests():
     try:
         w = windows.focused
         w.blank()

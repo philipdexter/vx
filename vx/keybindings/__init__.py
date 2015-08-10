@@ -1,6 +1,6 @@
 import vx
 from . import utils
-import vx_mod.text as text
+import vx.text
 
 from unicodedata import category
 from functools import partial
@@ -81,8 +81,8 @@ class _keymodifier:
         other.printable = self.printable + '-' + other.printable
         return other
 
-_ctrl = _keymodifier(lambda c: bytes([0x1f & ord(c)]), 'C')
-_alt =  _keymodifier(lambda c: bytes([0x80 | ord(c)]), 'M')
+ctrl = _keymodifier(lambda c: bytes([0x1f & ord(c)]), 'C')
+alt =  _keymodifier(lambda c: bytes([0x80 | ord(c)]), 'M')
 
 _print_printable = True
 
@@ -145,7 +145,7 @@ def _tobinding(s):
         binding = binding + c
     return binding
 
-class _keybinding_table:
+class keybinding_table:
     class MATCH_STATE(Enum):
         reject = 1
         keep_going = 2
@@ -197,7 +197,7 @@ class _keybinding_table:
             if cur is None:
                 if self.catch_all:
                     return self.catch_all(key)
-                return _keybinding_table.MATCH_STATE.reject
+                return keybinding_table.MATCH_STATE.reject
             elif callable(cur):
                 import inspect
                 argspec = inspect.getargspec(cur)
@@ -205,17 +205,16 @@ class _keybinding_table:
                     res = cur(key=key)
                 else:
                     res = cur()
-                if res == _keybinding_table.MATCH_STATE.reject:
+                if res == keybinding_table.MATCH_STATE.reject:
                     if self.catch_all:
                         return self.catch_all(key)
-                    return _keybinding_table.MATCH_STATE.reject
-                return _keybinding_table.MATCH_STATE.accept
-        return _keybinding_table.MATCH_STATE.keep_going
+                    return keybinding_table.MATCH_STATE.reject
+                return keybinding_table.MATCH_STATE.accept
+        return keybinding_table.MATCH_STATE.keep_going
 
-_global_keybinding_table = _keybinding_table()
+_global_keybinding_table = keybinding_table()
 
-@vx.expose
-def _bind(keys, command=None, *args, **kwargs):
+def bind(keys, command=None, *args, **kwargs):
     """Bind a key to the global keybinding table. Can be used as a decorator"""
 
     # used as a decorator
@@ -225,53 +224,43 @@ def _bind(keys, command=None, *args, **kwargs):
     _global_keybinding_table.bind(keys, command)
 
 
-_keybinding_tables = []
-_keybinding_tables.append(_global_keybinding_table)
+keybinding_tables = []
+keybinding_tables.append(_global_keybinding_table)
 
 _keybinding_queue = []
 
 vx.last_pressed = ''
 
 _key_listeners = []
-@vx.expose
-def _register_key_listener(f):
+def register_key_listener(f):
     _key_listeners.append(f)
-@vx.expose
-def _unregister_key_listener(f):
+def unregister_key_listener(f):
     _key_listeners.remove(f)
 
-@vx.expose
 def _register_key(key):
     global _keybinding_queue
     _keybinding_queue.append(key)
     vx.last_pressed = key
 
-    for table in _keybinding_tables:
+    for table in keybinding_tables:
         match = table.match_key_sequence(_keybinding_queue)
-        if match == _keybinding_table.MATCH_STATE.accept:
+        if match == keybinding_table.MATCH_STATE.accept:
             break
 
-    if match == _keybinding_table.MATCH_STATE.reject:
-        if vx.print_printable and len(_keybinding_queue) == 1 and utils.is_printable(key.decode('utf8')[0]):
-            text.add_string(key.decode('utf8'))
+    if match == keybinding_table.MATCH_STATE.reject:
+        if _print_printable and len(_keybinding_queue) == 1 and utils.is_printable(key.decode('utf8')[0]):
+            vx.text.add_string(key.decode('utf8'))
         _keybinding_queue = []
-    elif match == _keybinding_table.MATCH_STATE.accept:
+    elif match == keybinding_table.MATCH_STATE.accept:
         _keybinding_queue = []
 
     for kl in _key_listeners:
         kl()
-
-## Exports and defaults
-
-vx.expose(_keybinding_table, 'keybinding_table')
-vx.expose(_keybinding_tables, 'keybinding_tables')
-vx.expose(_ctrl, 'ctrl')
-vx.expose(_alt, 'alt')
-vx.expose(Keys, 'keys')
-vx.expose(_print_printable, 'print_printable')
+vx.register_key = _register_key
 
 # bind return and backspace
-vx.bind(Keys.enter, partial(text.add_string, '\n'))
-vx.bind(Keys.backspace, text.backspace)
+bind(Keys.enter, partial(vx.text.add_string, '\n'))
+bind(Keys.backspace, vx.text.backspace)
+bind(Keys.tab, partial(vx.text.add_string, '\t'))
 
-vx.bind(Keys.tab, partial(text.add_string, '\t'))
+keys = Keys

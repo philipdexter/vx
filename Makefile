@@ -42,5 +42,5 @@ install: all
 	mkdir -p ~/.vx
 	cp ./start.py ~/.vx
 	cp ./vx_intro.py ~/.vx
-	cp -r ./vx_mod ~/.vx/vx_mod
+	cp -r ./vx ~/.vx/vx
 	install -D -m0755 $(OUT_DIR)/vx /usr/bin/vx

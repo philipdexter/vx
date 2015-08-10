@@ -1,6 +1,7 @@
 import vx
-import vx_mod.window
-import vx_mod.movement as move
+import vx.window
+import vx.movement as move
+import vx.utils
 
 import re
 from functools import partial
@@ -11,8 +12,8 @@ def remove_text_linecol_to_linecol(rowa, cola, rowb, colb):
     The removed text is not saved in the undo system.
     """
     # TODO inneficient, maybe implement this in C
-    with vx.cursor_wander():
-        window = vx_mod.window.windows.focused
+    with vx.utils.cursor_wander():
+        window = vx.window.windows.focused
         window.cursor = (rowb, colb)
         row, col = window.cursor
         while row != rowa or col != cola:
@@ -30,7 +31,7 @@ def get_offsets_of(breaks, forward=True, ignore_pos=True, ignore_failed=True):
         move.right()
     else:
         move.left()
-    offsets = map(lambda s: (s, vx.get_linecoloffset_of_str(vx_mod.window.windows.focused, s, int(forward))[2]), breaks)
+    offsets = map(lambda s: (s, vx.get_linecoloffset_of_str(vx.window.windows.focused, s, int(forward))[2]), breaks)
     offsets = list(map(lambda x: (x[0], x[1] + 1 if x[1] != -1 else x[1]), offsets)) if ignore_pos else offsets
     if ignore_pos and forward:
         move.left()
@@ -43,7 +44,7 @@ def delete(track=True):
 
     :param track: whether to track the action in the undo system
     """
-    window = vx_mod.window.windows.focused
+    window = vx.window.windows.focused
     if track:
         window.dirty = True
         r, c = window.cursor
@@ -56,7 +57,7 @@ def backspace(track=True):
 
     :param track: whether to track the action in the undo system
     """
-    window = vx_mod.window.windows.focused
+    window = vx.window.windows.focused
     if track:
         window.dirty = True
         r, c = window.cursor
@@ -77,11 +78,11 @@ def backspace(track=True):
 
 def add_string(s, **kwargs):
     """Add a string to the current window"""
-    vx_mod.window.windows.focused.add_string(s, **kwargs)
+    vx.window.windows.focused.add_string(s, **kwargs)
 
 def find_regex(regex, window=None):
     if window is None:
-        window = vx_mod.window.windows.focused
+        window = vx.window.windows.focused
     y, x = window.cursor
     contents = window.contents.split('\n')[y-1:]
     contents[0] = contents[0][x-1:]
@@ -92,9 +93,9 @@ def find_regex(regex, window=None):
         return (0, 0, -1, 0)
     m = rgx.search(contents)
     if m:
-        with vx.cursor_wander():
+        with vx.utils.cursor_wander():
             offset = m.start()
-            vx.repeat(partial(vx.move_right_window, window), times=offset)
+            vx.utils.repeat(partial(vx.move_right_window, window), times=offset)
             l, c = window.cursor
         return (l, c, offset, m.end() - m.start())
     else:
