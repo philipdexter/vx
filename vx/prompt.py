@@ -107,7 +107,7 @@ class file_prompt(_prompt):
     def getout(self, force=False, cancel_open=False):
         if not force and self.attached_to.dirty:
             self.attached_to.focus()
-            _yn_prompt('Window is dirty, really open another file?',
+            yn_prompt('Window is dirty, really open another file?',
                        partial(self.getout, force=True),
                        partial(self.getout, force=True, cancel_open=True))
             return
