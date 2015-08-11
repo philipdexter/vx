@@ -97,7 +97,7 @@ def delete(track=True):
         window.dirty = True
         r, c = window.cursor
         ch = vx.get_ch_linecol_window(window, r, c)
-        undo.register_removal(ch, r, c, hold=True)
+        vx.undo.register_removal(ch, r, c, hold=True)
     vx.backspace_delete_window(window)
 
 def backspace(track=True):
@@ -121,7 +121,7 @@ def backspace(track=True):
             ch = vx.get_ch_linecol_window(window, r, c)
             if ch == '\t':
                 c -= 7
-            undo.register_removal(ch, r, c)
+            vx.undo.register_removal(ch, r, c)
     vx.backspace_window(window)
 
 def add_string(s, **kwargs):
