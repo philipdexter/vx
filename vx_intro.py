@@ -1,5 +1,6 @@
 import vx
 
+import os.path
 import math
 from sys import argv
 
@@ -30,7 +31,8 @@ import vx.status_bar
 import vx.prompt
 import vx.test
 
-def _default_start():
+
+def _normal_start():
     if len(vx.files) == 0:
         win = window(vx.rows, vx.cols, 0, 0)
         win.blank()
@@ -43,4 +45,10 @@ def _default_start():
             win.attach_file(f)
             y += d
             win.focus()
+def _default_start():
+    if not os.path.isfile(os.path.expanduser('~/.vx/rc.py')):
+        import vx.new_user
+        vx.new_user.start()
+    else:
+        _normal_start()
 vx.default_start = _default_start
