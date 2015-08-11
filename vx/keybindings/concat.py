@@ -316,7 +316,11 @@ class concat_keybindings(keybinding_table):
         with utils.cursor_wander():
             ra, ca = self.for_window.cursor
             for _ in range(x):
-                offset = text.get_offset_regex(self.for_window, r'\s', forwards=direction)
+                if part == PlaceModifier.absolute:
+                    regex = r'^$'
+                else:
+                    regex = r'\s'
+                offset = text.get_offset_regex(self.for_window, regex, forwards=direction)
                 if offset is  None:
                     move.eol() if direction else move.bol()
                 else:
