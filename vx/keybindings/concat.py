@@ -54,6 +54,8 @@ class concat_keybindings(keybinding_table):
         self._quoting = False
         self._set_column = True
 
+        self._graveyard = []
+
         def _catch_all(key):
             if self.force_insert:
                 return keybinding_table.MATCH_STATE.reject
@@ -113,6 +115,7 @@ class concat_keybindings(keybinding_table):
 
         super(concat_keybindings, self).bind(keys.backspace, self.backspace)
         self.cb(keys.d, self.delete)
+        self.cb(keys.y, self.pop_graveyard)
 
         self.cb(keys.forwardslash, undo.undo)
         super(concat_keybindings, self).bind(ctrl + keys.underscore, undo.undo)
@@ -190,6 +193,11 @@ class concat_keybindings(keybinding_table):
         self.backward_pm()
         self.analyze(self.move_me, partial(self.line_grabber, restore_column=True))
 
+    def pop_graveyard(self):
+        if len(self._graveyard) > 0:
+            g = self._graveyard.pop()
+            self.for_window.add_string(g)
+
     def delete_me(self, what=None):
         if what is None:
             vx.delete()
@@ -201,6 +209,7 @@ class concat_keybindings(keybinding_table):
                 direction = 0
                 self.for_window.cursor = (ra, ca)
             removed = vx.get_str_linecol_to_linecol_window(self.for_window, ra, ca, rb, cb)
+            self._graveyard.append(removed)
             text.remove_text_linecol_to_linecol(ra, ca, rb, cb)
             self.for_window.dirty = True
             undo.register_removal(removed, ra, ca, hold=bool(direction))
