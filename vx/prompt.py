@@ -249,4 +249,6 @@ class search_prompt(_prompt):
 
 class regex_prompt(search_prompt):
     def dosearch(self, window, search_for, forwards):
-        return text.find_regex(search_for, window)
+        if not forwards:
+            vx.move_right_window(window)
+        return text.find_regex(search_for, window, forwards)

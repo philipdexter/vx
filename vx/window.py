@@ -118,7 +118,9 @@ class window:
     def get_contents_from_cursor(self):
         y, x = self.cursor
         contents = self.contents.split('\n')[y-1:]
-        contents[0] = contents[0][x-1:]
+        tabs = contents[0][:x-1].count('\t')
+        cutoff = x-1 - 7*tabs
+        contents[0] = contents[0][cutoff:]
         contents = '\n'.join(contents)
         return contents
 
@@ -126,7 +128,9 @@ class window:
         y, x = self.cursor
         contents = self.contents.split('\n')[:y]
         try:
-            contents[-1] = contents[-1][:x-1]
+            tabs = contents[-1][:x-1].count('\t')
+            cutoff = x-1 - 7*tabs
+            contents[-1] = contents[-1][:cutoff]
         except:
             return ''
         contents = '\n'.join(contents)

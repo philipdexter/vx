@@ -23,7 +23,7 @@ def remove_text_linecol_to_linecol(rowa, cola, rowb, colb):
 def regex_forward(window, regex):
     contents = window.get_contents_from_cursor()
     try:
-        rgx = re.compile(regex)
+        rgx = re.compile(regex, re.MULTILINE)
     except:
         return None
     return rgx.search(contents)
@@ -31,7 +31,7 @@ def regex_forward(window, regex):
 def regex_backward(window, regex):
     contents = window.get_contents_before_cursor()
     try:
-        rgx = re.compile(regex)
+        rgx = re.compile(regex, re.MULTILINE)
     except:
         return None
     results = list(rgx.finditer(contents))
@@ -51,6 +51,22 @@ def get_offset_regex(window, regex, forwards=True, ignore_pos=True):
         contents = window.get_contents_before_cursor()
         offset = len(contents) - offset
     return offset
+
+def find_regex(regex, window=None, forwards=True):
+    if window is None:
+        window = vx.window.windows.focused
+    m = regex_forward(window, regex) if forwards else regex_backward(window, regex)
+    if m:
+        with vx.utils.cursor_wander():
+            offset = m.start()
+            if not forwards:
+                contents = window.get_contents_before_cursor()
+                offset = len(contents) - offset
+            vx.utils.repeat(partial(vx.move_right_window if forwards else vx.move_left_window, window), times=offset)
+            l, c = window.cursor
+        return (l, c, offset, m.end() - m.start())
+    else:
+        return (0, 0, -1, 0)
 
 def get_offsets_of(breaks, forward=True, ignore_pos=True, ignore_failed=True):
     """Returns a list of the offsets of each of the characters inside `breaks`
@@ -111,24 +127,3 @@ def backspace(track=True):
 def add_string(s, **kwargs):
     """Add a string to the current window"""
     vx.window.windows.focused.add_string(s, **kwargs)
-
-def find_regex(regex, window=None):
-    if window is None:
-        window = vx.window.windows.focused
-    y, x = window.cursor
-    contents = window.contents.split('\n')[y-1:]
-    contents[0] = contents[0][x-1:]
-    contents = '\n'.join(contents)
-    try:
-        rgx = re.compile(regex)
-    except:
-        return (0, 0, -1, 0)
-    m = rgx.search(contents)
-    if m:
-        with vx.utils.cursor_wander():
-            offset = m.start()
-            vx.utils.repeat(partial(vx.move_right_window, window), times=offset)
-            l, c = window.cursor
-        return (l, c, offset, m.end() - m.start())
-    else:
-        return (0, 0, -1, 0)
