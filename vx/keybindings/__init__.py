@@ -200,10 +200,13 @@ class keybinding_table:
                 return keybinding_table.MATCH_STATE.reject
             elif callable(cur):
                 import inspect
-                argspec = inspect.getargspec(cur)
-                if 'key' in argspec.args:
-                    res = cur(key=key)
-                else:
+                try:
+                    argspec = inspect.getargspec(cur)
+                    if 'key' in argspec.args:
+                        res = cur(key=key)
+                    else:
+                        res = cur()
+                except:
                     res = cur()
                 if res == keybinding_table.MATCH_STATE.reject:
                     if self.catch_all:
