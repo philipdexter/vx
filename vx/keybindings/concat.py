@@ -123,8 +123,8 @@ class concat_keybindings(keybinding_table):
         self.cb(keys.d, self.delete)
         self.cb(keys.y, self.pop_graveyard)
 
-        self.cb(keys.forwardslash, undo.undo)
-        super(concat_keybindings, self).bind(ctrl + keys.underscore, undo.undo)
+        self.cb(keys.forwardslash, self.for_window.undo)
+        self.bind(ctrl + keys.underscore, self.for_window.undo)
 
         self.cb(keys.c, self.center)
 
@@ -218,7 +218,7 @@ class concat_keybindings(keybinding_table):
             self._graveyard.append(removed)
             self.for_window.remove_text(ra, ca, rb, cb)
             self.for_window.dirty = True
-            undo.register_removal(removed, ra, ca, hold=bool(direction))
+            self.for_window.undo_tree.add(undo.removal(removed, ra, ca, hold=bool(direction), box=(ra, ca, rb, cb)))
     def delete(self):
         self.analyze(self.delete_me, self.character_grabber)
 

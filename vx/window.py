@@ -126,12 +126,8 @@ class window:
         self.dirty = False
         vx.prompt.time_prompt('saved {}'.format(self.filename))
 
-    def add_string(self, s, track=True):
-        """Adds a string to this window"""
+    def add_string(self, s):
         vx.add_string_window(self, s)
-        if track:
-            self.dirty = True
-            undo.register_change(s)
 
     def remove(self, force=False):
         """Removes this window from the screen; prompting when the window is dirty."""

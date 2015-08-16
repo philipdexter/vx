@@ -85,27 +85,3 @@ def delete(track=True):
         ch = vx.get_ch_linecol_window(window, r, c)
         vx.undo.register_removal(ch, r, c, hold=True)
     vx.backspace_delete_window(window)
-
-def backspace(track=True):
-    """Backspace one character in the current window
-
-    :param track: whether to track the action in the undo system
-    """
-    window = windows.focused
-    if track:
-        window.dirty = True
-        r, c = window.cursor
-        if r > 1 or c > 1:
-            c = c - 1
-            if c == 0:
-                r -= 1
-                move.up()
-                move.eol()
-                _, c = window.cursor
-                move.down()
-                move.bol()
-            ch = vx.get_ch_linecol_window(window, r, c)
-            if ch == '\t':
-                c -= 7
-            vx.undo.register_removal(ch, r, c)
-    vx.backspace_window(window)
