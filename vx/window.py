@@ -128,7 +128,8 @@ class window:
         """Saves the contents of the window to ``self.filename``"""
         vx.save_window(self)
         self.dirty = False
-        vx.prompt.time_prompt('saved {}'.format(self.filename), attached_to=self)
+        from . import prompt
+        p = self.pane.open_prompt(prompt.time_prompt, 'saved {}'.format(self.filename))
 
     def add_string(self, s):
         vx.add_string_window(self, s)

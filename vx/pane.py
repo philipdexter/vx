@@ -54,6 +54,7 @@ class pane:
             organizer.switch_to_pane(self)
         self.buffer.unfocus()
         p = prompt(*args, attached_to=self.buffer, remove_callback=close_prompt, **kwargs)
+        p.focus()
         self.pad(bottom=1)
         self.attach_window(p)
         windows.focused = p

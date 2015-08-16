@@ -21,7 +21,6 @@ class _prompt(buffer):
                                       attached_to.y + attached_to.rows-1,
                                       attached_to.x)
         self.blank()
-        self.focus()
         self.attached_to = attached_to
         self.remove_callback = remove_callback
 
@@ -169,10 +168,6 @@ class time_prompt(_prompt):
         schedule(seconds, self.getout)
 
         self.attached_to.focus()
-
-        self.add_string('hii')
-
-        todo # fix this shit
 
     def getout(self):
         if self.remove_callback:
