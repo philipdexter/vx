@@ -147,7 +147,7 @@ class concat_keybindings(keybinding_table):
     def concat_bind(self, command):
         def h(key):
             if self._quoting and key != b'"':
-                from keybindings import utils
+                from . import utils
                 if utils.is_printable(key):
                     if not self._stack:
                         self._stack.append(String(key.decode('utf8')))
@@ -161,12 +161,12 @@ class concat_keybindings(keybinding_table):
                     return keybinding_table.MATCH_STATE.reject
                 else:
                     command()
-            # if not self._stack:
-            #     if self.for_window.status_bar:
-            #         self.for_window.status_bar.reset_default_text()
-            # else:
-            #     if self.for_window.status_bar:
-            #         self.for_window.status_bar.set_status_text(' '.join(list(map(str, self._stack))))
+            if not self._stack:
+                if self.for_window.pane.status_bar:
+                    self.for_window.pane.status_bar.reset_default_text()
+            else:
+                if self.for_window.pane.status_bar:
+                    self.for_window.pane.status_bar.set_status_text(' '.join(list(map(str, self._stack))))
         return h
 
     def toggle_quoting(self):
