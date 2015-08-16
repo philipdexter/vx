@@ -246,10 +246,16 @@ def _register_key(key):
     _keybinding_queue.append(key)
     vx.last_pressed = key
 
+    keep_going = False
     for table in keybinding_tables:
         match = table.match_key_sequence(_keybinding_queue)
+        if match == keybinding_table.MATCH_STATE.keep_going:
+            keep_going = True
         if match == keybinding_table.MATCH_STATE.accept:
+            keep_going = False
             break
+    if keep_going:
+        match = keybinding_table.MATCH_STATE.keep_going
 
     if match == keybinding_table.MATCH_STATE.reject:
         if _print_printable and len(_keybinding_queue) == 1 and utils.is_printable(key.decode('utf8')[0]):
