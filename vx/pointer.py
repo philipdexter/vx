@@ -16,6 +16,12 @@ class _organizer:
         below.resize(new_rows, new_columns)
         below.move(above.y + above.rows, above.x)
 
+    def next_pane(self):
+        for i, p in enumerate(panes.all):
+            if p == panes.focused:
+                break
+        self.switch_to_pane(panes.all[(i+1) % len(panes.all)])
+
     def remove_pane(self, p, tree=None):
         from .pane import pane
 

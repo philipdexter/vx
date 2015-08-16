@@ -128,10 +128,6 @@ class concat_keybindings(keybinding_table):
 
         self.cb(keys.c, self.center)
 
-        super(concat_keybindings, self).bind(ctrl + keys.x - keys['2'], lambda: window.windows.focused.split_h)
-        super(concat_keybindings, self).bind(ctrl + keys.x - keys['3'], lambda: window.windows.focused.split_v)
-        super(concat_keybindings, self).bind(ctrl + keys.x - keys['0'], window.close_window)
-
         self.cb(keys.z, vx.suspend)
 
         self.cb(keys.f, self._open_search)
@@ -140,6 +136,10 @@ class concat_keybindings(keybinding_table):
         super(concat_keybindings, self).bind(alt + keys.x, self._open_exec)
 
         self.cb(ctrl + keys.t, test.run_tests)
+
+        self.bind(ctrl + keys.x - keys['0'], lambda: organizer.remove_pane(panes.focused))
+        self.bind(ctrl + keys.x - keys['2'], lambda: panes.focused.split())
+        self.bind(ctrl + keys.x - keys.o, lambda: organizer.next_pane())
 
     def cb(self, key, command):
         super(concat_keybindings, self).bind(key, self.concat_bind(command))
