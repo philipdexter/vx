@@ -1,26 +1,28 @@
 import vx
 import vx.utils as utils
 import vx.text as text
-import vx.movement as move
-from vx.window import window, windows
+from .buffer import buffer
 from vx.keybindings import ctrl, alt, keys, register_key_listener, unregister_key_listener
+
+from .pointer import windows, panes
 
 import traceback
 from os.path import isfile
 from functools import partial
 
-class _prompt(window):
-    def __init__(self, attached_to=None):
+class _prompt(buffer):
+    def __init__(self, attached_to=None, remove_callback=None):
         if attached_to is None:
-            attached_to = windows.focused
+            raise Exception('not implemented')
+            attached_to = panes.focused
         super(_prompt, self).__init__(2, attached_to.columns,
                                       attached_to.y + attached_to.rows-1,
-                                      attached_to.x,
-                                      status_bar=False)
-        attached_to.pad(bottom=1)
+                                      attached_to.x)
+        # attached_to.pad(bottom=1)
         self.blank()
         self.focus()
         self.attached_to = attached_to
+        self.remove_callback = remove_callback
 
         self.keybinding_table.bind(ctrl + keys.g, self.cancel)
 
@@ -162,7 +164,7 @@ class time_prompt(_prompt):
 
         text.add_string(message)
 
-        vx.schedule(seconds, self.getout)
+        vx.scheduler.schedule(seconds, self.getout)
 
         self.attached_to.focus()
 
@@ -240,9 +242,11 @@ class search_prompt(_prompt):
         if self.matching:
             if self.forwards:
                 utils.repeat(partial(vx.move_right_window, self.attached_to), times=self.match_length)
-        y, x = vx.get_window_size(self)
-        self.attached_to.grow(bottom=y)
         self.attached_to.focus()
+
+        if self.remove_callback:
+            self.remove_callback(self)
+
         self.remove(force=True)
         unregister_key_listener(self.isearch)
         self.attached_to.color_tags.clear()

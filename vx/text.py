@@ -1,24 +1,10 @@
-import vx
-import vx.window
 import vx.movement as move
 import vx.utils
 
+from .pointer import windows
+
 import re
 from functools import partial
-
-def remove_text_linecol_to_linecol(rowa, cola, rowb, colb):
-    """Removes all text between two points each specified as a row and column
-
-    The removed text is not saved in the undo system.
-    """
-    # TODO inneficient, maybe implement this in C
-    with vx.utils.cursor_wander():
-        window = vx.window.windows.focused
-        window.cursor = (rowb, colb)
-        row, col = window.cursor
-        while row != rowa or col != cola:
-            backspace(track=False)
-            row, col = window.cursor
 
 def regex_forward(window, regex):
     contents = window.get_contents_from_cursor()
@@ -39,11 +25,11 @@ def regex_backward(window, regex):
 
 def get_offset_regex(window, regex, forwards=True, ignore_pos=True):
     if ignore_pos:
-        vx.move_right_window(window) if forwards else vx.move_left_window(window)
+        move.right(window) if forwards else move.left(window)
     m = regex_forward(window, regex) if forwards else regex_backward(window, regex)
     if m is None: return None
     if ignore_pos:
-        vx.move_left_window(window) if forwards else vx.move_right_window(window)
+        move.left(window) if forwards else move.right(window)
     offset = m.start()
     if ignore_pos:
         offset += 1
@@ -54,15 +40,15 @@ def get_offset_regex(window, regex, forwards=True, ignore_pos=True):
 
 def find_regex(regex, window=None, forwards=True):
     if window is None:
-        window = vx.window.windows.focused
+        window = windows.focused
     m = regex_forward(window, regex) if forwards else regex_backward(window, regex)
     if m:
-        with vx.utils.cursor_wander():
+        with window.cursor_wander():
             offset = m.start()
             if not forwards:
                 contents = window.get_contents_before_cursor()
                 offset = len(contents) - offset
-            vx.utils.repeat(partial(vx.move_right_window if forwards else vx.move_left_window, window), times=offset)
+            vx.utils.repeat(partial(move.right if forwards else move.left, window), times=offset)
             l, c = window.cursor
         return (l, c, offset, m.end() - m.start())
     else:
@@ -79,7 +65,7 @@ def get_offsets_of(breaks, forward=True, ignore_pos=True, ignore_failed=True):
         move.right()
     else:
         move.left()
-    offsets = map(lambda s: (s, vx.get_linecoloffset_of_str(vx.window.windows.focused, s, int(forward))[2]), breaks)
+    offsets = map(lambda s: (s, vx.get_linecoloffset_of_str(windows.focused, s, int(forward))[2]), breaks)
     offsets = list(map(lambda x: (x[0], x[1] + 1 if x[1] != -1 else x[1]), offsets)) if ignore_pos else offsets
     if ignore_pos and forward:
         move.left()
@@ -92,7 +78,7 @@ def delete(track=True):
 
     :param track: whether to track the action in the undo system
     """
-    window = vx.window.windows.focused
+    window = windows.focused
     if track:
         window.dirty = True
         r, c = window.cursor
@@ -105,7 +91,7 @@ def backspace(track=True):
 
     :param track: whether to track the action in the undo system
     """
-    window = vx.window.windows.focused
+    window = windows.focused
     if track:
         window.dirty = True
         r, c = window.cursor
@@ -123,7 +109,3 @@ def backspace(track=True):
                 c -= 7
             vx.undo.register_removal(ch, r, c)
     vx.backspace_window(window)
-
-def add_string(s, **kwargs):
-    """Add a string to the current window"""
-    vx.window.windows.focused.add_string(s, **kwargs)

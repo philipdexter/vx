@@ -9,6 +9,8 @@ import vx.test as test
 import vx.utils as utils
 import vx.prompt as prompt
 
+from ..pointer import panes, organizer
+
 from enum import Enum
 from functools import partial, wraps
 
@@ -61,7 +63,7 @@ class concat_keybindings(keybinding_table):
                 return keybinding_table.MATCH_STATE.reject
             if is_printable(key):
                 def g():
-                    text.add_string('X')
+                    self.for_window.add_string('X')
                 self.concat_bind(g)(key)
                 return keybinding_table.MATCH_STATE.accept
             return keybinding_table.MATCH_STATE.reject
@@ -82,6 +84,10 @@ class concat_keybindings(keybinding_table):
 
         self.cb(keys.i, partial(self.save_typing, True))
         super(concat_keybindings, self).bind(ctrl + keys.k, partial(self.save_typing, False))
+
+        self.bind(keys.enter, partial(self.for_window.add_string, '\n'))
+        self.bind(keys.backspace, self.for_window.backspace)
+        self.bind(keys.tab, partial(self.for_window.add_string, '\t'))
 
         self.cb(keys.l, self.line)
         self.cb(keys.r, self.window)
@@ -155,12 +161,12 @@ class concat_keybindings(keybinding_table):
                     return keybinding_table.MATCH_STATE.reject
                 else:
                     command()
-            if not self._stack:
-                if self.for_window.status_bar:
-                    self.for_window.status_bar.reset_default_text()
-            else:
-                if self.for_window.status_bar:
-                    self.for_window.status_bar.set_status_text(' '.join(list(map(str, self._stack))))
+            # if not self._stack:
+            #     if self.for_window.status_bar:
+            #         self.for_window.status_bar.reset_default_text()
+            # else:
+            #     if self.for_window.status_bar:
+            #         self.for_window.status_bar.set_status_text(' '.join(list(map(str, self._stack))))
         return h
 
     def toggle_quoting(self):
@@ -172,7 +178,7 @@ class concat_keybindings(keybinding_table):
         else:
             s = self._stack.pop(0)
             s = s.s
-            text.add_string(s)
+            self.for_window.add_string(s)
 
     def beginning(self):
         self.beginning_pm()
@@ -210,7 +216,7 @@ class concat_keybindings(keybinding_table):
                 self.for_window.cursor = (ra, ca)
             removed = vx.get_str_linecol_to_linecol_window(self.for_window, ra, ca, rb, cb)
             self._graveyard.append(removed)
-            text.remove_text_linecol_to_linecol(ra, ca, rb, cb)
+            self.for_window.remove_text(ra, ca, rb, cb)
             self.for_window.dirty = True
             undo.register_removal(removed, ra, ca, hold=bool(direction))
     def delete(self):
@@ -251,7 +257,7 @@ class concat_keybindings(keybinding_table):
             direction = False
         else:
             direction = True
-        with utils.cursor_wander():
+        with self.for_window.cursor_wander():
             ra, ca = self.for_window.cursor
             for _ in range(x):
                 move.right() if direction else move.left()
@@ -263,7 +269,7 @@ class concat_keybindings(keybinding_table):
             direction = False
         else:
             direction = True
-        with utils.cursor_wander():
+        with self.for_window.cursor_wander():
             ra, ca = self.for_window.cursor
             move.end() if direction else move.beg()
             rb, cb = self.for_window.cursor
@@ -275,7 +281,7 @@ class concat_keybindings(keybinding_table):
             direction = False
         else:
             direction = True
-        with utils.cursor_wander():
+        with self.for_window.cursor_wander():
             # Can only move to the beginning of a line once
             if part == PlaceModifier.beginning:
                 ra, ca = self.for_window.cursor
@@ -322,7 +328,7 @@ class concat_keybindings(keybinding_table):
             direction = False
         else:
             direction = True
-        with utils.cursor_wander():
+        with self.for_window.cursor_wander():
             ra, ca = self.for_window.cursor
             for _ in range(x):
                 if part == PlaceModifier.absolute:
@@ -342,7 +348,7 @@ class concat_keybindings(keybinding_table):
             direction = False
         else:
             direction = True
-        with utils.cursor_wander():
+        with self.for_window.cursor_wander():
             ra, ca = self.for_window.cursor
             breaks = self.for_window.mode.breaks
             for _ in range(x):
@@ -355,7 +361,7 @@ class concat_keybindings(keybinding_table):
             return ra, ca, rb, cb
 
     def content_grabber(self, x, part):
-        with utils.cursor_wander():
+        with self.for_window.cursor_wander():
             ra, ca = self.for_window.cursor
             move.bol()
             offset = text.get_offset_regex(self.for_window, r'[^\s]', ignore_pos=False)
@@ -445,7 +451,8 @@ class concat_keybindings(keybinding_table):
         if self._stack:
             s = self._stack.pop()
             start = s.s
-        p = prompt.regex_prompt(forwards=forwards, start=start)
+        p = panes.focused.open_prompt(prompt.regex_prompt, forwards=forwards, start=start)
+        # p = prompt.regex_prompt(forwards=forwards, start=start)
         p.keybinding_table.force_insert = True
 
     def _open_file(self):

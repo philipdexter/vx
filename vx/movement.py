@@ -1,21 +1,21 @@
 import vx
-import vx.window
+from .pointer import windows
 
-def up():
-    vx.move_up_window(vx.window.windows.focused)
-def down():
-    vx.move_down_window(vx.window.windows.focused)
-def left():
-    vx.move_left_window(vx.window.windows.focused)
-def right():
-    vx.move_right_window(vx.window.windows.focused)
+def up(window=None):
+    vx.move_up_window(window if window else windows.focused)
+def down(window=None):
+    vx.move_down_window(window if window else windows.focused)
+def left(window=None):
+    vx.move_left_window(window if window else windows.focused)
+def right(window=None):
+    vx.move_right_window(window if window else windows.focused)
 
-def eol():
-    vx.move_eol_window(vx.window.windows.focused)
-def bol():
-    vx.move_bol_window(vx.window.windows.focused)
+def eol(window=None):
+    vx.move_eol_window(window if window else windows.focused)
+def bol(window=None):
+    vx.move_bol_window(window if window else windows.focused)
 
-def beg():
-    vx.move_beg_window(vx.window.windows.focused)
-def end():
-    vx.move_end_window(vx.window.windows.focused)
+def beg(window=None):
+    vx.move_beg_window(window if window else windows.focused)
+def end(window=None):
+    vx.move_end_window(window if window else windows.focused)

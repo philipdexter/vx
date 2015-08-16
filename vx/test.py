@@ -1,7 +1,6 @@
 import vx
-import vx.text as text
 import vx.movement as move
-from vx.window import windows
+from .pointer import windows
 
 import traceback
 
@@ -17,6 +16,27 @@ def check_items(a, b):
     for x, y in zip(a, b):
         check(x, y)
 
+def profile():
+    import cProfile
+    from . import utils
+
+    w = windows.focused
+
+    with utils.stdoutIO() as s:
+        cProfile.run('''import vx
+import vx.pointer
+w = vx.pointer.windows.focused
+# for _ in range(10000):
+#   vx.get_contents_window(w)
+s = vx.get_contents_window(w)
+for _ in range(10000):
+  s = s[0:100] + 'a' + s[100:]
+''')
+
+    w.blank()
+
+    w.add_string(s.getvalue())
+
 def run_tests():
     try:
         w = windows.focused
@@ -26,13 +46,13 @@ def run_tests():
         def check_at(s, a, forwards=True):
             check_items(vx.get_linecoloffset_of_str(w, s, int(forwards)), a)
 
-        text.add_string(
+        w.add_string(
 '''
 Tests are being run
 ''')
         move.beg()
 
-        text.add_string('öäå')
+        w.add_string('öäå')
         move.beg()
 
         check_at('ä', (1, 2, 1))
@@ -61,10 +81,10 @@ Tests are being run
             t()
 
         move.end()
-        text.add_string('''
+        w.add_string('''
 All tests have passed
 ''')
     except AssertionError as e:
         move.end()
-        text.add_string('\n\n')
-        text.add_string(traceback.format_exc())
+        w.add_string('\n\n')
+        w.add_string(traceback.format_exc())

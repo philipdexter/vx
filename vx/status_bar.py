@@ -1,10 +1,9 @@
-import vx.window
+from .buffer import buffer
 
-class status_bar(vx.window.window):
+class status_bar(buffer):
     def __init__(self, attached_to):
         super(status_bar, self).__init__(1, attached_to.columns,
-                                         attached_to.y + attached_to.rows - 1, attached_to.x,
-                                         traversable=False, status_bar=False)
+                                         attached_to.y + attached_to.rows - 1, attached_to.x)
         self.attached_to = attached_to
         self.text = lambda window: 'line: {} col: {} - {}{}'.format(attached_to.line,
                                                                       attached_to.col,

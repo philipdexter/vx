@@ -23,28 +23,22 @@ def _resize():
     pass
 vx.resize_handler = _resize
 
-import vx.utils
-import vx.scheduler
-import vx.keybindings
-from vx.window import window
-import vx.status_bar
-import vx.prompt
-import vx.test
-
-
 def _normal_start():
+    from vx.pane import pane
+    from vx.pointer import organizer
     if len(vx.files) == 0:
-        win = window(vx.rows, vx.cols, 0, 0)
+        win = pane(vx.rows, vx.cols, 0, 0)
         win.blank()
-        win.focus()
+        organizer.add_pane(win)
+        organizer.switch_to_pane(win)
     else:
         d = math.floor(vx.rows / (len(vx.files)))
         y = 0
         for f in vx.files:
-            win = window(d, vx.cols, y, 0)
-            win.attach_file(f)
+            win = pane(f, d, vx.cols, y, 0)
             y += d
-            win.focus()
+            organizer.add_pane(win)
+            organizer.switch_to_pane(win)
 def _default_start():
     if not os.path.isfile(os.path.expanduser('~/.vx/rc.py')):
         import vx.new_user
@@ -52,3 +46,5 @@ def _default_start():
     else:
         _normal_start()
 vx.default_start = _default_start
+
+import vx.pointer
