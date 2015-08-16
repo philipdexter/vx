@@ -5,6 +5,7 @@ from .buffer import buffer
 from vx.keybindings import ctrl, alt, keys, register_key_listener, unregister_key_listener
 
 from .pointer import windows, panes, organizer
+from .scheduler import schedule
 
 import traceback
 from os.path import isfile
@@ -163,16 +164,20 @@ class time_prompt(_prompt):
 
         self.message = message
 
-        text.add_string(message)
+        self.add_string(message)
 
-        vx.scheduler.schedule(seconds, self.getout)
+        schedule(seconds, self.getout)
 
         self.attached_to.focus()
+
+        self.add_string('hii')
+
+        todo # fix this shit
 
     def getout(self):
-        y, x = vx.get_window_size(self)
-        self.attached_to.grow(bottom=y)
-        self.attached_to.focus()
+        if self.remove_callback:
+            self.remove_callback(self)
+
         self.remove(force=True)
 
 class search_prompt(_prompt):
