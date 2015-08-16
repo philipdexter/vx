@@ -1,5 +1,6 @@
 from .buffer import buffer
 from .status_bar import status_bar
+from .line_numbers import line_numbers
 
 from .pointer import panes, windows, organizer
 
@@ -12,13 +13,17 @@ class pane:
 
         self.windows = []
 
-        self.buffer = buffer(rows, columns, y, x)
+        self.buffer = buffer(self, rows, columns, y, x)
         self.buffer.attach_file(file)
 
         self.status_bar = status_bar(self.buffer)
 
+        self.line_numbers = line_numbers(self.buffer)
+        self.buffer.pad(left=self.line_numbers.columns, bottom=1)
+
         self.attach_window(self.buffer)
         self.attach_window(self.status_bar)
+        self.attach_window(self.line_numbers)
 
     def attach_window(self, window):
         self.windows.append(window)
@@ -36,7 +41,6 @@ class pane:
     def update(self):
         for w in self.windows:
             w.prepare()
-        self.status_bar.set_text(self.status_bar.text(self.buffer))
         for w in self.windows:
             w.render()
         for w in self.windows:
@@ -61,14 +65,25 @@ class pane:
     def resize(self, lines, columns):
         self.rows = lines
         self.columns = columns
+
+        self.line_numbers.resize(self.rows-1, self.line_numbers.columns)
+
         self.buffer.resize(lines-1, columns)
+        self.buffer.pad(left=self.line_numbers.columns)
+
+        self.status_bar.resize(1, self.columns)
         self.status_bar.move(self.y + self.rows - 1, self.x)
 
     def move(self, y, x):
         self.y = y
         self.x = x
+
         self.buffer.move(y, x)
+        self.buffer.pad(left=self.line_numbers.columns)
+
         self.status_bar.move(self.y + self.rows - 1, self.x)
+
+        self.line_numbers.move(self.y, self.x)
 
     def grow(self, top=0, bottom=0, left=0, right=0):
         if top > 0 or left > 0:

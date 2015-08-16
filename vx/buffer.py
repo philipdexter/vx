@@ -7,8 +7,10 @@ from .keybindings import ctrl, keys
 from contextlib import contextmanager
 
 class buffer(window):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, pane, *args, **kwargs):
         super(buffer, self).__init__(*args, **kwargs)
+
+        self.pane = pane
 
         self.undo_tree = undo_tree(self)
 
@@ -71,3 +73,6 @@ class buffer(window):
             while line != from_line or col != from_col:
                 self.backspace(track=False)
                 line, col = self.cursor
+
+    def get_text_lines(self):
+        return len(self.contents.split('\n'))

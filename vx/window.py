@@ -63,6 +63,10 @@ class window:
         return vx.set_linecol_start_window(self, line, col)
     topleft = property(__get_window_start, __set_window_start)
 
+    def __get_window_size(self):
+        return vx.get_window_size(self)
+    size = property(__get_window_size)
+
     def __get_contents(self):
         return vx.get_contents_window(self)
     contents = property(__get_contents)

@@ -2,7 +2,8 @@ from .buffer import buffer
 
 class status_bar(buffer):
     def __init__(self, attached_to):
-        super(status_bar, self).__init__(1, attached_to.columns,
+        super(status_bar, self).__init__(attached_to.pane,
+                                         1, attached_to.columns,
                                          attached_to.y + attached_to.rows - 1, attached_to.x)
         self.attached_to = attached_to
         self.text = lambda window: 'line: {} col: {} - {}{}'.format(attached_to.line,
@@ -29,3 +30,7 @@ class status_bar(buffer):
 
     def reset_default_text(self):
         self.text = self.default_text
+
+    def prepare(self):
+        super(status_bar, self).prepare()
+        self.set_text(self.text(self.attached_to))
