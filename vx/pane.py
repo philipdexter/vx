@@ -28,7 +28,7 @@ class pane:
         self.windows.remove(window)
 
     def unfocus(self):
-        self.buffer.unfocus()
+        pass#self.buffer.unfocus()
 
     def focus(self):
         self.buffer.focus()
@@ -50,10 +50,9 @@ class pane:
             organizer.switch_to_pane(self)
         self.buffer.unfocus()
         p = prompt(*args, attached_to=self.buffer, remove_callback=close_prompt, **kwargs)
-        windows.add(p)
-        windows.focused = p
         self.pad(bottom=1)
         self.attach_window(p)
+        windows.focused = p
         return p
 
     def get_contents_from_cursor(self):

@@ -452,13 +452,12 @@ class concat_keybindings(keybinding_table):
             s = self._stack.pop()
             start = s.s
         p = panes.focused.open_prompt(prompt.regex_prompt, forwards=forwards, start=start)
-        # p = prompt.regex_prompt(forwards=forwards, start=start)
         p.keybinding_table.force_insert = True
 
     def _open_file(self):
-        p = prompt.file_prompt()
+        p = panes.focused.open_prompt(prompt.file_prompt)
         p.keybinding_table.force_insert = True
 
     def _open_exec(self):
-        p = prompt.exec_prompt()
+        p = panes.focused.open_prompt(prompt.exec_prompt)
         p.keybinding_table.force_insert = True

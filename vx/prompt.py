@@ -4,7 +4,7 @@ import vx.text as text
 from .buffer import buffer
 from vx.keybindings import ctrl, alt, keys, register_key_listener, unregister_key_listener
 
-from .pointer import windows, panes
+from .pointer import windows, panes, organizer
 
 import traceback
 from os.path import isfile
@@ -43,9 +43,6 @@ class exec_prompt(_prompt):
         self.keybinding_table.bind(ctrl + keys.j, self._enter_and_expand)
 
     def getout(self):
-        y, x = vx.get_window_size(self)
-        self.attached_to.grow(bottom=y)
-        self.attached_to.focus()
         contents = self.contents
         exec_prompt._history.append(contents)
         with utils.stdoutIO() as s:
@@ -56,18 +53,22 @@ class exec_prompt(_prompt):
             else:
                 tb = None
         s = s.getvalue()
+
+        if self.remove_callback:
+            self.remove_callback(self)
+
         if len(s) > 0 or tb:
-            split = self.attached_to.split_h()
-            split.focus()
+            split = panes.focused.split()
             if not tb:
-                text.add_string(s)
+                split.buffer.add_string(s)
             else:
-                text.add_string(tb)
+                split.buffer.add_string(tb)
+
         self.remove(force=True)
 
     def _enter_and_expand(self):
         self.expand()
-        text.add_string('\n')
+        self.add_string('\n')
 
     def expand(self):
         self.attached_to.pad(bottom=1)
@@ -76,7 +77,7 @@ class exec_prompt(_prompt):
     def _history_pullback(self):
         if len(_exec_prompt._history) > 0:
             vx.clear_contents_window(self)
-            text.add_string(_exec_prompt._history[-1])
+            self.add_string(_exec_prompt._history[-1])
 
 class file_prompt(_prompt):
     def __init__(self, *args, **kwargs):
@@ -100,11 +101,11 @@ class file_prompt(_prompt):
         if len(self.files) == 0:
             self.completing = False
             vx.clear_contents_window(self)
-            text.add_string(self.old_contents)
+            self.add_string(self.old_contents)
         else:
             completion = self.files.pop()
             vx.clear_contents_window(self)
-            text.add_string(completion)
+            self.add_string(completion)
 
     def getout(self, force=False, cancel_open=False):
         if not force and self.attached_to.dirty:
@@ -242,7 +243,6 @@ class search_prompt(_prompt):
         if self.matching:
             if self.forwards:
                 utils.repeat(partial(vx.move_right_window, self.attached_to), times=self.match_length)
-        self.attached_to.focus()
 
         if self.remove_callback:
             self.remove_callback(self)

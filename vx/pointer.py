@@ -85,6 +85,8 @@ class _organizer:
     def switch_to_pane(self, pane):
         if panes.focused is not None:
             panes.focused.unfocus()
+        if windows.focused is not None:
+            windows.focused.unfocus()
         pane.focus()
         panes.focused = pane
         windows.focused = pane.buffer
