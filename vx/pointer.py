@@ -1,9 +1,54 @@
 import vx
+import operator
 
 class _organizer:
     class pane_tree:
         def __init__(self):
             self.node = None
+
+        def __get_rows(self):
+            return self.get_f(lambda x: x.rows)
+        rows = property(__get_rows)
+        def __get_columns(self):
+            return self.get_f(lambda x: x.columns)
+        columns = property(__get_columns)
+        def __get_y(self):
+            return self.node[0].y
+        y = property(__get_y)
+        def __get_x(self):
+            return self.node[0].x
+        x = property(__get_x)
+
+        def resize(self, rows, columns):
+            pass
+
+        def grow(self, top=0, bottom=0, left=0, right=0):
+            if bottom > 0:
+                self.node[0].grow(bottom=bottom+self.node[1].rows)
+                organizer.fit_below(self.node[0], self.node[1])
+            if top > 0:
+                self.node[0].move(self.node[0].y - top, self.node[0].x)
+                self.grow(bottom=top)
+
+        def get_f(self, f, c=operator.add, z=0):
+            from .pane import pane
+            if self.node is None:
+                return z
+            if isinstance(self.node, pane):
+                return f(pane)
+
+            agg = z
+
+            if isinstance(self.node[0], pane):
+                agg = c(agg, f(self.node[0]))
+            else:
+                agg = c(agg, self.node[0].get_f(f, c, z))
+            if isinstance(self.node[1], pane):
+                agg = c(agg, f(self.node[1]))
+            else:
+                agg = c(agg, self.node[1].get_f(f, c, z))
+
+            return agg
 
     def __init__(self):
         self.tree = _organizer.pane_tree()
@@ -36,18 +81,33 @@ class _organizer:
 
         if isinstance(tree.node[0], pane) and p == tree.node[0]:
             more_rows = tree.node[0].rows
+
             tree.node[1].grow(top=more_rows)
+
             tree.node[0].remove()
-            self.switch_to_pane(tree.node[1])
-            tree.node = tree.node[1]
+
+            if isinstance(tree.node[1], pane):
+                tree.node = tree.node[1]
+                self.switch_to_pane(tree.node)
+            else:
+                tree = tree.node[1]
+                self.switch_to_pane(tree.node[1])
+
             return True
         elif isinstance(tree.node[1], pane) and p == tree.node[1]:
-            # todo if instance of a tree then sum up all rows, etc.
-            more_rows = tree.node[0].rows
+            more_rows = tree.node[1].rows
+
             tree.node[0].grow(bottom=more_rows)
+
             tree.node[1].remove()
-            self.switch_to_pane(tree.node[0])
-            tree.node = tree.node[0]
+
+            if isinstance(tree.node[0], pane):
+                tree.node = tree.node[0]
+                self.switch_to_pane(tree.node)
+            else:
+                tree = tree.node[0]
+                self.switch_to_pane(tree.node[0])
+
             return True
         else:
             found = False
@@ -78,9 +138,9 @@ class _organizer:
             return (tree, 1)
         found = None
         if tree.node[0] and not isinstance(tree.node[0], pane):
-            found = find_pane(p, tree.node[0])
+            found = self.find_pane(p, tree.node[0])
         if not found and tree.node[1] and not isinstance(tree.node[1], pane):
-            found = find_pane(p, tree.node[1])
+            found = self.find_pane(p, tree.node[1])
 
         return found
 
