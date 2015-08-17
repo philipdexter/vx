@@ -42,6 +42,7 @@ class _organizer:
             tree.node = tree.node[1]
             return True
         elif isinstance(tree.node[1], pane) and p == tree.node[1]:
+            # todo if instance of a tree then sum up all rows, etc.
             more_rows = tree.node[0].rows
             tree.node[0].grow(bottom=more_rows)
             tree.node[1].remove()
@@ -60,6 +61,28 @@ class _organizer:
                     tree.node[1] = tree.node[1].node
             return found
         return False
+
+    def find_pane(self, p, tree=None):
+        from .pane import pane
+
+        if tree is None:
+            tree = self.tree
+
+        if isinstance(tree.node, pane):
+            if p == tree.node: return (tree, -1)
+            else: return None
+
+        if isinstance(tree.node[0], pane) and p == tree.node[0]:
+            return (tree, 0)
+        if isinstance(tree.node[1], pane) and p == tree.node[1]:
+            return (tree, 1)
+        found = None
+        if tree.node[0] and not isinstance(tree.node[0], pane):
+            found = find_pane(p, tree.node[0])
+        if not found and tree.node[1] and not isinstance(tree.node[1], pane):
+            found = find_pane(p, tree.node[1])
+
+        return found
 
 
     def add_pane(self, p, parent=None):
@@ -81,6 +104,16 @@ class _organizer:
                 tmp_node = node[1]
                 node[1] = _organizer.pane_tree()
                 node[1].node = [tmp_node, p]
+        else:
+            t, pos = self.find_pane(parent)
+            if pos == -1:
+                self.fit_below(t.node, p)
+                t.node = [t.node, p]
+            elif pos == 0 or pos == 1:
+                self.fit_below(t.node[pos], p)
+                tmp_node = t.node[pos]
+                t.node[pos] = _organizer.pane_tree()
+                t.node[pos].node = [tmp_node, p]
 
     def switch_to_pane(self, pane):
         if panes.focused is not None:

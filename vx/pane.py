@@ -102,7 +102,7 @@ class pane:
 
     def split(self):
         p = pane('README.md', self.rows, self.columns, self.y, self.x)
-        organizer.add_pane(p)
+        organizer.add_pane(p, parent=self)
         organizer.switch_to_pane(p)
         return p
 
