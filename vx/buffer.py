@@ -20,6 +20,9 @@ class buffer(window):
             p = panes.focused.split()
             p.buffer.blank()
             p.buffer.add_string(self.undo_tree.stringify())
+            p.buffer.unfocus()
+            p.buffer.keybinding_table = vx.undo.load(p.buffer, attached_to=self)
+            p.buffer.focus()
         self.keybinding_table.bind(ctrl + keys.y, print_undo)
 
     def redo(self):
