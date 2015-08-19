@@ -25,6 +25,8 @@ class buffer(window):
             p.buffer.focus()
         self.keybinding_table.bind(ctrl + keys.y, print_undo)
 
+        self.last_seeked_column = 1
+
     def redo(self):
         self.undo_tree.redo()
 
@@ -39,6 +41,38 @@ class buffer(window):
         yp, xp = self.cursor
         yield (yp, xp)
         self.cursor = (y, x)
+
+    @contextmanager
+    def column_restore(self, column=None):
+        if not column:
+            column = self.last_seeked_column
+        yield
+        with self.cursor_wander():
+            move.eol()
+            _, end = self.cursor
+        self.cursor = (self.cursor[0], min(end, column))
+
+    @contextmanager
+    def column_save(self):
+        yield
+        self.last_seeked_column = self.cursor[1]
+
+    @contextmanager
+    def cursor_jail(self, la, ca, lb, cb):
+        old_cursor = getattr(buffer, 'cursor')
+        def _set_cursor(inst, linecol):
+            if self is inst:
+                line, col = linecol
+                if line < la: return
+                if line > lb: return
+                if line == la and col < ca: return
+                if line == lb and col > cb: return
+            return vx.set_linecol_window(self, line, col)
+        def _get_cursor(self):
+            return vx.get_linecol_window(self)
+        setattr(buffer, 'cursor', property(_get_cursor, _set_cursor))
+        yield
+        setattr(buffer, 'cursor', old_cursor)
 
     def backspace(self, track=True):
         if track:

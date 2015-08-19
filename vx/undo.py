@@ -43,10 +43,11 @@ class removal(action):
         self.hold = hold
 
     def undo(self, buffer):
+        buffer.cursor = (self.line, self.col)
+
         if self.hold:
             tmp_cursor = buffer.cursor
 
-        buffer.cursor = (self.line, self.col)
         buffer.add_string(self.string, track=False)
 
         if self.hold:
