@@ -69,6 +69,7 @@ class pane:
 
         self.line_numbers.resize(self.rows-1, self.line_numbers.columns)
 
+        self.buffer.move(self.y, self.x)
         self.buffer.resize(lines-1, columns)
         self.buffer.pad(left=self.line_numbers.columns)
 
