@@ -89,7 +89,7 @@ class concat_keybindings(keybinding_table):
         self.bind(keys.backspace, self.for_window.backspace)
         self.bind(keys.tab, partial(self.for_window.add_string, '\t'))
 
-        self.cb(keys.l, self.line)
+        self.cb(keys.L, self.line)
         self.cb(keys.r, self.window)
         self.cb(keys.w, self.word)
         self.cb(keys.W, self.whitespace)
@@ -97,16 +97,16 @@ class concat_keybindings(keybinding_table):
 
         self.cb(keys.g, self.clear)
 
-        self.cb(keys.n, self.next)
-        self.cb(keys.p, self.previous)
-        self.cb(keys.m, self.move)
-        self.cb(keys.b, self.backward)
+        self.cb(keys.h, self.backward)
+        self.cb(keys.j, self.next)
+        self.cb(keys.k, self.previous)
+        self.cb(keys.l, self.move)
         self.cb(keys.a, self.beginning)
         self.cb(keys.e, self.end)
 
         self.cb(keys.A, self.beginning_pm)
         self.cb(keys.E, self.end_pm)
-        self.cb(keys.B, self.backward_pm)
+        self.cb(keys.H, self.backward_pm)
         self.cb(keys.N, self.absolute_pm)
 
         self.cb(keys.q, vx.quit)
@@ -117,7 +117,7 @@ class concat_keybindings(keybinding_table):
 
         self.cb(keys.o, self.raise_stack)
 
-        self.cb(keys.L, self.absolute_line)
+        self.cb(ctrl + keys.l, self.absolute_line)
 
         super(concat_keybindings, self).bind(keys.backspace, self.backspace)
         self.cb(keys.d, self.delete)
