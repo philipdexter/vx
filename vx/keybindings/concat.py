@@ -139,6 +139,35 @@ class words:
                 lb, cb = buffer.cursor
             return la, ca, lb, cb
 
+class whitespaces:
+    def __init__(self, how_many=1, forward=True):
+        self.how_many = how_many
+        self.forward = forward
+
+    def __str__(self):
+        return '{} whitespace{} {}'.format(self.how_many,
+                                           's' if self.how_many > 1 else '',
+                                           '' if self.forward else 'back')
+
+    def __call__(self, item):
+        if item == PlaceModifier.backward:
+            self.forward = False
+        else:
+            raise Exception('whitespaces cannot take new item {}'.format(item))
+
+    def grab(self, buffer):
+        with buffer.cursor_wander():
+            la, ca = buffer.cursor
+            breaks = (' ', '\n')
+            for _ in range(self.how_many):
+                offset = text.get_offset_regex(buffer, '[{}]'.format(''.join(breaks)), forwards=self.forward)
+                if offset is None:
+                    move.eol(buffer) if self.forward else move.bol(buffer)
+                else:
+                    utils.repeat(move.right if self.forward else move.left, times=offset)
+                lb, cb = buffer.cursor
+            return la, ca, lb, cb
+
 class characters:
     def __init__(self, how_many=1, forward=True):
         self.how_many = how_many
@@ -642,6 +671,19 @@ class concat_keybindings(keybinding_table):
                 raise Exception('unsupported previous stack entry')
         self._stack.append(cls(how_many, forward))
 
+    def whitespace(self):
+        how_many = 1
+        forward = True
+        while self._stack:
+            i = self._stack.pop(0)
+            if isinstance(i, Times):
+                how_many = i.i
+            elif i == PlaceModifier.backward:
+                forward = False
+            else:
+                raise Exception('unsupported previous stack entry')
+        self._stack.append(whitespaces(how_many, forward))
+
     def word(self):
         how_many = 1
         forward = True
@@ -680,8 +722,6 @@ class concat_keybindings(keybinding_table):
 
     def window(self):
         self._stack.append(Place.window)
-    def whitespace(self):
-        self._stack.append(Place.whitespace)
     def content(self):
         self._stack.append(Place.content)
     def beginning_pm(self):
