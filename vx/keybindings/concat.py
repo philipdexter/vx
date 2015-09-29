@@ -110,6 +110,34 @@ class absolute_line(lines):
             la, ca = buffer.cursor
             return la, ca, self.line, 1
 
+class whitespace_lines(lines):
+    def __init__(self, how_many=None, forward=True):
+        self.how_many = how_many if how_many is not None else 1
+        self.forward = forward
+
+    def __str__(self):
+        return '{} blank line{} {}'.format(self.how_many,
+                                           's' if self.how_many > 1 else '',
+                                           '' if self.forward else 'back')
+
+    def __call__(self, item):
+        if item == PlaceModifier.backward:
+            self.forward = False
+        else:
+            raise Exception('lines cannot take new item {}'.format(item))
+
+    def grab(self, buffer):
+        with buffer.cursor_wander():
+            la, ca = buffer.cursor
+            for _ in range(self.how_many):
+                offset = text.get_offset_regex(buffer, r'^$', forwards=self.forward)
+                if offset is None:
+                    move.end(buffer) if self.forward else move.end(buffer)
+                else:
+                    utils.repeat(move.right if self.forward else move.left, times=offset)
+                lb, cb = buffer.cursor
+            return la, ca, lb, cb
+
 class words:
     def __init__(self, how_many=1, forward=True):
         self.how_many = how_many
@@ -504,6 +532,10 @@ class concat_keybindings(keybinding_table):
             i = self._stack.pop(0)
             if isinstance(i, Times):
                 how_many = i.i
+            elif isinstance(i, whitespaces):
+                how_many = i.how_many
+                forward = i.forward
+                cls = whitespace_lines
             elif i == PlaceModifier.backward:
                 forward = False
             elif i == PlaceModifier.whole:
