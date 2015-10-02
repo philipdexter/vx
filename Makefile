@@ -14,8 +14,8 @@ HDS = $(SOURCES:%.c=$(OUT_DIR)/%.m)
 
 CFLAGS = -g -Wall -pedantic -std=c99 -O0
 
-PYCFLAGS = $(shell /usr/bin/python3.4-config --cflags)
-PYLDFLAGS = $(shell /usr/bin/python3.4-config --ldflags)
+PYCFLAGS = $(shell /usr/bin/python3.5-config --cflags)
+PYLDFLAGS = $(shell /usr/bin/python3.5-config --ldflags)
 
 .PHONY: all
 all: dirs $(TARGET)
@@ -25,10 +25,10 @@ dirs:
 	mkdir -p $(OUT_DIR)
 
 $(TARGET): $(OBJS)
-	gcc -lpython3.4m -lncurses $(OBJS) -o$(TARGET) $(PYLDFLAGS)
+	gcc -lpython3.5m -lncurses $(OBJS) -o$(TARGET) $(PYLDFLAGS)
 
 $(OUT_DIR)/%.o: %.c
-	gcc -c $< -o $@ -I/usr/include/python3.4m -MMD -MF $(<:%.c=$(OUT_DIR)/%.m) $(PYCFLAGS) $(CFLAGS)
+	gcc -c $< -o $@ -I/usr/include/python3.5m -MMD -MF $(<:%.c=$(OUT_DIR)/%.m) $(PYCFLAGS) $(CFLAGS)
 
 -include $(HDS)
 
