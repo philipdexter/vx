@@ -301,6 +301,9 @@ class concat_keybindings(keybinding_table):
         self.cb(keys.a, self.beginning)
         self.cb(keys.e, self.end)
 
+        self.cb(ctrl + keys.d, self.page_down)
+        self.cb(ctrl + keys.u, self.page_up)
+
         self.cb(keys.T, self.whole_pm)
         self.cb(keys.A, self.beginning_pm)
         self.cb(keys.E, self.end_pm)
@@ -458,6 +461,14 @@ class concat_keybindings(keybinding_table):
                 if self.for_window.pane.status_bar:
                     self.for_window.pane.status_bar.set_status_text(' '.join(list(map(str, self._stack))))
         return h
+
+    def page_down(self):
+        self.times(10)
+        self.next_line()
+
+    def page_up(self):
+        self.times(10)
+        self.previous_line()
 
     def toggle_quoting(self):
             self._quoting = not self._quoting
