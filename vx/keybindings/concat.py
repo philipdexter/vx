@@ -446,7 +446,11 @@ class concat_keybindings(keybinding_table):
                 if fi:
                     return keybinding_table.MATCH_STATE.reject
                 else:
-                    command()
+                    try:
+                        command()
+                    except:
+                        p = panes.focused.open_prompt(prompt.time_prompt, message='clearing stack', seconds=.3)
+                        self.clear()
             if not self._stack:
                 if self.for_window.pane.status_bar:
                     self.for_window.pane.status_bar.reset_default_text()
