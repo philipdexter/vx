@@ -297,6 +297,10 @@ class window:
         new.focus()
         return new
 
+    def backspace(self):
+        self._invalidate_cache()
+        vx.backspace_window(self)
+
 def close_window():
     w = windows.focused
     _next_window()

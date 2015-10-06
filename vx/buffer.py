@@ -74,11 +74,10 @@ class buffer(window):
         setattr(buffer, 'cursor', old_cursor)
 
     def backspace(self, track=True):
-        self._invalidate_cache()
-
         if track:
             self.dirty = True
             l, c = self.cursor
+            lb, cb = l, c
             if l > 1 or c > 1:
                 c = c - 1
                 if c == 0:
@@ -91,8 +90,8 @@ class buffer(window):
                 ch = vx.get_ch_linecol_window(self, l, c)
                 if ch == '\t':
                     c -= 7
-                self.undo_tree.add(removal(ch, l, c, hold=False))
-        vx.backspace_window(self)
+                self.undo_tree.add(removal(ch, l, c, hold=False, box=(l, c, lb, cb)))
+        super(buffer, self).backspace()
 
     def add_string(self, s, track=True):
         if track:
