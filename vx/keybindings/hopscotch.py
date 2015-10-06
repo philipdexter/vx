@@ -67,6 +67,7 @@ class hopscotch_keybindings(keybinding_table):
 
         self.bind(ctrl + keys.x - ctrl + keys.c, vx.quit)
         self.bind(alt + keys.x, lambda: panes.focused.open_prompt(vx.prompt.exec_prompt))
+        self.bind(ctrl + keys.s, lambda: panes.focused.open_prompt(vx.prompt.regex_prompt))
 
         self.bind(ctrl + keys.x - ctrl + keys.f, lambda: panes.focused.open_prompt(vx.prompt.file_prompt))
 
