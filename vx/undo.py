@@ -54,6 +54,8 @@ class removal(action):
             buffer.cursor = tmp_cursor
 
     def redo(self, buffer):
+        line, col, _, _ = self.box
+        buffer.cursor = line, col
         buffer.remove_text(*self.box)
 
     # def stringify(self):
