@@ -75,6 +75,8 @@ class buffer(window):
         setattr(buffer, 'cursor', old_cursor)
 
     def backspace(self, track=True):
+        self._invalidate_cache()
+
         if track:
             self.dirty = True
             l, c = self.cursor

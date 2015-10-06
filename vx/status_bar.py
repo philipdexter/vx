@@ -15,6 +15,8 @@ class status_bar(buffer):
         self.blank()
         self.set_color(5, -1)
 
+        self.id = 'status_bar'
+
     def set_status_text(self, text):
         if callable(text):
             self.text = text

@@ -48,6 +48,10 @@ class window:
 
         self.mode = starting_mode(self) if starting_mode else mode.mode(self)
 
+        self.__contents_cache = None
+
+        self.id = 'blah'
+
     def __get_cursor(self):
         return vx.get_linecol_window(self)
     def __set_cursor(self, linecol):
@@ -68,8 +72,13 @@ class window:
     size = property(__get_window_size)
 
     def __get_contents(self):
-        return vx.get_contents_window(self)
+        if self.__contents_cache is None:
+            self.__contents_cache = vx.get_contents_window(self)
+        return self.__contents_cache
     contents = property(__get_contents)
+
+    def _invalidate_cache(self):
+        self.__contents_cache = None
 
     def get_contents_from_cursor(self):
         y, x = self.cursor
@@ -132,6 +141,7 @@ class window:
         p = self.pane.open_prompt(prompt.time_prompt, 'saved {}'.format(self.filename))
 
     def add_string(self, s):
+        self._invalidate_cache()
         vx.add_string_window(self, s)
 
     def remove(self, force=False):

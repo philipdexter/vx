@@ -11,6 +11,8 @@ class line_numbers(buffer):
         self.blank()
         self.set_color(9, -1)
 
+        self.id = 'line-numbers'
+
     def prepare(self):
         super(line_numbers, self).prepare()
         self.set_text('h')
