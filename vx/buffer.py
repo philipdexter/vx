@@ -14,7 +14,6 @@ class buffer(window):
 
         self.undo_tree = undo_tree(self)
 
-        self.keybinding_table.bind(ctrl + keys.underscore, self.redo)
         def print_undo():
             from .pointer import panes
             p = panes.focused.split()

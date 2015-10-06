@@ -325,7 +325,7 @@ class concat_keybindings(keybinding_table):
         self.cb(keys.y, self.pop_graveyard)
 
         self.cb(keys.forwardslash, self.for_window.undo)
-        self.bind(ctrl + keys.underscore, self.for_window.undo)
+        self.bind(ctrl + keys.underscore, self.for_window.redo)
 
         self.cb(keys.c, self.center_me)
 
