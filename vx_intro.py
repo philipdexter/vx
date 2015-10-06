@@ -1,8 +1,18 @@
 import vx
-
 import os.path
 import math
 from sys import argv
+
+import vx.logger
+import datetime
+import subprocess
+vx.logger.info('''----------------
+Starting vx
+{time}
+{gitinfo}
+----------------
+'''.format(time=datetime.datetime.now(),
+           gitinfo=subprocess.check_output('git rev-parse HEAD'.split(' ')).decode('utf8').strip()))
 
 _tick_functions = []
 def _register_tick_function(f, front=False):
@@ -24,6 +34,8 @@ def _resize():
 vx.resize_handler = _resize
 
 def _normal_start():
+    vx.logger.info('starting normally')
+
     from vx.pane import pane
     from vx.pointer import organizer
     if len(vx.files) == 0:

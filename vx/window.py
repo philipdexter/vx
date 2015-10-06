@@ -1,8 +1,8 @@
 import vx
-import vx.undo as undo
 import vx.mode as mode
 import vx.utils
 import vx.keybindings
+import vx.logger
 from .pointer import windows, panes
 
 import math
@@ -73,11 +73,13 @@ class window:
 
     def __get_contents(self):
         if self.__contents_cache is None:
+            vx.logger.debug('cache fetch {}'.format(self.id))
             self.__contents_cache = vx.get_contents_window(self)
         return self.__contents_cache
     contents = property(__get_contents)
 
     def _invalidate_cache(self):
+        vx.logger.debug('cache invalidation')
         self.__contents_cache = None
 
     def get_contents_from_cursor(self):
