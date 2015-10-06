@@ -27,8 +27,8 @@ class _prompt(buffer):
         self.keybinding_table.bind(ctrl + keys.g, self.cancel)
 
     def cancel(self):
-        y, x = vx.get_window_size(self)
-        self.attached_to.grow(bottom=y)
+        if self.remove_callback:
+            self.remove_callback(self)
         self.attached_to.focus()
         self.remove(force=True)
 
@@ -125,7 +125,7 @@ class file_prompt(_prompt):
             else:
                 split = self.attached_to.split_h()
                 split.focus()
-                text.add_string('file "{}" does not exist'.format(contents))
+                split.add_string('file "{}" does not exist'.format(contents))
         self.remove(force=True)
 
 class yn_prompt(_prompt):
