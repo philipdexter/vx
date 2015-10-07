@@ -301,6 +301,10 @@ class window:
         self._invalidate_cache()
         vx.backspace_window(self)
 
+    def delete(self):
+        self._invalidate_cache()
+        vx.backspace_delete_window(self)
+
     def undo(self):
         raise Exception('not implemented')
     def redo(self):

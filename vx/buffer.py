@@ -93,6 +93,17 @@ class buffer(window):
                 self.undo_tree.add(removal(ch, l, c, hold=False, box=(l, c, lb, cb)))
         super(buffer, self).backspace()
 
+    def delete(self, track=True):
+        if track:
+            self.dirty = True
+            l, c = self.cursor
+            move.right()
+            lb, cb = self.cursor
+            move.left()
+            ch = vx.get_ch_linecol_window(self, l, c)
+            self.undo_tree.add(removal(ch, l, c, hold=True, box=(l, c, lb, cb)))
+        super(buffer, self).delete()
+
     def add_string(self, s, track=True):
         if track:
             la, ca = self.cursor

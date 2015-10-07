@@ -72,16 +72,3 @@ def get_offsets_of(breaks, forward=True, ignore_pos=True, ignore_failed=True):
     else:
         move.right()
     return list(filter(lambda x: x[1] != -1, offsets) if ignore_failed else offsets)
-
-def delete(track=True):
-    """Delete (the opposite direction of backspace) one character in the current window
-
-    :param track: whether to track the action in the undo system
-    """
-    window = windows.focused
-    if track:
-        window.dirty = True
-        r, c = window.cursor
-        ch = vx.get_ch_linecol_window(window, r, c)
-        vx.undo.register_removal(ch, r, c, hold=True)
-    vx.backspace_delete_window(window)

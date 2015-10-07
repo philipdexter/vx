@@ -36,9 +36,8 @@ class hopscotch_keybindings(keybinding_table):
         self.bind(alt + keys.rangle, move.end)
 
         self.bind(keys.backspace, self.for_window.backspace)
-
-        # self.bind(alt + keys.b, vx.backward_word)
-        # self.bind(alt + keys.f, vx.forward_word)
+        self.bind(ctrl + keys.d, self.for_window.delete)
+        self.bind(keys.enter, partial(self.for_window.add_string, '\n'))
 
         self.bind(ctrl + keys.l, vx.window.center)
 
