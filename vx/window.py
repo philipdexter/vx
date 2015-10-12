@@ -75,6 +75,7 @@ class window:
         if self.__contents_cache is None:
             vx.logger.debug('cache fetch {}'.format(self.id))
             self.__contents_cache = vx.get_contents_window(self)
+            self.syntax_highlight()
         return self.__contents_cache
     contents = property(__get_contents)
 
@@ -208,8 +209,8 @@ class window:
     def color_line(self, line_number, column_number, line):
         printed = 0
         start = 0
-        for _, ctc, ctlen, ctfg, ctbg in filter(lambda x: x[0] == line_number, self.color_tags):
-            colored = True
+        for tag, _, ctc, ctlen, ctfg, ctbg in filter(lambda x: x[1] == line_number, self.color_tags):
+            vx.logger.debug('found {} {} {}'.format(tag, ctc, line_number))
             ctc -= column_number - 1
             vx.print_string_window(self, line[start:ctc-1])
             printed += len(line[start:ctc-1])
@@ -238,15 +239,6 @@ class window:
                 if c-1 > 0:
                     line = '$' + line[1:]
 
-                # def highlight(l):
-                #     import re
-                #     matches = [(m.start(), m.end() - m.start()) for m in re.finditer('return', line)]
-                #     for col, length in matches:
-                #         a = (cline, col+1, length, 9, -1)
-                #         self.color_tags = list(filter(lambda x: x != a, self.color_tags))
-                #         self.add_color_tag(cline, col+1, length, 9, -1)
-                # highlight(line)
-
                 self.color_line(cline, ccol, line)
                 vx.print_string_window(self, '\n')
                 cline += 1
@@ -258,14 +250,26 @@ class window:
         self.render()
         self.refresh()
 
+    def syntax_highlight(self):
+        self.color_tags = list(filter(lambda x: x[0] != "syntax-highlight", self.color_tags))
+
+        import re
+        for cline, line in enumerate(self.contents.split('\n')):
+            line = line.replace('\t', '        ')
+            matches = [(m.start(), m.end() - m.start()) for m in re.finditer('return', line)]
+            for col, length in matches:
+                a = ("syntax-highlight", cline+1, col+1, length, 9, -1)
+                self.color_tags = list(filter(lambda x: x != a, self.color_tags))
+                self.add_color_tag("syntax-highlight", cline+1, col+1, length, 9, -1)
+
     def set_cursor(self, y, x):
         vx.set_cursor(self, y, x)
 
     def set_color(self, fg, bg):
         vx.set_color_window(self, fg, bg)
 
-    def add_color_tag(self, l, c, length, fg, bg):
-        self.color_tags.append((l, c, length, fg, bg))
+    def add_color_tag(self, tag, l, c, length, fg, bg):
+        self.color_tags.append((tag, l, c, length, fg, bg))
 
     def attach_file(self, filename):
         self.filename = filename
