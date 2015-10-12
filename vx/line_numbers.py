@@ -3,8 +3,7 @@ from .buffer import buffer
 class line_numbers(buffer):
     def __init__(self, attached_to):
         width = len(str(attached_to.get_text_lines()))
-        super(line_numbers, self).__init__(attached_to.pane,
-                                           attached_to.rows, width,
+        super(line_numbers, self).__init__(attached_to.rows, width,
                                            attached_to.y, attached_to.x)
         self.attached_to = attached_to
 

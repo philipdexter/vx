@@ -1,11 +1,12 @@
 from .buffer import buffer
+from .scratchbuffer import scratchbuffer
 from .status_bar import status_bar
 from .line_numbers import line_numbers
 
 from .pointer import panes, windows, organizer
 
 class pane:
-    def __init__(self, file, rows, columns, y, x):
+    def __init__(self, buffer, rows, columns, y, x):
         self.rows = rows
         self.columns = columns
         self.y = y
@@ -13,8 +14,7 @@ class pane:
 
         self.windows = []
 
-        self.buffer = buffer(self, rows, columns, y, x)
-        self.buffer.attach_file(file)
+        self.buffer = buffer
 
         self.status_bar = status_bar(self.buffer)
 
@@ -102,7 +102,8 @@ class pane:
             self.resize(self.rows - (bottom + top), self.columns - (right + left))
 
     def split(self):
-        p = pane('README.md', self.rows, self.columns, self.y, self.x)
+        fb = scratchbuffer(self.rows, self.columns, self.y, self.x)
+        p = pane(fb, self.rows, self.columns, self.y, self.x)
         organizer.add_pane(p, parent=self)
         organizer.switch_to_pane(p)
         return p

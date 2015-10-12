@@ -35,17 +35,20 @@ def _normal_start():
     vx.logger.info('starting normally')
 
     from vx.pane import pane
+    from vx.filebuffer import filebuffer
+    from vx.scratchbuffer import scratchbuffer
     from vx.pointer import organizer
     if len(vx.files) == 0:
-        win = pane(vx.rows, vx.cols, 0, 0)
-        win.blank()
+        sb = scratchbuffer(vx.rows, vx.cols, 0, 0)
+        win = pane(sb, vx.rows, vx.cols, 0, 0)
         organizer.add_pane(win)
         organizer.switch_to_pane(win)
     else:
         d = math.floor(vx.rows / (len(vx.files)))
         y = 0
         for f in vx.files:
-            win = pane(f, d, vx.cols, y, 0)
+            fb = filebuffer(f, d, vx.cols, y, 0)
+            win = pane(fb, d, vx.cols, y, 0)
             y += d
             organizer.add_pane(win)
             organizer.switch_to_pane(win)

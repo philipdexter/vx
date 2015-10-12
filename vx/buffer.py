@@ -7,10 +7,8 @@ from .keybindings import ctrl, keys
 from contextlib import contextmanager
 
 class buffer(window):
-    def __init__(self, pane, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(buffer, self).__init__(*args, **kwargs)
-
-        self.pane = pane
 
         self.undo_tree = undo_tree(self)
 

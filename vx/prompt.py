@@ -16,8 +16,7 @@ class _prompt(buffer):
         if attached_to is None:
             raise Exception('not implemented')
             attached_to = panes.focused
-        super(_prompt, self).__init__(attached_to.pane,
-                                      2, attached_to.columns,
+        super(_prompt, self).__init__(2, attached_to.columns,
                                       attached_to.y + attached_to.rows-1,
                                       attached_to.x)
         self.blank()
