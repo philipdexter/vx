@@ -9,10 +9,8 @@ import subprocess
 vx.logger.info('''----------------
 Starting vx
 {time}
-{gitinfo}
 ----------------
-'''.format(time=datetime.datetime.now(),
-           gitinfo=subprocess.check_output('git rev-parse HEAD'.split(' ')).decode('utf8').strip()))
+'''.format(time=datetime.datetime.now()))
 
 _tick_functions = []
 def _register_tick_function(f, front=False):
