@@ -207,7 +207,7 @@ class keybinding_table:
                         res = cur(key=key)
                     else:
                         res = cur()
-                except:
+                except TypeError:
                     res = cur()
                 if res == keybinding_table.MATCH_STATE.reject:
                     if self.catch_all:
