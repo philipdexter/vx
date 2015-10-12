@@ -162,9 +162,6 @@ class window:
             self.move(self.y + top, self.x + left)
         if bottom > 0 or right > 0:
             self.resize(self.rows - (bottom + top), self.columns - (right + left))
-            # if self.status_bar:
-            #     self.status_bar.move(self.y + self.rows - 1, self.x)
-        #vx.redraw_all()
 
     def grow(self, top=0, bottom=0, left=0, right=0):
         if top > 0 or left > 0:
@@ -172,14 +169,11 @@ class window:
             self.resize(self.rows + top, self.columns + left)
         if bottom > 0 or right > 0:
             self.resize(self.rows + (bottom + top), self.columns + (right + left))
-        #vx.redraw_all()
 
     def move(self, y, x):
         self.y = y
         self.x = x
         vx.move_window(self, y, x)
-        # if self.status_bar:
-        #     self.status_bar.move(y + self.rows - 1, x)
 
     def set_text(self, text):
         self.graffitis = []
@@ -200,8 +194,6 @@ class window:
         vx.clear_window(self)
         vx.set_cursor(self, 0, 0)
         self.line, self.col = self.cursor
-        # if self.status_bar:
-        #     self.status_bar.set_text(self.status_bar.text(self))
 
     def refresh(self):
         vx.refresh_window(self)
