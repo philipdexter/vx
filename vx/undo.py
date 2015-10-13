@@ -32,10 +32,6 @@ class addition(action):
         buffer.cursor = line, col
         buffer.add_string(self.string, track=False)
 
-    # def stringify(self):
-    #     s = 'addition'
-    #     return super(addition, self).stringify(s)
-
 class removal(action):
     def __init__(self, string, line, col, box, hold):
         super(removal, self).__init__(string, line, col, box)
@@ -57,10 +53,6 @@ class removal(action):
         line, col, _, _ = self.box
         buffer.cursor = line, col
         buffer.remove_text(*self.box)
-
-    # def stringify(self):
-    #     s = 'removal {}'.format(self.hold)
-    #     return super(removal, self).stringify(s)
 
 class tree:
     def __init__(self, item, parent):
