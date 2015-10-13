@@ -57,6 +57,7 @@ class pane:
         p.focus()
         self.pad(bottom=1)
         self.attach_window(p)
+        p.move(self.y + self.rows, 0)
         windows.focused = p
         return p
 
@@ -70,7 +71,7 @@ class pane:
         self.line_numbers.resize(self.rows-1, self.line_numbers.columns)
 
         self.buffer.move(self.y, self.x)
-        self.buffer.resize(lines-1, columns)
+        self.buffer.resize(self.rows-1, self.columns)
         self.buffer.pad(left=self.line_numbers.columns)
 
         self.status_bar.resize(1, self.columns)
