@@ -202,7 +202,6 @@ class window:
         printed = 0
         start = 0
         for tag, _, ctc, ctlen, ctfg, ctbg in filter(lambda x: x[1] == line_number, self.color_tags):
-            vx.logger.debug('found {} {} {}'.format(tag, ctc, line_number))
             ctc -= column_number - 1
             vx.print_string_window(self, line[start:ctc-1])
             printed += len(line[start:ctc-1])
