@@ -95,6 +95,7 @@ class undo_tree:
         self.current = self.tree
         self.next_child = -1
         self.buffer = buffer
+        self.save_point = self.current
 
     def switch_child(self):
         if self.current.children:
@@ -109,13 +110,24 @@ class undo_tree:
         if self.current.item is not None:
             self.current.item.undo(self.buffer)
             self.current = self.current.parent
+            if self.current == self.save_point:
+                self.buffer.dirty = False
+            else:
+                self.buffer.dirty = True
         self.next_child = -1
 
     def redo(self):
         if self.current.children and self.current.children[self.next_child] is not None:
             self.current.children[self.next_child].item.redo(self.buffer)
             self.current = self.current.children[self.next_child]
+            if self.current == self.save_point:
+                self.buffer.dirty = False
+            else:
+                self.buffer.dirty = True
         self.next_child = -1
+
+    def mark_save_point(self):
+        self.save_point = self.current
 
     def stringify(self):
         items = self.tree.items()

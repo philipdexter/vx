@@ -30,6 +30,10 @@ class buffer(window):
     def undo(self):
         self.undo_tree.undo()
 
+    def save(self):
+        super(buffer, self).save()
+        self.undo_tree.mark_save_point()
+
     @contextmanager
     def cursor_wander(self, command=None):
         y, x = self.cursor
