@@ -19,6 +19,8 @@ class pane:
         self.status_bar = status_bar(self.buffer)
 
         self.line_numbers = line_numbers(self.buffer)
+        self.buffer.move(self.y, self.x)
+        self.buffer.resize(self.rows, self.columns)
         self.buffer.pad(left=self.line_numbers.columns, bottom=1)
 
         self.attach_window(self.buffer)
@@ -50,7 +52,7 @@ class pane:
         def close_prompt(p):
             import vx
             self.windows.remove(p)
-            self.grow(bottom=vx.get_window_size(p)[0])
+            self.grow(bottom=p.size[0])
             organizer.switch_to_pane(self)
         self.buffer.unfocus()
         p = prompt(*args, attached_to=self.buffer, remove_callback=close_prompt, **kwargs)
@@ -71,8 +73,8 @@ class pane:
         self.line_numbers.resize(self.rows-1, self.line_numbers.columns)
 
         self.buffer.move(self.y, self.x)
-        self.buffer.resize(self.rows-1, self.columns)
-        self.buffer.pad(left=self.line_numbers.columns)
+        self.buffer.resize(self.rows, self.columns)
+        self.buffer.pad(left=self.line_numbers.columns, bottom=1)
 
         self.status_bar.resize(1, self.columns)
         self.status_bar.move(self.y + self.rows - 1, self.x)
@@ -100,7 +102,7 @@ class pane:
             self.resize(self.rows - top, self.columns - left)
             self.move(self.y + top, self.x + left)
         if bottom > 0 or right > 0:
-            self.resize(self.rows - (bottom + top), self.columns - (right + left))
+            self.resize(self.rows - bottom, self.columns - right)
 
     def split(self):
         fb = scratchbuffer(self.rows, self.columns, self.y, self.x)

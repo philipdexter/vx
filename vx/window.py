@@ -161,7 +161,7 @@ class window:
             self.resize(self.rows - top, self.columns - left)
             self.move(self.y + top, self.x + left)
         if bottom > 0 or right > 0:
-            self.resize(self.rows - (bottom + top), self.columns - (right + left))
+            self.resize(self.rows - bottom, self.columns - right)
 
     def grow(self, top=0, bottom=0, left=0, right=0):
         if top > 0 or left > 0:
