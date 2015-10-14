@@ -6,6 +6,7 @@
 #include <locale.h>
 #include <argp.h>
 #include <time.h>
+#include <setjmp.h>
 
 #include "vx_module.h"
 #include "buffer.h"
@@ -13,6 +14,7 @@
 #include "text.h"
 
 static void finish(int sig);
+jmp_buf exit_jmpbuf;
 
 int lets_edit = 1;
 int lets_suspend = 0;
@@ -120,6 +122,7 @@ int main(int argc, char *argv[])
 
 	clock_t last_tick = clock();
 	float update_every = .25;
+	setjmp(exit_jmpbuf);
 	while (lets_edit)
 	{
 		if (lets_suspend) {
@@ -207,11 +210,12 @@ int main(int argc, char *argv[])
 
 	vx_py_deinit_python();
 
-	finish(0);
+	endwin();
+	exit(0);
 }
 
 static void finish(int sig)
 {
-	endwin();
-	exit(0);
+	lets_edit = 0;
+	longjmp(exit_jmpbuf, 0);
 }
