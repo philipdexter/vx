@@ -14,7 +14,7 @@
 #include "text.h"
 
 static void finish(int sig);
-jmp_buf exit_jmpbuf;
+sigjmp_buf exit_jmpbuf;
 
 int lets_edit = 1;
 int lets_suspend = 0;
@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
 
 	clock_t last_tick = clock();
 	float update_every = .25;
-	setjmp(exit_jmpbuf);
+	sigsetjmp(exit_jmpbuf, 1);
 	while (lets_edit)
 	{
 		if (lets_suspend) {
@@ -217,5 +217,5 @@ int main(int argc, char *argv[])
 static void finish(int sig)
 {
 	lets_edit = 0;
-	longjmp(exit_jmpbuf, 0);
+	siglongjmp(exit_jmpbuf, 0);
 }
