@@ -247,11 +247,12 @@ class window:
         import re
         for cline, line in enumerate(self.contents.split('\n')):
             line = line.replace('\t', '        ')
-            matches = [(m.start(), m.end() - m.start()) for m in re.finditer('return', line)]
-            for col, length in matches:
-                a = ("syntax-highlight", cline+1, col+1, length, 9, -1)
-                self.color_tags = list(filter(lambda x: x != a, self.color_tags))
-                self.add_color_tag("syntax-highlight", cline+1, col+1, length, 9, -1)
+            for keyword in self.mode.keywords:
+                matches = [(m.start(), m.end() - m.start()) for m in re.finditer(keyword, line)]
+                for col, length in matches:
+                    a = ("syntax-highlight", cline+1, col+1, length, 4, -1)
+                    self.color_tags = list(filter(lambda x: x != a, self.color_tags))
+                    self.add_color_tag(*a)
 
     def set_cursor(self, y, x):
         vx.set_cursor(self, y, x)
