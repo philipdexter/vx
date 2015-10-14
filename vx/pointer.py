@@ -56,7 +56,8 @@ class _organizer:
     def fit_below(self, above, below):
         new_rows = above.rows // 2
         new_columns = above.columns
-        above.resize(new_rows, new_columns)
+        even_rows = above.rows % 2 == 0
+        above.resize(new_rows + int(not even_rows), new_columns)
 
         below.resize(new_rows, new_columns)
         below.move(above.y + above.rows, above.x)
