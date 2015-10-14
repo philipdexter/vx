@@ -146,7 +146,7 @@ def _tobinding(s):
         binding = binding + c
     return binding
 
-class keybinding_table:
+class KeybindingTable:
     class MATCH_STATE(Enum):
         reject = 1
         keep_going = 2
@@ -198,7 +198,7 @@ class keybinding_table:
             if cur is None:
                 if self.catch_all:
                     return self.catch_all(key)
-                return keybinding_table.MATCH_STATE.reject
+                return KeybindingTable.MATCH_STATE.reject
             elif callable(cur):
                 import inspect
                 try:
@@ -209,14 +209,14 @@ class keybinding_table:
                         res = cur()
                 except TypeError:
                     res = cur()
-                if res == keybinding_table.MATCH_STATE.reject:
+                if res == KeybindingTable.MATCH_STATE.reject:
                     if self.catch_all:
                         return self.catch_all(key)
-                    return keybinding_table.MATCH_STATE.reject
-                return keybinding_table.MATCH_STATE.accept
-        return keybinding_table.MATCH_STATE.keep_going
+                    return KeybindingTable.MATCH_STATE.reject
+                return KeybindingTable.MATCH_STATE.accept
+        return KeybindingTable.MATCH_STATE.keep_going
 
-_global_keybinding_table = keybinding_table()
+_global_keybinding_table = KeybindingTable()
 
 def bind(keys, command=None, *args, **kwargs):
     """Bind a key to the global keybinding table. Can be used as a decorator"""
@@ -249,19 +249,19 @@ def _register_key(key):
     keep_going = False
     for table in keybinding_tables:
         match = table.match_key_sequence(_keybinding_queue)
-        if match == keybinding_table.MATCH_STATE.keep_going:
+        if match == KeybindingTable.MATCH_STATE.keep_going:
             keep_going = True
-        if match == keybinding_table.MATCH_STATE.accept:
+        if match == KeybindingTable.MATCH_STATE.accept:
             keep_going = False
             break
     if keep_going:
-        match = keybinding_table.MATCH_STATE.keep_going
+        match = KeybindingTable.MATCH_STATE.keep_going
 
-    if match == keybinding_table.MATCH_STATE.reject:
+    if match == KeybindingTable.MATCH_STATE.reject:
         if _print_printable and len(_keybinding_queue) == 1 and utils.is_printable(key.decode('utf8')[0]):
             windows.focused.add_string(key.decode('utf8'))
         _keybinding_queue = []
-    elif match == keybinding_table.MATCH_STATE.accept:
+    elif match == KeybindingTable.MATCH_STATE.accept:
         _keybinding_queue = []
 
     for kl in _key_listeners:

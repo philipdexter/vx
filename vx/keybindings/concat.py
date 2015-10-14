@@ -1,5 +1,5 @@
 import vx
-from vx.keybindings import bind, alt, ctrl, keys, keybinding_table
+from vx.keybindings import bind, alt, ctrl, keys, KeybindingTable
 from vx.keybindings.utils import is_printable
 import vx.undo as undo
 import vx.movement as move
@@ -15,7 +15,7 @@ from enum import Enum
 from functools import partial, wraps
 
 def load(window):
-    return concat_keybindings(window)
+    return Concat(window)
 
 class Place(Enum):
     line = 0
@@ -236,9 +236,9 @@ class Times:
     def __str__(self):
         return '{}-times'.format(self.i)
 
-class concat_keybindings(keybinding_table):
+class Concat(KeybindingTable):
     def __init__(self, for_window):
-        super(concat_keybindings, self).__init__()
+        super(Concat, self).__init__()
 
         self.for_window = for_window
 
@@ -252,13 +252,13 @@ class concat_keybindings(keybinding_table):
 
         def _catch_all(key):
             if self.force_insert:
-                return keybinding_table.MATCH_STATE.reject
+                return KeybindingTable.MATCH_STATE.reject
             if is_printable(key):
                 def g():
                     self.for_window.add_string('X')
                 self.concat_bind(g)(key)
-                return keybinding_table.MATCH_STATE.accept
-            return keybinding_table.MATCH_STATE.reject
+                return KeybindingTable.MATCH_STATE.accept
+            return KeybindingTable.MATCH_STATE.reject
         self.catch_all = _catch_all
 
         self.cb(keys.quote, self.toggle_quoting)
@@ -275,7 +275,7 @@ class concat_keybindings(keybinding_table):
         self.cb(keys['9'], partial(self.times, 9))
 
         self.cb(keys.i, partial(self.save_typing, True))
-        super(concat_keybindings, self).bind(ctrl + keys.k, partial(self.save_typing, False))
+        super(Concat, self).bind(ctrl + keys.k, partial(self.save_typing, False))
 
         self.bind(keys.enter, partial(self.for_window.add_string, '\n'))
         self.bind(keys.backspace, self.for_window.backspace)
@@ -320,7 +320,7 @@ class concat_keybindings(keybinding_table):
 
         self.cb(ctrl + keys.l, self.move_absolute_line)
 
-        super(concat_keybindings, self).bind(keys.backspace, self.backspace)
+        super(Concat, self).bind(keys.backspace, self.backspace)
         self.cb(keys.d, self.delete)
         self.cb(keys.y, self.pop_graveyard)
 
@@ -334,7 +334,7 @@ class concat_keybindings(keybinding_table):
         self.cb(keys.f, self._open_search)
         self.cb(keys.F, partial(self._open_search, forwards=False))
         self.cb(keys.O, self._open_file)
-        super(concat_keybindings, self).bind(alt + keys.x, self._open_exec)
+        super(Concat, self).bind(alt + keys.x, self._open_exec)
 
         self.cb(ctrl + keys.t, test.run_tests)
 
@@ -429,7 +429,7 @@ class concat_keybindings(keybinding_table):
         self._stack.append(PlaceModifier.backward)
 
     def cb(self, key, command):
-        super(concat_keybindings, self).bind(key, self.concat_bind(command))
+        super(Concat, self).bind(key, self.concat_bind(command))
 
     def concat_bind(self, command):
         def h(key):
@@ -447,7 +447,7 @@ class concat_keybindings(keybinding_table):
                     self._stack[-1].finalize()
                 fi = self.force_insert
                 if fi:
-                    return keybinding_table.MATCH_STATE.reject
+                    return KeybindingTable.MATCH_STATE.reject
                 else:
                     try:
                         command()
