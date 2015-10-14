@@ -219,7 +219,6 @@ class window:
                         to_add.append((tag, ctl, octc+octlen, ctc+ctlen-(octc+octlen), fg, bg))
         this_line.extend(to_add)
         this_line.sort(key=lambda n: n[2])
-        if hasattr(self, 'filename') and line_number == 1: vx.logger.debug('this_line {}'.format(this_line))
         for tag, _, ctc, ctlen, ctfg, ctbg in this_line:
             ctc -= column_number - 1
             vx.print_string_window(self, line[start:ctc-1])
