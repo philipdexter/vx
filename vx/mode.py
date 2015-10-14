@@ -13,6 +13,7 @@ def mode_from_filename(file):
 class mode:
     def __init__(self, window):
         self.breaks = ('_', ' ', '\n', '\t')
+        self.keywords = ()
 
 class python_mode(mode):
     def __init__(self, window):
@@ -28,4 +29,4 @@ class c_mode(mode):
 
         self.breaks = ('_', ' ', '\n', '\t', '(', ')', '<', '>', '.', ',', '#')
 
-        self.keywords = ('return', 'goto', 'break', 'continue')
+        self.keywords = ('#include', '#define', 'if', 'else', 'return', 'goto', 'break', 'continue')
