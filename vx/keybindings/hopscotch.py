@@ -41,6 +41,8 @@ class hopscotch_keybindings(keybinding_table):
 
         self.bind(ctrl + keys.l, vx.window.center)
 
+        self.bind(ctrl + keys.z, vx.suspend)
+
         # text manipulation
 
         # self.bind(ctrl + keys.d, vx.delete)
