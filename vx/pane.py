@@ -64,8 +64,8 @@ class pane:
     def get_contents_from_cursor(self):
         return self.buffer.get_contents_from_cursor()
 
-    def resize(self, lines, columns):
-        self.rows = lines
+    def resize(self, rows, columns):
+        self.rows = rows
         self.columns = columns
 
         self.line_numbers.resize(self.rows-1, self.line_numbers.columns)

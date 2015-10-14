@@ -151,10 +151,10 @@ class window:
         """Removes this window from the screen; prompting when the window is dirty."""
         vx.delete_window(self)
 
-    def resize(self, lines, columns):
-        self.rows = lines
+    def resize(self, rows, columns):
+        self.rows = rows
         self.columns = columns
-        vx.resize_window(self, lines, columns)
+        vx.resize_window(self, rows, columns)
 
     def pad(self, top=0, bottom=0, left=0, right=0):
         if top > 0 or left > 0:
