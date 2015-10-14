@@ -201,7 +201,26 @@ class window:
     def color_line(self, line_number, column_number, line):
         printed = 0
         start = 0
-        for tag, _, ctc, ctlen, ctfg, ctbg in filter(lambda x: x[1] == line_number, self.color_tags):
+        this_line = list(filter(lambda x: x[1] == line_number, self.color_tags))
+        to_add = []
+        this_line.sort(key=lambda n: n[2])
+        for (i, c) in enumerate(this_line):
+            tag, ctl, ctc, ctlen, fg, bg = c
+            for oc in this_line:
+                if c == oc: continue
+                _, _, octc, octlen, _, _ = oc
+                if octc == ctc and octlen < ctlen:
+                    this_line[i] = (tag, ctl, octc + octlen, ctc+ctlen-(octc+octlen), fg, bg)
+                elif octc == ctc and octlen == ctlen:
+                    this_line[i] = (tag, ctl, ctc, 0, fg, bg)
+                elif octc > ctc and octc < ctc + ctlen:
+                    this_line[i] = (tag, ctl, ctc, octc - ctc, fg, bg)
+                    if ctc + ctlen > octc + octlen:
+                        to_add.append((tag, ctl, octc+octlen, ctc+ctlen-(octc+octlen), fg, bg))
+        this_line.extend(to_add)
+        this_line.sort(key=lambda n: n[2])
+        if hasattr(self, 'filename') and line_number == 1: vx.logger.debug('this_line {}'.format(this_line))
+        for tag, _, ctc, ctlen, ctfg, ctbg in this_line:
             ctc -= column_number - 1
             vx.print_string_window(self, line[start:ctc-1])
             printed += len(line[start:ctc-1])
