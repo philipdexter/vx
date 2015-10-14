@@ -29,4 +29,4 @@ class c_mode(mode):
 
         self.breaks = ('_', ' ', '\n', '\t', '(', ')', '<', '>', '.', ',', '#')
 
-        self.keywords = ('#include', '#define', 'if', 'else', 'return', 'goto', 'break', 'continue')
+        self.keywords = ('#include', '#define', 'if', 'else', 'return', 'goto', 'break', 'continue', r'"(?:[^"\\]|\\.)*"')
