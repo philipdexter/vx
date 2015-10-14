@@ -50,8 +50,13 @@ int attach_file(Buffer *buffer, char *filename)
 	fseek(fp, 0L, SEEK_SET);
 	resize_gap(buffer->text, file_size);
 
-	while ((nread = fread(buf, 1, sizeof buf, fp)) > 0)
+	while ((nread = fread(buf, 1, sizeof buf, fp)) > 0 && !ferror(fp))
 		add_string(buffer->text, buf, nread);
+
+	if (ferror(fp)) {
+		fclose(fp);
+		return -1;
+	}
 
 	ret = fclose(fp);
 	if (ret) return -1;
