@@ -6,7 +6,6 @@
 #include <locale.h>
 #include <argp.h>
 #include <time.h>
-#include <setjmp.h>
 
 #include "vx_module.h"
 #include "buffer.h"
@@ -14,7 +13,6 @@
 #include "text.h"
 
 static void finish(int sig);
-sigjmp_buf exit_jmpbuf;
 
 int lets_edit = 1;
 int lets_suspend = 0;
@@ -122,7 +120,6 @@ int main(int argc, char *argv[])
 
 	clock_t last_tick = clock();
 	float update_every = .25;
-	sigsetjmp(exit_jmpbuf, 1);
 	while (lets_edit)
 	{
 		if (lets_suspend) {
@@ -217,5 +214,4 @@ int main(int argc, char *argv[])
 static void finish(int sig)
 {
 	lets_edit = 0;
-	siglongjmp(exit_jmpbuf, 0);
 }
