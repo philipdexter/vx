@@ -14,7 +14,6 @@ class line_numbers(buffer):
 
     def prepare(self):
         super(line_numbers, self).prepare()
-        self.set_text('h')
         y, _ = self.attached_to.topleft
         r, _ = self.attached_to.size
         width = self.columns
