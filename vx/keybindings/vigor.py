@@ -1,14 +1,36 @@
 import vx
-import keybindings
-import prompt
-import math
-import sys
-
 import vx.movement as move
-import vx.text as text
 
 from functools import partial
+from vx.keybindings import KeybindingTable
+from vx.keybindings import alt
+from vx.keybindings import bind
+from vx.keybindings import ctrl
+from vx.keybindings import keys
 
+def load(window):
+    return Vigor(window)
+
+class Vigor(KeybindingTable):
+    def __init__(self, win):
+        super().__init__()
+
+        self.win = win
+
+        self.bind(keys.h, move.left)
+        self.bind(keys.j, move.down)
+        self.bind(keys.k, move.up)
+        self.bind(keys.l, move.right)
+
+        self.bind(keys.backspace, self.win.backspace)
+        self.bind(keys.enter, partial(self.win.add_string, '\n'))
+
+        self.bind(ctrl + keys.x, vx.quit)
+        self.bind(ctrl + keys.s, self.win.save)
+
+# old trash code that I might want to look at later
+"""
+from functools import partial
 from enum import Enum
 
 vx.print_printable = False
@@ -105,3 +127,4 @@ vx.bind('C-x', vx.quit)
 vx.bind(';', vx.exec_prompt)
 
 # FIXME add vigor prompt
+"""
