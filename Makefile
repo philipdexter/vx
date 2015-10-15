@@ -12,7 +12,7 @@ OBJS = $(SOURCES:%.c=$(OUT_DIR)/%.o)
 
 HDS = $(SOURCES:%.c=$(OUT_DIR)/%.m)
 
-CFLAGS = -g -Wall -pedantic -std=c99 -O0 -D_POSIX_C_SOURCE
+CFLAGS = -g -Wall -pedantic -std=c99 -O0
 
 PYCFLAGS = $(shell /usr/bin/python3.5-config --cflags)
 PYLDFLAGS = $(shell /usr/bin/python3.5-config --ldflags)
