@@ -15,7 +15,7 @@ def load(window):
 
 class Hopscotch(KeybindingTable):
     def __init__(self, for_window):
-        super(hopscotch_keybindings, self).__init__()
+        super(Hopscotch, self).__init__()
 
         self.for_window = for_window
 
