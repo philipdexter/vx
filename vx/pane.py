@@ -41,6 +41,16 @@ class pane:
         self.buffer.focus()
 
     def update(self):
+        buffer_text_lines = len(str(self.buffer.get_text_lines()))
+        line_number_lines = self.line_numbers.columns
+        if buffer_text_lines > line_number_lines:
+            diff = buffer_text_lines-line_number_lines
+            self.line_numbers.grow(right=diff)
+            self.buffer.pad(left=diff)
+        elif buffer_text_lines < line_number_lines:
+            diff = line_number_lines-buffer_text_lines
+            self.line_numbers.pad(right=diff)
+            self.buffer.grow(left=diff)
         for w in self.windows:
             w.prepare()
         for w in self.windows:
