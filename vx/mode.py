@@ -17,7 +17,7 @@ class mode:
 
 class python_mode(mode):
     def __init__(self, window):
-        super(python_mode, self).__init__(window)
+        super().__init__(window)
 
         self.breaks = ('_', ' ', '\n', '\t', '(', ')', '{', '}', '.', ',', '#')
 
@@ -25,7 +25,7 @@ class python_mode(mode):
 
 class c_mode(mode):
     def __init__(self, window):
-        super(c_mode, self).__init__(window)
+        super().__init__(window)
 
         self.breaks = ('_', ' ', '\n', '\t', '(', ')', '<', '>', '.', ',', '#')
 

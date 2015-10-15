@@ -16,7 +16,7 @@ class _prompt(buffer):
         if attached_to is None:
             raise Exception('not implemented')
             attached_to = panes.focused
-        super(_prompt, self).__init__(2, attached_to.columns,
+        super().__init__(2, attached_to.columns,
                                       attached_to.y + attached_to.rows-1,
                                       attached_to.x)
         self.blank()
@@ -35,7 +35,7 @@ class exec_prompt(_prompt):
     _history = []
 
     def __init__(self, *args, **kwargs):
-        super(exec_prompt, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.keybinding_table.bind(alt + keys.p, self._history_pullback)
         self.keybinding_table.bind(keys.enter, self.getout)
@@ -80,7 +80,7 @@ class exec_prompt(_prompt):
 
 class file_prompt(_prompt):
     def __init__(self, *args, **kwargs):
-        super(file_prompt, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.completing = False
 
@@ -129,7 +129,7 @@ class file_prompt(_prompt):
 
 class yn_prompt(_prompt):
     def __init__(self, message, yes, no, *args, **kwargs):
-        super(yn_prompt, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.yes = yes
         self.no = no
@@ -158,7 +158,7 @@ class yn_prompt(_prompt):
 
 class time_prompt(_prompt):
     def __init__(self, message, seconds=2, *args, **kwargs):
-        super(time_prompt, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.message = message
 
@@ -176,7 +176,7 @@ class time_prompt(_prompt):
 
 class search_prompt(_prompt):
     def __init__(self, start='', forwards=True, *args, **kwargs):
-        super(search_prompt, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.forwards = forwards
 
@@ -197,7 +197,7 @@ class search_prompt(_prompt):
     def cancel(self):
         self.attached_to.cursor = (self.original_cursor[0], self.original_cursor[1])
         self.attached_to.topleft = (self.original_start[0], self.original_start[1])
-        super(search_prompt, self).cancel()
+        super().cancel()
 
     def reverse(self):
         self.forwards = not self.forwards

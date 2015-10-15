@@ -8,7 +8,7 @@ from contextlib import contextmanager
 
 class buffer(window):
     def __init__(self, *args, **kwargs):
-        super(buffer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.undo_tree = undo_tree(self)
 
@@ -31,7 +31,7 @@ class buffer(window):
         self.undo_tree.undo()
 
     def save(self):
-        super(buffer, self).save()
+        super().save()
         self.undo_tree.mark_save_point()
 
     @contextmanager
@@ -93,7 +93,7 @@ class buffer(window):
                 if ch == '\t':
                     c -= 7
                 self.undo_tree.add(removal(ch, l, c, hold=False, box=(l, c, lb, cb)))
-        super(buffer, self).backspace()
+        super().backspace()
 
     def delete(self, track=True):
         if track:
@@ -104,13 +104,13 @@ class buffer(window):
             move.left()
             ch = vx.get_ch_linecol_window(self, l, c)
             self.undo_tree.add(removal(ch, l, c, hold=True, box=(l, c, lb, cb)))
-        super(buffer, self).delete()
+        super().delete()
 
     def add_string(self, s, track=True):
         if track:
             la, ca = self.cursor
             self.dirty = True
-        super(buffer, self).add_string(s)
+        super().add_string(s)
         if track:
             lb, cb = self.cursor
             self.undo_tree.add(addition(s, lb, cb, (la, ca, lb, cb)))

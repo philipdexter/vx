@@ -20,7 +20,7 @@ class action:
 
 class addition(action):
     def __init__(self, string, line, col, box):
-        super(addition, self).__init__(string, line, col, box)
+        super().__init__(string, line, col, box)
 
     def undo(self, buffer):
         buffer.cursor = (self.line, self.col)
@@ -34,7 +34,7 @@ class addition(action):
 
 class removal(action):
     def __init__(self, string, line, col, box, hold):
-        super(removal, self).__init__(string, line, col, box)
+        super().__init__(string, line, col, box)
 
         self.hold = hold
 
@@ -140,7 +140,7 @@ def load(buffer, attached_to):
     from .pointer import organizer, panes
     class undo_tree_keybindings(keybinding_table):
         def __init__(self):
-            super(undo_tree_keybindings, self).__init__()
+            super().__init__()
 
             self.buffer = buffer
             self.attached_to = attached_to

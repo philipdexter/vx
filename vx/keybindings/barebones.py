@@ -9,7 +9,7 @@ def load(window):
 
 class Barebones(KeybindingTable):
     def __init__(self, for_window):
-        super(Barebones, self).__init__()
+        super().__init__()
 
         self.for_window = for_window
 

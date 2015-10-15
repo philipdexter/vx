@@ -59,11 +59,11 @@ class lines:
 class beginning_lines(lines):
     def __init__(self, how_many=None, forward=True):
         how_many = how_many if how_many is not None else 0
-        super(beginning_lines, self).__init__(how_many, forward)
+        super().__init__(how_many, forward)
 
     def grab(self, buffer):
         with buffer.cursor_wander():
-            la, ca, lb, cb = super(beginning_lines, self).grab(buffer)
+            la, ca, lb, cb = super().grab(buffer)
             buffer.cursor = (lb, cb)
             move.bol()
             lb, cb = buffer.cursor
@@ -72,11 +72,11 @@ class beginning_lines(lines):
 class end_lines(lines):
     def __init__(self, how_many=None, forward=True):
         how_many = how_many if how_many is not None else 0
-        super(end_lines, self).__init__(how_many, forward)
+        super().__init__(how_many, forward)
 
     def grab(self, buffer):
         with buffer.cursor_wander():
-            la, ca, lb, cb = super(end_lines, self).grab(buffer)
+            la, ca, lb, cb = super().grab(buffer)
             buffer.cursor = (lb, cb)
             move.eol()
             lb, cb = buffer.cursor
@@ -85,12 +85,12 @@ class end_lines(lines):
 class whole_lines(lines):
     def __init__(self, how_many=None, forward=True):
         how_many = how_many if how_many is not None else 1
-        super(whole_lines, self).__init__(how_many-1, forward)
+        super().__init__(how_many-1, forward)
 
     def grab(self, buffer):
         with buffer.cursor_wander():
             move.bol() if self.forward else move.eol()
-            la, ca, lb, cb = super(whole_lines, self).grab(buffer)
+            la, ca, lb, cb = super().grab(buffer)
             buffer.cursor = (lb, cb)
             move.eol() if self.forward else move.bol()
             lb, cb = buffer.cursor
@@ -100,7 +100,7 @@ class absolute_line(lines):
     def __init__(self, line=None, *args):
         line = line if line is not None else 1
         self.line = line
-        super(absolute_line, self).__init__(line, *args)
+        super().__init__(line, *args)
 
     def __str__(self):
         return 'line {}'.format(self.line)
@@ -238,7 +238,7 @@ class Times:
 
 class Concat(KeybindingTable):
     def __init__(self, for_window):
-        super(Concat, self).__init__()
+        super().__init__()
 
         self.for_window = for_window
 
@@ -275,7 +275,7 @@ class Concat(KeybindingTable):
         self.cb(keys['9'], partial(self.times, 9))
 
         self.cb(keys.i, partial(self.save_typing, True))
-        super(Concat, self).bind(ctrl + keys.k, partial(self.save_typing, False))
+        super().bind(ctrl + keys.k, partial(self.save_typing, False))
 
         self.bind(keys.enter, partial(self.for_window.add_string, '\n'))
         self.bind(keys.backspace, self.for_window.backspace)
@@ -320,7 +320,7 @@ class Concat(KeybindingTable):
 
         self.cb(ctrl + keys.l, self.move_absolute_line)
 
-        super(Concat, self).bind(keys.backspace, self.backspace)
+        super().bind(keys.backspace, self.backspace)
         self.cb(keys.d, self.delete)
         self.cb(keys.y, self.pop_graveyard)
 
@@ -334,7 +334,7 @@ class Concat(KeybindingTable):
         self.cb(keys.f, self._open_search)
         self.cb(keys.F, partial(self._open_search, forwards=False))
         self.cb(keys.O, self._open_file)
-        super(Concat, self).bind(alt + keys.x, self._open_exec)
+        super().bind(alt + keys.x, self._open_exec)
 
         self.cb(ctrl + keys.t, test.run_tests)
 
@@ -429,7 +429,7 @@ class Concat(KeybindingTable):
         self._stack.append(PlaceModifier.backward)
 
     def cb(self, key, command):
-        super(Concat, self).bind(key, self.concat_bind(command))
+        super().bind(key, self.concat_bind(command))
 
     def concat_bind(self, command):
         def h(key):
