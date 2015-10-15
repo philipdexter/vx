@@ -43,22 +43,6 @@ class hopscotch_keybindings(keybinding_table):
 
         self.bind(ctrl + keys.z, vx.suspend)
 
-        # text manipulation
-
-        # self.bind(ctrl + keys.d, vx.delete)
-
-        # self.bind(ctrl + keys.k, vx.kill_to_end)
-
-        # self.bind(alt + keys.d, vx.kill_to_forward)
-        # self.bind(alt + keys.backspace, vx.kill_to_backward)
-
-        # window management
-
-        # self.bind(ctrl + keys.x - keys.o, vx.next_window)
-
-        # self.bind(ctrl + keys.x - '2', vx.split_h)
-        # self.bind(ctrl + keys.x - '3', vx.split_v)
-        # self.bind(ctrl + keys.x - '0', vx.close_window)
 
         self.bind(ctrl + keys.x - keys['0'], lambda: organizer.remove_pane(panes.focused))
         self.bind(ctrl + keys.x - keys['2'], lambda: panes.focused.split())
