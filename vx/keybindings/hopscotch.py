@@ -1,5 +1,5 @@
 import vx
-from vx.keybindings import bind, alt, ctrl, keys, keybinding_table
+from vx.keybindings import bind, alt, ctrl, keys, KeybindingTable
 import vx.movement as move
 import vx.utils as utils
 import vx.window
@@ -11,9 +11,9 @@ from ..pointer import panes, organizer
 from functools import partial
 
 def load(window):
-    return hopscotch_keybindings(window)
+    return Hopscotch(window)
 
-class hopscotch_keybindings(keybinding_table):
+class Hopscotch(KeybindingTable):
     def __init__(self, for_window):
         super(hopscotch_keybindings, self).__init__()
 
