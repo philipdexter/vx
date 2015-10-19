@@ -78,6 +78,30 @@ class exec_prompt(_prompt):
             vx.clear_contents_window(self)
             self.add_string(_exec_prompt._history[-1])
 
+class input_prompt(_prompt):
+    def __init__(self, message, input_callback, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.keybinding_table.bind(keys.enter, self.getout)
+
+        self.message = message
+
+        self.input_callback = input_callback
+
+        self.add_string('{} '.format(message))
+
+    def getout(self):
+        contents = self.contents
+        response = contents.split(self.message)[1].strip()
+
+        if self.remove_callback:
+            self.remove_callback(self)
+
+        if self.input_callback:
+            self.input_callback(response)
+
+        self.remove(force=True)
+
 class file_prompt(_prompt):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
