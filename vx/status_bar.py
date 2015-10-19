@@ -5,10 +5,10 @@ class status_bar(buffer):
         super().__init__(1, attached_to.columns,
                                          attached_to.y + attached_to.rows - 1, attached_to.x)
         self.attached_to = attached_to
-        self.text = lambda window: 'line: {} col: {} - {}{}'.format(attached_to.line,
-                                                                      attached_to.col,
-                                                                      attached_to.filename if hasattr(window, 'filename') else '<none>',
-                                                                      '(d)' if attached_to.dirty else '')
+        self.text = lambda b: 'line: {} col: {} - {}{}'.format(b.line,
+                                                               b.col,
+                                                               b.filename if hasattr(b, 'filename') else '<none>',
+                                                               '(d)' if b.dirty else '')
         self.default_text = self.text
 
         self.blank()
