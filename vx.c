@@ -95,8 +95,8 @@ int main(int argc, char *argv[])
 	arguments.verbose = 0;
 	arguments.nopy = 0;
 	arguments.files = NULL;
-	arguments.num_files = 0;
-	argp_parse(&argp, argc, argv, 0, 0, &arguments);
+	arguments.num_files = argc-1;
+	/*argp_parse(&argp, argc, argv, 0, 0, &arguments);*/
 
 	vx_py_init_python(arguments.num_files, argc, argv);
 
