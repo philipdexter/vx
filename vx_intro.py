@@ -1,4 +1,5 @@
 import vx
+import vx.args
 import os.path
 import math
 from sys import argv
@@ -24,8 +25,6 @@ def _tick():
 
 vx.my_vx = _tick
 vx.register_tick_function = _register_tick_function
-
-vx.files = argv[1:]
 
 def _resize():
     pass
