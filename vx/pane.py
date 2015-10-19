@@ -27,6 +27,11 @@ class pane:
         self.attach_window(self.status_bar)
         self.attach_window(self.line_numbers)
 
+    def set_buffer(self, buffer):
+        self.buffer = buffer
+        self.line_numbers.attached_to = buffer
+        self.status_bar.attached_to = buffer
+
     def attach_window(self, window):
         self.windows.append(window)
         windows.add(window)
