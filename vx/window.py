@@ -349,5 +349,5 @@ def execute_window():
 
 def _resize_handler():
     for p in panes.all:
-        p.resize(p.rows, vx.cols)
+        p.resize(vx.rows, vx.cols)
 vx.resize_handler = _resize_handler
