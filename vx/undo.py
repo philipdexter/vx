@@ -136,9 +136,9 @@ class undo_tree:
         return '{}\n{}'.format(items, rep)
 
 def load(buffer, attached_to):
-    from .keybindings import keybinding_table, ctrl, keys
+    from .keybindings import KeybindingTable, ctrl, keys
     from .pointer import organizer, panes
-    class undo_tree_keybindings(keybinding_table):
+    class undo_tree_keybindings(KeybindingTable):
         def __init__(self):
             super().__init__()
 
