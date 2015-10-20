@@ -322,11 +322,6 @@ class window:
     def redo(self):
         raise Exception('not implemented')
 
-def close_window():
-    w = windows.focused
-    _next_window()
-    w.remove()
-
 def center():
     r, c = vx.get_window_size(windows.focused)
     y, _ = windows.focused.cursor
