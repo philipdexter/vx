@@ -80,7 +80,7 @@ int save_file(Buffer *buffer)
 		free(str);
 		return -1;
 	}
-	if (0 > snprintf(name, strlen(buffer->filename), ".%s.", buffer->filename)) {
+	if (0 > snprintf(name, strlen(buffer->filename)+3, "%s##", buffer->filename)) {
 		free(name);
 		free(str);
 		return -1;
