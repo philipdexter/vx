@@ -9,6 +9,8 @@ def mode_from_filename(file):
     mode = None
     if ext == '.c':
         return c_mode
+    elif ext == '.py':
+        return python_mode
 
 class mode:
     def __init__(self, window):
@@ -21,7 +23,7 @@ class python_mode(mode):
 
         self.breaks = ('_', ' ', '\n', '\t', '(', ')', '{', '}', '.', ',', '#')
 
-        self.keywords = ('return', 'for', 'while', 'break', 'continue', 'def')
+        self.keywords = ('class', 'return', 'for', 'while', 'break', 'continue', 'def', 'from', 'import')
 
 class c_mode(mode):
     def __init__(self, window):
