@@ -2,6 +2,7 @@ import vx
 import vx.utils as utils
 import vx.text as text
 from .buffer import buffer
+from .filebuffer import filebuffer
 from vx.keybindings import ctrl, alt, keys, register_key_listener, unregister_key_listener
 
 from .pointer import windows, panes, organizer
@@ -137,18 +138,24 @@ class file_prompt(_prompt):
                        partial(self.getout, force=True),
                        partial(self.getout, force=True, cancel_open=True))
             return
-        y, x = vx.get_window_size(self)
-        self.attached_to.grow(bottom=y)
-        self.attached_to.focus()
+
+        if self.remove_callback:
+            self.remove_callback(self)
+
         if not cancel_open:
             contents = self.contents
             if isfile(contents):
-                self.attached_to.attach_file(contents)
-                self.attached_to.dirty = False
+                panes.focused.detach_window(self.attached_to)
+                fb = filebuffer(contents, self.attached_to.rows, self.attached_to.columns, self.attached_to.y, self.attached_to.x)
+                panes.focused.set_buffer(fb)
+                panes.focused.attach_window(fb)
+                organizer.switch_to_pane(panes.focused)
+                windows.remove(self.attached_to)
             else:
                 split = self.attached_to.split_h()
                 split.focus()
                 split.add_string('file "{}" does not exist'.format(contents))
+
         self.remove(force=True)
 
 class yn_prompt(_prompt):
