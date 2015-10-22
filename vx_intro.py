@@ -59,4 +59,10 @@ def _default_start():
         _normal_start()
 vx.default_start = _default_start
 
+def _resize_handler():
+    from vx.pointer import panes
+    for p in panes.all:
+        p.resize(vx.rows, vx.cols)
+vx.resize_handler = _resize_handler
+
 import vx.pointer

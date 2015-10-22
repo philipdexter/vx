@@ -328,26 +328,3 @@ def center():
     _, x = vx.get_linecol_start_window(windows.focused)
     new_top = max(y - r // 2, 1)
     windows.focused.topleft = (new_top, x)
-
-def execute_window():
-    contents = vx.windows.focused.contents
-    with vx.utils.stdoutIO() as s:
-        try:
-            exec(contents)
-        except Exception as e:
-            tb = traceback.format_exc()
-        else:
-            tb = None
-    s = s.getvalue()
-    if len(s) > 0 or tb:
-        split = vx.windows.focused.split_h()
-        split.focus()
-        if not tb:
-            vx.add_string(s)
-        else:
-            vx.add_string(tb)
-
-def _resize_handler():
-    for p in panes.all:
-        p.resize(vx.rows, vx.cols)
-vx.resize_handler = _resize_handler
