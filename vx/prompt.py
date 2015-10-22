@@ -250,7 +250,7 @@ class search_prompt(_prompt):
         return l, c, o, len(search_for)
 
     def clear_color(self):
-        self.attached_to.color_tags = list(filter(lambda x: x[0] != "search", self.attached_to.color_tags))
+        self.attached_to.color_tags = list(filter(lambda x: x[0] != 'search', self.attached_to.color_tags))
 
     def search(self):
         self.set_color(-1, -1)
@@ -285,7 +285,7 @@ class search_prompt(_prompt):
         self.clear_color()
 
 class regex_prompt(search_prompt):
-    def dosearch(self, window, search_for, forwards):
-        if not forwards:
+    def dosearch(self, window, search_for, forward):
+        if not forward:
             vx.move_right_window(window)
-        return text.find_regex(search_for, window, forwards)
+        return window.get_regex_linecoloffsetlength_of(search_for, forward=forward)

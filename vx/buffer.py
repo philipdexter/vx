@@ -2,8 +2,10 @@ import vx
 from vx.window import window
 from .undo import undo_tree, addition, removal
 import vx.movement as move
+import vx.text as text
 from .keybindings import ctrl, keys
 
+import re
 from contextlib import contextmanager
 
 class buffer(window):
@@ -126,3 +128,57 @@ class buffer(window):
 
     def get_text_lines(self):
         return len(self.contents.split('\n'))
+
+    def get_linecoloffset_of(self, to_find, contents=None, start=0, forward=True):
+        if forward:
+            contents = contents or self.get_contents_from_cursor()
+            index = contents.find(to_find, start)
+            lines, columns = text.get_linecol_offset(contents[:index])
+            l, c = self.cursor
+            columns = c + columns if lines == 0 else columns + 1
+            lines = l + lines
+            return lines, columns, index
+        else:
+            raise Exception('not implemented')
+
+    def get_all_linecoloffsets_of(self, to_find, forward=True):
+        if not forward:
+            raise Exception('not implemented')
+        contents = self.get_contents_from_cursor()
+        start = 0
+        while True:
+            line, col, start = self.get_linecoloffset_of(to_find, contents, start, forward)
+            if start == -1: break
+            yield (line, col, start)
+            start += 1
+
+    def get_regex_linecoloffsetlength_of(self, regex, contents=None, start=0, forward=True):
+        if forward:
+            contents = contents or self.get_contents_from_cursor()
+            try:
+                rgx = re.compile(regex, re.MULTILINE)
+            except:
+                return (0, 0, -1, 0)
+            match = rgx.search(contents, start)
+            if match is None:
+                return (0, 0, -1, 0)
+            index = match.start()
+            lines, columns = text.get_linecol_offset(contents[:index])
+            l, c = self.cursor
+            columns = c + columns if lines == 0 else columns + 1
+            lines = l + lines
+            length = match.end() - match.start()
+            return lines, columns, index, length
+        else:
+            raise Exception('not implemented')
+
+    def get_all_regex_linecoloffsetlengths_of(self, regex, forward=True):
+        if not forward:
+            raise Exception('not implemented')
+        contents = self.get_contents_from_cursor()
+        start = 0
+        while True:
+            line, col, start, length = self.get_regex_linecoloffsetlength_of(regex, contents, start, forward)
+            if start == -1: break
+            yield (line, col, start, length)
+            start += 1

@@ -54,21 +54,9 @@ def find_regex(regex, window=None, forwards=True):
     else:
         return (0, 0, -1, 0)
 
-def get_offsets_of(breaks, forward=True, ignore_pos=True, ignore_failed=True):
-    """Returns a list of the offsets of each of the characters inside `breaks`
-
-    :param forward: if False, search backwards
-    :param ignore_pos: flag for ignoring the cursors current location
-    :param ignore_failed: flag to prune characters that weren't found
-    """
-    if ignore_pos and forward:
-        move.right()
-    else:
-        move.left()
-    offsets = map(lambda s: (s, vx.get_linecoloffset_of_str(windows.focused, s, int(forward))[2]), breaks)
-    offsets = list(map(lambda x: (x[0], x[1] + 1 if x[1] != -1 else x[1]), offsets)) if ignore_pos else offsets
-    if ignore_pos and forward:
-        move.left()
-    else:
-        move.right()
-    return list(filter(lambda x: x[1] != -1, offsets) if ignore_failed else offsets)
+def get_linecol_offset(text):
+    lines = text.count('\n')
+    columns = text.rfind('\n')
+    if columns == -1: columns = len(text)
+    else: columns = len(text) - columns - 1
+    return lines, columns
