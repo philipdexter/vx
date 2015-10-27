@@ -43,12 +43,11 @@ def _normal_start():
         organizer.add_pane(win)
         organizer.switch_to_pane(win)
     else:
-        d = math.floor(vx.rows / (len(vx.files)))
+        d = vx.rows
         y = 0
         for f in vx.files:
             fb = filebuffer(f, d, vx.cols, y, 0)
             win = pane(fb, d, vx.cols, y, 0)
-            y += d
             organizer.add_pane(win)
             organizer.switch_to_pane(win)
 def _default_start():
