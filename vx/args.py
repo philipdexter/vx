@@ -1,7 +1,7 @@
 import vx
 import argparse
 
-parser = argparse.ArgumentParser(description='ldit files')
+parser = argparse.ArgumentParser(description='edit files')
 parser.add_argument('files', metavar='FILE', type=str, nargs='*',
                     help='Files to edit')
 parser.add_argument('-l', '--log', dest='log', action='store_true',
