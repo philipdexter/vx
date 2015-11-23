@@ -242,6 +242,9 @@ def unregister_key_listener(f):
     _key_listeners.remove(f)
 
 def _register_key(key):
+    if key == b'':
+        key = b'\x00'
+
     global _keybinding_queue
     _keybinding_queue.append(key)
     vx.last_pressed = key
