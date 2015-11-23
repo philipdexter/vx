@@ -4,6 +4,7 @@ from .undo import undo_tree, addition, removal
 import vx.movement as move
 import vx.text as text
 from .keybindings import ctrl, keys
+from vx.copystack import CopyStack
 
 import re
 from contextlib import contextmanager
@@ -23,6 +24,8 @@ class buffer(window):
             p.buffer.keybinding_table = vx.undo.load(p.buffer, attached_to=self)
             p.buffer.focus()
         self.keybinding_table.bind(ctrl + keys.y, print_undo)
+
+        self.copystack = CopyStack()
 
         self.last_seeked_column = 1
 
