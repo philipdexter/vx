@@ -173,15 +173,42 @@ class buffer(window):
             length = match.end() - match.start()
             return lines, columns, index, length
         else:
-            raise Exception('not implemented')
+            contents = contents or self.get_contents_before_cursor()
+            try:
+                rgx = re.compile(regex, re.MULTILINE)
+            except:
+                return (0, 0, -1, 0)
+            match = None
+            for match in rgx.finditer(contents, endpos=len(contents)-start):
+                pass
+            if match is None:
+                return (0, 0, -1, 0)
+            index = match.start()
+            lines, columns = text.get_linecol_offset(contents[index:], forward=False)
+            back = index - contents.rfind('\n', 0, index) - 1
+            if back == -1: back = 0
+            columns = back+1
+            ol, oc = lines, columns
+            l, c = self.cursor
+            lines = l - lines
+            length = match.end() - match.start()
+            return lines, columns, index, length
 
     def get_all_regex_linecoloffsetlengths_of(self, regex, forward=True):
-        if not forward:
-            raise Exception('not implemented')
-        contents = self.get_contents_from_cursor()
-        start = 0
-        while True:
-            line, col, start, length = self.get_regex_linecoloffsetlength_of(regex, contents, start, forward)
-            if start == -1: break
-            yield (line, col, start, length)
-            start += 1
+        if forward:
+            contents = self.get_contents_from_cursor()
+            start = 0
+            while True:
+                line, col, start, length = self.get_regex_linecoloffsetlength_of(regex, contents, start, forward)
+                if start == -1: break
+                yield (line, col, start, length)
+                start += 1
+        else:
+            contents = self.get_contents_before_cursor()
+            start = 0
+            while True:
+                line, col, start, length = self.get_regex_linecoloffsetlength_of(regex, contents, start, forward)
+                if start == -1:
+                    break
+                yield (line, col, start, length)
+                start = len(contents) - start + 1

@@ -54,9 +54,15 @@ def find_regex(regex, window=None, forwards=True):
     else:
         return (0, 0, -1, 0)
 
-def get_linecol_offset(text):
-    lines = text.count('\n')
-    columns = text.rfind('\n')
-    if columns == -1: columns = len(text)
-    else: columns = len(text) - columns - 1
-    return lines, columns
+def get_linecol_offset(text, forward=True):
+    if forward:
+        lines = text.count('\n')
+        columns = text.rfind('\n')
+        if columns == -1: columns = len(text)
+        else: columns = len(text) - columns - 1
+        return lines, columns
+    else:
+        lines = text.count('\n')
+        columns = text.find('\n')
+        if columns == -1: columns = len(text)
+        return lines, columns

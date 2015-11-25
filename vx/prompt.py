@@ -270,6 +270,10 @@ class search_prompt(_prompt):
         self.clear_color()
         self.attached_to.add_color_tag('search', l, c, length, 1, 10)
         all_matches = self.attached_to.get_all_regex_linecoloffsetlengths_of(search_for, self.forwards)
+        if not self.forwards:
+            # quick and ugly, this should be fixed with better overlap
+            # color tag detection
+            all_matches = [None] + list(all_matches)
         for l, c, _, length in list(all_matches)[1:]:
             self.attached_to.add_color_tag('search', l, c, length, 1, 9)
         if not self.forwards:
