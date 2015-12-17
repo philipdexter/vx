@@ -261,8 +261,11 @@ def _register_key(key):
         match = KeybindingTable.MATCH_STATE.keep_going
 
     if match == KeybindingTable.MATCH_STATE.reject:
-        if _print_printable and len(_keybinding_queue) == 1 and utils.is_printable(key.decode('utf8')[0]):
-            windows.focused.add_string(key.decode('utf8'))
+        try:
+            if _print_printable and len(_keybinding_queue) == 1 and utils.is_printable(key.decode('utf8')[0]):
+                windows.focused.add_string(key.decode('utf8'))
+        except UnicodeDecodeError:
+            pass
         _keybinding_queue = []
     elif match == KeybindingTable.MATCH_STATE.accept:
         _keybinding_queue = []
