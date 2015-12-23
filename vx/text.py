@@ -58,8 +58,10 @@ def get_linecol_offset(text, forward=True):
     if forward:
         lines = text.count('\n')
         columns = text.rfind('\n')
+        tabs = text[max(columns, 0):].count('\t')
         if columns == -1: columns = len(text)
         else: columns = len(text) - columns - 1
+        columns += 7*tabs
         return lines, columns
     else:
         lines = text.count('\n')

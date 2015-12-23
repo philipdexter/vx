@@ -188,6 +188,8 @@ class buffer(window):
             back = index - contents.rfind('\n', 0, index) - 1
             if back == -1: back = 0
             columns = back+1
+            tabs = contents[contents.rfind('\n', 0, index):index].count('\t')
+            columns += 7*tabs
             ol, oc = lines, columns
             l, c = self.cursor
             lines = l - lines
