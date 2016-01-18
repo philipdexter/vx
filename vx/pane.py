@@ -15,13 +15,13 @@ class pane:
         self.windows = []
 
         self.buffer = buffer
-
         self.status_bar = status_bar(self.buffer)
-
         self.line_numbers = line_numbers(self.buffer)
+
         self.buffer.move(self.y, self.x)
         self.buffer.resize(self.rows, self.columns)
         self.buffer.pad(left=self.line_numbers.columns, bottom=1)
+        self.line_numbers.pad(bottom=1)
 
         self.attach_window(self.buffer)
         self.attach_window(self.status_bar)
@@ -85,7 +85,8 @@ class pane:
         self.rows = rows
         self.columns = columns
 
-        self.line_numbers.resize(self.rows-1, self.line_numbers.columns)
+        self.line_numbers.resize(self.rows, self.line_numbers.columns)
+        self.line_numbers.pad(bottom=1)
 
         self.buffer.move(self.y, self.x)
         self.buffer.resize(self.rows, self.columns)
