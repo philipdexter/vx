@@ -24,22 +24,29 @@ class Hopscotch(KeybindingTable):
 
         # simple movement
 
-        self.bind(ctrl + keys.n, move.down)
-        self.bind(ctrl + keys.p, move.up)
-        self.bind(ctrl + keys.b, move.left)
-        self.bind(ctrl + keys.f, move.right)
+        def with_column_restore(f):
+            with self.for_window.column_restore():
+                return f()
+        def with_column_save(f):
+            with self.for_window.column_save():
+                return f()
 
-        self.bind(ctrl + keys.a, move.bol)
-        self.bind(ctrl + keys.e, move.eol)
+        self.bind(ctrl + keys.n, partial(with_column_restore, move.down))
+        self.bind(ctrl + keys.p, partial(with_column_restore, move.up))
+        self.bind(ctrl + keys.b, partial(with_column_save, move.left))
+        self.bind(ctrl + keys.f, partial(with_column_save, move.right))
+
+        self.bind(ctrl + keys.a, partial(with_column_save, move.bol))
+        self.bind(ctrl + keys.e, partial(with_column_save, move.eol))
 
         self.bind(ctrl + keys.v, partial(utils.repeat, move.down))
         self.bind(alt + keys.v, partial(utils.repeat, move.up))
 
-        self.bind(alt + keys.langle, move.beg)
-        self.bind(alt + keys.rangle, move.end)
+        self.bind(alt + keys.langle, partial(with_column_save, move.beg))
+        self.bind(alt + keys.rangle, partial(with_column_save, move.end))
 
-        self.bind(keys.backspace, self.for_window.backspace)
-        self.bind(ctrl + keys.d, self.for_window.delete)
+        self.bind(keys.backspace, partial(with_column_save, self.for_window.backspace))
+        self.bind(ctrl + keys.d, partial(with_column_save, self.for_window.delete))
         self.bind(keys.enter, partial(self.for_window.add_string, '\n'))
 
         self.bind(ctrl + keys.l, vx.window.center)
