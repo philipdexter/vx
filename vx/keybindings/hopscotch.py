@@ -86,9 +86,13 @@ class Hopscotch(KeybindingTable):
         self.bind(ctrl + keys.k, self.cut_to_eol)
         self.bind(ctrl + keys.w, self.cut)
         self.bind(alt + keys.w, self.uncut)
+        self.bind(alt + keys.W, self.pop_cut)
 
     def save_mark(self):
         self.mark = self.for_window.cursor
+
+    def pop_cut(self):
+        self.for_window.copystack.pop()
 
     def uncut(self):
         if self.for_window.copystack.empty(): return
