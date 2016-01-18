@@ -23,9 +23,9 @@ class addition(action):
         super().__init__(string, line, col, box)
 
     def undo(self, buffer):
-        buffer.cursor = (self.line, self.col)
-        for _ in range(len(self.string)):
-            buffer.backspace(track=False)
+        line, col, _, _ = self.box
+        buffer.cursor = line, col
+        buffer.remove_text(*self.box)
 
     def redo(self, buffer):
         line, col, _, _ = self.box
