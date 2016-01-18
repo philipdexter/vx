@@ -76,6 +76,7 @@ class Hopscotch(KeybindingTable):
 
         # copy/paste
 
+        self.bind(ctrl + keys.k, self.cut_to_eol)
         self.bind(ctrl + keys.w, self.cut)
         self.bind(alt + keys.w, self.uncut)
 
@@ -104,4 +105,16 @@ class Hopscotch(KeybindingTable):
         self.for_window.remove_text(la, ca, lb, cb)
         self.for_window.dirty = True
         self.for_window.undo_tree.add(undo.removal(text_between, la, ca, (la, ca, lb, cb), forward))
+        self.for_window.cursor = (la, ca)
+
+    def cut_to_eol(self):
+        (la, ca) = self.for_window.cursor
+        with self.for_window.cursor_wander():
+            move.eol()
+            (lb, cb) = self.for_window.cursor
+        text_between = vx.get_str_linecol_to_linecol_window(self.for_window, la, ca, lb, cb)
+        self.for_window.copystack.push(text_between)
+        self.for_window.remove_text(la, ca, lb, cb)
+        self.for_window.dirty = True
+        self.for_window.undo_tree.add(undo.removal(text_between, la, ca, (la, ca, lb, cb), True))
         self.for_window.cursor = (la, ca)
