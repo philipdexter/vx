@@ -126,6 +126,9 @@ class Hopscotch(KeybindingTable):
         with self.for_window.cursor_wander():
             move.eol()
             (lb, cb) = self.for_window.cursor
+            if la == la and ca == cb:
+                move.down()
+                (lb, cb) = self.for_window.cursor
         text_between = vx.get_str_linecol_to_linecol_window(self.for_window, la, ca, lb, cb)
         self.for_window.copystack.push(text_between)
         self.for_window.remove_text(la, ca, lb, cb)
