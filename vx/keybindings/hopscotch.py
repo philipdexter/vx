@@ -62,7 +62,10 @@ class Hopscotch(KeybindingTable):
 
         self.bind(ctrl + keys.x - ctrl + keys.c, vx.quit)
         self.bind(alt + keys.x, lambda: panes.focused.open_prompt(vx.prompt.exec_prompt))
-        self.bind(ctrl + keys.s, lambda: panes.focused.open_prompt(vx.prompt.regex_prompt))
+        def open_regex_search():
+            if not isinstance(self.for_window, vx.prompt._prompt):
+                panes.focused.open_prompt(vx.prompt.regex_prompt)
+        self.bind(ctrl + keys.s, open_regex_search)
 
         self.bind(ctrl + keys.x - ctrl + keys.f, lambda: panes.focused.open_prompt(vx.prompt.file_prompt))
 

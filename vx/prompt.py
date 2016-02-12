@@ -212,7 +212,7 @@ class search_prompt(_prompt):
         self.forwards = forwards
 
         self.keybinding_table.bind(keys.enter, self.getout)
-        self.keybinding_table.bind(ctrl + keys.f, self.next)
+        self.keybinding_table.bind(ctrl + keys.s, self.next)
         self.keybinding_table.bind(ctrl + keys.r, self.reverse)
 
         register_key_listener(self.isearch)
